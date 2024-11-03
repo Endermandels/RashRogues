@@ -8,8 +8,8 @@ public class Entity extends Sprite {
 
     protected float maxXVelocity;
     protected float maxYVelocity;
-    private float xVelocity;
-    private float yVelocity;
+    protected float xVelocity;
+    protected float yVelocity;
     protected Rectangle boundingBox;
     protected boolean flipped;
 
@@ -18,8 +18,8 @@ public class Entity extends Sprite {
         setPosition(x, y);
         boundingBox = this.getBoundingRectangle();
         // maybe make edits here idk how good it will be but this gives us a baseline
-        this.maxXVelocity = 100.0f;
-        this.maxYVelocity = 100.0f;
+        this.maxXVelocity = 500.0f;
+        this.maxYVelocity = 500.0f;
         this.flipped = false;
     }
 
@@ -36,14 +36,4 @@ public class Entity extends Sprite {
         setX(x + delta * xVelocity);
         setY(y + delta * yVelocity);
     }
-
-    protected void setXVelocity(float xVelocity) {
-        this.xVelocity = xVelocity;
-    }
-
-    protected void setYVelocity(float yVelocity) {
-        this.yVelocity = yVelocity;
-    }
-
-
 }

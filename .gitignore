@@ -5,6 +5,8 @@
 *.war
 *.ear
 hs_err_pid*
+lwjgl3/build/
+core/build/
 
 ## Robovm
 /ios/robovm-build/
