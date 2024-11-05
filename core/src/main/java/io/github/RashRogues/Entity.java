@@ -13,13 +13,17 @@ public class Entity extends Sprite {
     protected Rectangle boundingBox;
     protected boolean flipped;
 
-    Entity(Texture texture, int x, int y) {
+    Entity(Texture texture, int x, int y, float width, float height) {
         super(texture);
+        setSize(width, height);
+        setOrigin(width/2, height/2);
         setPosition(x, y);
         boundingBox = this.getBoundingRectangle();
         // maybe make edits here idk how good it will be but this gives us a baseline
-        this.maxXVelocity = 500.0f;
-        this.maxYVelocity = 500.0f;
+        this.maxXVelocity = 15.0f;
+        this.maxYVelocity = 15.0f;
+        // this can be whatever, I imagine each enemy might have its own speed but for now this works,
+        // just override the maxVelocities on the subclasses.
         this.flipped = false;
     }
 
