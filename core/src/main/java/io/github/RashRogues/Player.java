@@ -8,10 +8,16 @@ public class Player extends Entity {
 
     private final float ACCELERATION = 50.0f;
     private final float FRICTION = 100.0f;
+    private final float BASE_PLAYER_SPEED = 15.0f;
 
-    Player(Texture texture, int x, int y) {
-        super(texture, x, y);
-        // can override maxX/Y velocity here
+    Player(Texture texture, int x, int y, float width, float height) {
+        super(texture, x, y, width, height);
+        this.maxXVelocity = BASE_PLAYER_SPEED;
+        this.maxYVelocity = BASE_PLAYER_SPEED;
+    }
+
+    Player(Texture texture, int x, int y, float size) {
+        this(texture, x, y, size, size);
     }
 
     public void takeInput() {
