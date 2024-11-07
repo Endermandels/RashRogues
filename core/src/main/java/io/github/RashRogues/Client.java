@@ -4,9 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Net;
 import com.badlogic.gdx.net.Socket;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.ConnectException;
 import java.nio.charset.StandardCharsets;
 
@@ -18,6 +16,9 @@ import java.nio.charset.StandardCharsets;
 public class Client {
     private InputStream input;
     private OutputStream output;
+    private ObjectInputStream oInput;
+    private ObjectOutputStream oOutput;
+
     private Thread listeningThread;
     private volatile boolean connectedToServer;
 
@@ -57,24 +58,37 @@ public class Client {
         this.connectedToServer = true;
         this.input = socket.getInputStream();
         this.output = socket.getOutputStream();
-        byte[] bytes = new byte[Server.IO_BUFFER_SIZE];
+       try {
+           this.oInput = new ObjectInputStream(input);
+           this.oOutput = new ObjectOutputStream(output);
+       } catch (IOException e) {
+           e.printStackTrace();
+       }
+       byte[] bytes = new byte[Server.IO_BUFFER_SIZE];
         this.listeningThread = new Thread(
            new Runnable() {
                public void run() {
                    while (connectedToServer) {
                        int bytesRead = 0;
                        try {
-                           bytesRead = input.read(bytes, 0, Server.IO_BUFFER_SIZE);
-                           byte[] msgBytes = new byte[bytesRead];
-                           System.arraycopy(bytes, 0, msgBytes, 0, bytesRead);
-                           String msgString = new String(msgBytes, StandardCharsets.UTF_8);
-                           System.out.println("Server sez: " + msgString);
+                           System.out.println("Trying to read an object:");
+                             Object req = oInput.readObject();
+                             if (req.getClass() == ReqCreatePlayer.class){
+                                System.out.println("We got a new player from the server!");
+                             }
+//                           bytesRead = input.read(bytes, 0, Server.IO_BUFFER_SIZE);
+//                           byte[] msgBytes = new byte[bytesRead];
+//                           System.arraycopy(bytes, 0, msgBytes, 0, bytesRead);
+//                           String msgString = new String(msgBytes, StandardCharsets.UTF_8);
+//                           System.out.println("Server sez: " + msgString);
                        } catch (IOException e) {
                            if (Thread.currentThread().isInterrupted()){
                                System.out.println("Connection to was closed.");
                                break;
                            }
                            throw new RuntimeException(e);
+                       } catch (ClassNotFoundException e) {
+                           e.printStackTrace();
                        }
                    }
                    socket.dispose();
@@ -98,7 +112,5 @@ public class Client {
        } catch (InterruptedException e) {
            throw new RuntimeException(e);
        }
-
-
    }
 }

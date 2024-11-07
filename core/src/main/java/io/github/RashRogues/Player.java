@@ -8,10 +8,17 @@ public class Player extends Entity {
 
     private final float ACCELERATION = 50.0f;
     private final float FRICTION = 100.0f;
+    private int nid;
 
     Player(Texture texture, int x, int y) {
         super(texture, x, y);
-        // can override maxX/Y velocity here
+    }
+
+    Player(Texture texture, int x, int y, boolean networked) {
+        super(texture, x, y);
+        if (networked){
+            this.nid = RRGame.mp.registerPlayer(this);
+        }
     }
 
     public void takeInput() {
@@ -58,16 +65,14 @@ public class Player extends Entity {
         xVelocity = Math.max(-maxXVelocity, Math.min(xVelocity, maxXVelocity));
         yVelocity = Math.max(-maxYVelocity, Math.min(yVelocity, maxYVelocity));
 
-        switch (RRGame.mp.clientType){
-            case CLIENT:
-                RRGame.mp.client.speak(Float.toString(xVelocity));
-                RRGame.mp.client.speak(Float.toString(yVelocity));
-                break;
-
-            case SERVER:
-                break;
+        if (RRGame.mp.clientType == Multiplayer.ClientType.SERVER){
+           //RRGame.mp.server.broadcastUpdatePlayer();
+        }else{
+            //RRGame.mp.client.broadcastUpdatePlayer();
         }
+    }
 
-
+    public int getNetworkID(){
+        return this.nid;
     }
 }

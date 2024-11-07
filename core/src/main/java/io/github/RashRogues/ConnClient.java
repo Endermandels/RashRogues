@@ -2,10 +2,9 @@ package io.github.RashRogues;
 
 import com.badlogic.gdx.net.Socket;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 
 /**
  * Representative of a single Server->Client connection
@@ -15,13 +14,22 @@ public class ConnClient {
     public Socket socket;
     private InputStream input;
     private OutputStream output;
+    private ObjectInputStream oInput;
+    private ObjectOutputStream oOutput;
+
 
     public ConnClient(Socket socket){
         this.socket = socket;
         this.input = socket.getInputStream();
         this.output = socket.getOutputStream();
+        try {
+            this.oOutput = new ObjectOutputStream(output);
+            this.oInput = new ObjectInputStream(input);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         this.listen();
-        this.speak("Hi Client!");
+        this.introduce();
     }
 
     /**
@@ -66,4 +74,36 @@ public class ConnClient {
             throw new RuntimeException(e);
         }
     }
+
+    /**
+     * It is necessary to send new players all of the client side controlled data when they join the game,
+     * as they may have missed it.
+     */
+    public void introduce(){
+        ArrayList<Player> networkPlayers = RRGame.mp.getNetworkPlayers();
+        for (int i = 0; i < networkPlayers.size(); i++){
+            Player p = networkPlayers.get(i);
+            this.requestCreatePlayer(p.getNetworkID(),i,"DefaultImages/rogue.png",p.getX(),p.getY());
+        }
+    }
+
+
+    /**
+     * Request client to create a new player.
+     * @param texImg Local path to the texture that should be applied to the player.
+     * @param nid Network ID of local player instance, so as to keep players synchronized.
+     * @param pid Whom this player should be under the control of.
+     * @param x X position of new player.
+     * @param y Y position of new player.
+     */
+    public void requestCreatePlayer(int nid, int pid, String texImg, float x, float y){
+        try {
+            this.oOutput.writeObject(new ReqCreatePlayer(nid,texImg,x,y));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
 }

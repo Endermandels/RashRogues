@@ -1,6 +1,7 @@
 package io.github.RashRogues;
 
 import com.badlogic.gdx.Net;
+import com.badlogic.gdx.graphics.glutils.FileTextureData;
 import com.badlogic.gdx.net.ServerSocket;
 import com.badlogic.gdx.net.Socket;
 import com.badlogic.gdx.Gdx;
@@ -8,6 +9,7 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -42,7 +44,7 @@ public class Server {
 
     private Thread newConnectionsThread;    // Thread on which to listen for new connections.
     private ServerSocket newConnectionsSocket;  // Socket on which to listen for new connections.
-    private List<Socket> clientSockets;     // Sockets on which to talk to clients.
+    private List<ConnClient> clientConnections;
 
     /**
      * Listen for new client connections.
@@ -50,18 +52,17 @@ public class Server {
      */
     public void host(){
         this.newConnectionsSocket = Gdx.net.newServerSocket(Server.PROTOCOL,"localhost",Server.PORT,null);
-        this.clientSockets = Collections.synchronizedList(new ArrayList<Socket>());
+        this.clientConnections = Collections.synchronizedList(new ArrayList<ConnClient>());
         this.newConnectionsThread = new Thread(
                 new Runnable() {
                     public void run(){
                         while (acceptingClients) {
                             try{
                                 Socket client = newConnectionsSocket.accept(null);
-                                clientSockets.add(client);
-                                new ConnClient(client);
+                                clientConnections.add(new ConnClient(client));
                                 System.out.println("A Client connected.");
                                 System.out.flush();
-                                acceptingClients = (clientSockets.size() == Server.MAX_CLIENTS);
+                                acceptingClients = (clientConnections.size() == Server.MAX_CLIENTS);
                             /*
                                 Note: Because accept() blocks, the only way to purposefully get out of listening
                                 for new clients reliably is to send the thread an interrupt, which throws an exception.
@@ -82,6 +83,32 @@ public class Server {
         );
         this.acceptingClients = true;
         this.newConnectionsThread.start();
+    }
+
+    public void broadcastCreatePlayer(Player player){
+        float xPos = player.getX();
+        float yPos = player.getY();
+        String texImg = ((FileTextureData) player.getTexture().getTextureData()).getFileHandle().toString();
+
+        System.out.println("Path was " + texImg);
+        System.out.println("Trying to create player on client side: ");
+
+        for (int i = 0; i < this.clientConnections.size(); i++){
+            this.clientConnections.get(i).requestCreatePlayer(player.getNetworkID(),0,texImg, xPos,yPos);
+        }
+
+    }
+
+    public void broadcastUpdatePlayer(Player player){
+        float xPos = player.getX();
+        float yPos = player.getY();
+        String img = ((FileTextureData) player.getTexture().getTextureData()).getFileHandle().toString();
+        System.out.println("Path was " + img);
+        System.out.println("Trying to update player on client side:");
+
+        //send over the line:
+        //command:update, network id, xpos, ypos texture string
+
     }
 
     /**

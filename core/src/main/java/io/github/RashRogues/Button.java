@@ -21,6 +21,7 @@ public class Button extends Sprite {
 
     private ButtonStates state;
     private ButtonActions action;
+    public PlayScreen theScreen; //todo: do not import this shit, nor use it.
 
     public int timeoutTime = 15;
     private int timeoutElapsed = 0;
@@ -33,11 +34,12 @@ public class Button extends Sprite {
      * @param y Y position of button on screen coordinates
      * @param action Action to perform on-click
      */
-    Button(Texture texture, int x, int y, ButtonActions action){
+    Button(PlayScreen screen, Texture texture, int x, int y, ButtonActions action){
        super(texture);
        this.setPosition(x,y);
        this.state = ButtonStates.IDLE;
        this.action = action;
+       this.theScreen = screen;
     }
 
     public boolean mouseover(){
@@ -130,11 +132,12 @@ public class Button extends Sprite {
        switch(action){
 
            case HOST_MULTIPLAYER:
-               RRGame.mp.register(Multiplayer.ClientType.SERVER);
+               RRGame.mp.setup(Multiplayer.ClientType.SERVER);
+               RRGame.mp.registerPlayer(theScreen.player);//TODO: fix this shit
                break;
 
            case JOIN_MULTIPLAYER:
-               RRGame.mp.register(Multiplayer.ClientType.CLIENT);
+               RRGame.mp.setup(Multiplayer.ClientType.CLIENT);
                break;
 
            case END_GAME:
