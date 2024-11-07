@@ -11,14 +11,18 @@ import com.badlogic.gdx.utils.ScreenUtils;
 public class RRGame extends Game {
     AssetManager am;
     SpriteBatch batch;
-
+    public static Multiplayer mp = new Multiplayer();
     public static final String RSC_ROGUE_IMG = "DefaultImages/rogue.png";
+    public static final String JOIN_IMG = "join.png";
+    public static final String HOST_IMG = "host.png";
 
     @Override
     public void create() {
         am = new AssetManager();
 
         am.load(RSC_ROGUE_IMG, Texture.class);
+        am.load(JOIN_IMG, Texture.class);
+        am.load(HOST_IMG, Texture.class);
 
         batch = new SpriteBatch();
         setScreen(new LoadScreen(this));

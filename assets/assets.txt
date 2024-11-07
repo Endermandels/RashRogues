@@ -24,3 +24,5 @@ Images/bomb sprite sheet.png
 Images/chest sprite sheet.png
 Images/door sprite sheet.png
 Images/explosion sprite sheet.png
+host.png
+join.png

@@ -57,5 +57,17 @@ public class Player extends Entity {
 
         xVelocity = Math.max(-maxXVelocity, Math.min(xVelocity, maxXVelocity));
         yVelocity = Math.max(-maxYVelocity, Math.min(yVelocity, maxYVelocity));
+
+        switch (RRGame.mp.clientType){
+            case CLIENT:
+                RRGame.mp.client.speak(Float.toString(xVelocity));
+                RRGame.mp.client.speak(Float.toString(yVelocity));
+                break;
+
+            case SERVER:
+                break;
+        }
+
+
     }
 }

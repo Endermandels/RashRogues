@@ -8,10 +8,14 @@ public class PlayScreen extends ScreenAdapter {
 
     private RRGame game;
     private Player player;
+    private Button joinbtn;
+    private Button hostbtn;
 
     public PlayScreen(RRGame game) {
         this.game = game;
         this.player = new Player(game.am.get(RRGame.RSC_ROGUE_IMG), 50, 50);
+        this.joinbtn = new Button(game.am.get(RRGame.JOIN_IMG),256,64, Button.ButtonActions.JOIN_MULTIPLAYER);
+        this.hostbtn = new Button(game.am.get(RRGame.HOST_IMG),128,64,Button.ButtonActions.HOST_MULTIPLAYER);
     }
 
     @Override
@@ -26,7 +30,8 @@ public class PlayScreen extends ScreenAdapter {
         // update player(s)
         player.takeInput();
         player.update(delta);
-
+        joinbtn.update(delta);
+        hostbtn.update(delta);
         // update enemies
 
         // update projectiles
@@ -45,7 +50,8 @@ public class PlayScreen extends ScreenAdapter {
 
         // draw player(s)
         player.draw(game.batch);
-
+        hostbtn.draw(game.batch);
+        joinbtn.draw(game.batch);
         // draw enemies
 
         // draw projectiles

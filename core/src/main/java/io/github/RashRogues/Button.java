@@ -1,5 +1,6 @@
 package io.github.RashRogues;
-
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 
@@ -21,6 +22,10 @@ public class Button extends Sprite {
     private ButtonStates state;
     private ButtonActions action;
 
+    public int timeoutTime = 15;
+    private int timeoutElapsed = 0;
+    private boolean timeoutActive = false;
+
     /**
      * Create a clickable button.
      * @param texture Texture to apply to button
@@ -31,6 +36,61 @@ public class Button extends Sprite {
     Button(Texture texture, int x, int y, ButtonActions action){
        super(texture);
        this.setPosition(x,y);
+       this.state = ButtonStates.IDLE;
+       this.action = action;
+    }
+
+    public boolean mouseover(){
+        float mouseX = Gdx.input.getX();
+        float mouseY = Gdx.graphics.getHeight() - Gdx.input.getY();
+
+        float l = this.getX();
+        float r = this.getX() + this.getWidth();
+        float b = this.getY();
+        float t = this.getY() + this.getHeight();
+
+        if (mouseX > l && mouseX < r){
+            if (mouseY > b && mouseY < t){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void update(float delta){
+        switch (state){
+            case IDLE:
+                if (mouseover()){
+                    state = ButtonStates.HOVER;
+                }
+                break;
+
+            case HOVER:
+
+                //our mouse is outside the button
+                if (!mouseover()) {
+                    state = ButtonStates.IDLE;
+                    break;
+                }
+
+                //button is cooling down
+                if (timeoutActive == true && timeoutElapsed < timeoutTime){
+                    timeoutElapsed +=1;
+                    break;
+                }else{
+                    timeoutElapsed = 0;
+                    timeoutActive = false;
+                }
+
+                if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
+                   this.activate();
+                   timeoutActive = true;
+                }
+                break;
+
+            case DISABLED:
+                break;
+        }
     }
 
     /**
@@ -70,9 +130,11 @@ public class Button extends Sprite {
        switch(action){
 
            case HOST_MULTIPLAYER:
+               RRGame.mp.register(Multiplayer.ClientType.SERVER);
                break;
 
            case JOIN_MULTIPLAYER:
+               RRGame.mp.register(Multiplayer.ClientType.CLIENT);
                break;
 
            case END_GAME:
@@ -85,14 +147,5 @@ public class Button extends Sprite {
                System.out.println("Warning! No action assigned to button");
 
        }
-
-
-
-
-
     }
-
-
-
-
 }

@@ -61,7 +61,7 @@ public class ConnClient {
             if (byteCount > Server.IO_BUFFER_SIZE){
                 System.out.println("Warning: Message too big for buffer. Some data may be lost!");
             }
-            this.output.write(msgBytes,0,Server.IO_BUFFER_SIZE);
+            this.output.write(msgBytes,0, msgBytes.length);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

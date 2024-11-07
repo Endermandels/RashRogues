@@ -10,17 +10,22 @@ import java.io.OutputStream;
 import java.net.ConnectException;
 import java.nio.charset.StandardCharsets;
 
-
+/**
+ * Clients are allowed to join one server.
+ * Client must first join a server with the join() method, before sending data with the speak() method etc..
+ * Failure to follow this order of operations will result in IO errors.
+ */
 public class Client {
-    private Socket socket;
     private InputStream input;
     private OutputStream output;
+    private Thread listeningThread;
+    private volatile boolean connectedToServer;
 
-    public Client(){
-        join("localhost");
-        speak("Hello Server!");
-    }
-
+    /**
+     * Send msg to the server. Must abide by the Server's IO_BUFFER_SIZE,
+     * which is the maximum size (in bytes) that a message can be.
+     * @param msg Message to send to the server.
+     */
     public void speak(String msg){
         try {
             byte[] msgBytes = msg.getBytes(StandardCharsets.UTF_8);
@@ -30,38 +35,70 @@ public class Client {
                 System.out.println("Warning, message too large. Some data may be lost!");
             }
 
-            this.output.write(msgBytes,0, Server.IO_BUFFER_SIZE);
+            this.output.write(msgBytes,0, msgBytes.length);
             this.output.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-
+    /**
+     * Join a server.
+     * This method is prerequsite to Speak().
+     * Connection will take place through the ports and protocols defined in Server.java.
+     * @param hostname Hostname or IP of the server to connect to.
+     */
    public void join(String hostname){
-     this.socket = Gdx.net.newClientSocket(Net.Protocol.TCP,hostname,Server.PORT,null);
-     this.input = this.socket.getInputStream();
-     this.output = this.socket.getOutputStream();
-     byte[] bytes = new byte[Server.IO_BUFFER_SIZE];
-       new Thread(
+       if (this.connectedToServer){
+           System.out.println("Already connected to a server. Disconnect your current connection before attempting to start to a new one.");
+           return;
+       }
+        Socket socket = Gdx.net.newClientSocket(Server.PROTOCOL, hostname, Server.PORT, null);
+        this.connectedToServer = true;
+        this.input = socket.getInputStream();
+        this.output = socket.getOutputStream();
+        byte[] bytes = new byte[Server.IO_BUFFER_SIZE];
+        this.listeningThread = new Thread(
            new Runnable() {
                public void run() {
-                   int bytesRead = 0;
-                   try {
-                       bytesRead = input.read(bytes,0, Server.IO_BUFFER_SIZE);
-                       byte[] msgBytes = new byte[bytesRead];
-                       System.arraycopy(bytes,0,msgBytes,0,bytesRead);
-                       String msgString = new String(msgBytes, StandardCharsets.UTF_8);
-                       System.out.println("Server sez: " + msgString);
-                   } catch (IOException e) {
-                       throw new RuntimeException(e);
+                   while (connectedToServer) {
+                       int bytesRead = 0;
+                       try {
+                           bytesRead = input.read(bytes, 0, Server.IO_BUFFER_SIZE);
+                           byte[] msgBytes = new byte[bytesRead];
+                           System.arraycopy(bytes, 0, msgBytes, 0, bytesRead);
+                           String msgString = new String(msgBytes, StandardCharsets.UTF_8);
+                           System.out.println("Server sez: " + msgString);
+                       } catch (IOException e) {
+                           if (Thread.currentThread().isInterrupted()){
+                               System.out.println("Connection to was closed.");
+                               break;
+                           }
+                           throw new RuntimeException(e);
+                       }
                    }
+                   socket.dispose();
                }
            }
-       );
-
+        );
+        this.listeningThread.start();
    }
 
 
+    /**
+     * Leave the game.
+     *
+     * TODO: This needs to tell the server that we left intentionally so that it can prepare.
+     */
+   public void leave(){
+      this.connectedToServer = false;
+      this.listeningThread.interrupt();
+       try {
+           this.listeningThread.join();
+       } catch (InterruptedException e) {
+           throw new RuntimeException(e);
+       }
 
+
+   }
 }
