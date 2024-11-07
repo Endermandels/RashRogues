@@ -6,14 +6,20 @@ import com.badlogic.gdx.graphics.Texture;
 
 public class Player extends Entity {
 
+    private final int BASE_PLAYER_HEALTH = 100;
+    private final int BASE_PLAYER_DAMAGE = 10;
+    private final float BASE_PLAYER_ATTACK_SPEED = 0.5f;
     private final float ACCELERATION = 50.0f;
     private final float FRICTION = 100.0f;
-    private final float BASE_PLAYER_SPEED = 15.0f;
+    private final float BASE_PLAYER_MOVE_SPEED = 15.0f;
+    private final float BASE_PLAYER_DEXTERITY = 10f;
+    public PlayerStats stats;
 
     Player(Texture texture, int x, int y, float width, float height) {
         super(texture, x, y, width, height);
-        this.maxXVelocity = BASE_PLAYER_SPEED;
-        this.maxYVelocity = BASE_PLAYER_SPEED;
+        this.maxXVelocity = BASE_PLAYER_MOVE_SPEED;
+        this.maxYVelocity = BASE_PLAYER_MOVE_SPEED;
+        this.stats = new PlayerStats(BASE_PLAYER_HEALTH, BASE_PLAYER_DAMAGE, BASE_PLAYER_ATTACK_SPEED, BASE_PLAYER_MOVE_SPEED, BASE_PLAYER_DEXTERITY, this);
     }
 
     Player(Texture texture, int x, int y, float size) {
