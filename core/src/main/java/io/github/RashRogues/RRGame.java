@@ -6,11 +6,17 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class RRGame extends Game {
     AssetManager am;
     SpriteBatch batch;
     LaggingCamera playerCam;
+
+    // global entity registry
+    public static final HashSet<Entity> instances = new HashSet<>();
 
     // constants
     public static final float WORLD_WIDTH = 80;

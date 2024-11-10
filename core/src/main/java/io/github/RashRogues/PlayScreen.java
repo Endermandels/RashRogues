@@ -2,9 +2,12 @@ package io.github.RashRogues;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 
 public class PlayScreen extends ScreenAdapter {
 
@@ -12,10 +15,12 @@ public class PlayScreen extends ScreenAdapter {
     private Player player;
     private ArrayList<Room> rooms;
     private Room currentRoom;
+    private PriorityQueue<Entity> renderQueue;
 
     public PlayScreen(RRGame game) {
         this.game = game;
         this.player = new Player(game.am.get(RRGame.RSC_ROGUE_IMG), RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, RRGame.PLAYER_SIZE);
+        this.renderQueue = new PriorityQueue<Entity>(new EntityComparator());
         loadRooms();
         setNextRoom();
     }
@@ -39,7 +44,6 @@ public class PlayScreen extends ScreenAdapter {
         // update projectiles
 
         // update misc
-
     }
 
     @Override
@@ -50,17 +54,16 @@ public class PlayScreen extends ScreenAdapter {
         ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
         game.batch.begin();
 
-        // draw room/objects
+        // draw room
         currentRoom.draw(game.batch);
 
-        // draw player(s)
-        player.draw(game.batch);
-
-        // draw enemies
-
-        // draw projectiles
-
-        // draw misc
+        //draw entities
+        for (Entity e : RRGame.instances){
+            renderQueue.offer(e);
+        }
+        while (!renderQueue.isEmpty()){
+            renderQueue.poll().draw(game.batch);
+        }
 
         game.batch.end();
     }
