@@ -12,9 +12,13 @@ public class Entity extends Sprite {
     protected float yVelocity;
     protected Rectangle boundingBox;
     protected boolean flipped;
+    protected Layer layer;
 
-    Entity(Texture texture, int x, int y, float width, float height) {
+    Entity(Texture texture, int x, int y, float width, float height, Layer layer) {
         super(texture);
+        RRGame.instances.add(this);
+        this.layer= layer;
+
         setSize(width, height);
         setOrigin(width/2, height/2);
         setPosition(x, y);

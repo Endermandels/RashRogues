@@ -15,8 +15,32 @@ public class Player extends Entity {
     private final float BASE_PLAYER_DEXTERITY = 10f;
     public PlayerStats stats;
 
+    /**
+     * Create a player object.
+     * @param texture Texture to apply to player sprite
+     * @param x X Position on map
+     * @param y Y Position on map
+     * @param width Width to scale the player to, in pixels.
+     * @param height Height to scale the player to, in pixels.
+     */
     Player(Texture texture, int x, int y, float width, float height) {
-        super(texture, x, y, width, height);
+        super(texture, x, y, width, height, Layer.PLAYER);
+        this.maxXVelocity = BASE_PLAYER_MOVE_SPEED;
+        this.maxYVelocity = BASE_PLAYER_MOVE_SPEED;
+        this.stats = new PlayerStats(BASE_PLAYER_HEALTH, BASE_PLAYER_DAMAGE, BASE_PLAYER_ATTACK_SPEED, BASE_PLAYER_MOVE_SPEED, BASE_PLAYER_DEXTERITY, this);
+    }
+
+    /**
+     * Create a player object.
+     * @param texture texture to apply to player sprite
+     * @param x X Position on map
+     * @param y Y Position on map
+     * @param width Width to scale the player to, in pixels.
+     * @param height Height to scale the player to, in pixels.
+     * @param layer Which layer to draw the player's sprite on.
+     */
+    Player(Texture texture, int x, int y, float width, float height, Layer layer){
+        super(texture,x,y,width,height,layer);
         this.maxXVelocity = BASE_PLAYER_MOVE_SPEED;
         this.maxYVelocity = BASE_PLAYER_MOVE_SPEED;
         this.stats = new PlayerStats(BASE_PLAYER_HEALTH, BASE_PLAYER_DAMAGE, BASE_PLAYER_ATTACK_SPEED, BASE_PLAYER_MOVE_SPEED, BASE_PLAYER_DEXTERITY, this);

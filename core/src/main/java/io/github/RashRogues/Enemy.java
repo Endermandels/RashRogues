@@ -6,12 +6,16 @@ public class Enemy extends Entity {
 
     protected EnemyStats stats;
 
-    Enemy(Texture texture, int x, int y, float width, float height) {
-        super(texture, x, y, width, height);
+   Enemy(Texture texture, int x, int y, float width, float height, Layer layer){
+        super(texture,x,y,width,height,layer);
+    }
+
+   Enemy(Texture texture, int x, int y, float width, float height) {
+        this(texture,x,y,width,height,Layer.ENEMY);
     }
 
     Enemy(Texture texture, int x, int y, float size) {
-        this(texture, x, y, size, size);
+        this(texture,x,y,size,size,Layer.ENEMY);
     }
 
     protected void levelUpEnemy() {
