@@ -5,11 +5,13 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class RRGame extends Game {
     AssetManager am;
     SpriteBatch batch;
+    ShapeRenderer shapeRenderer;
     LaggingCamera playerCam;
 
     // constants
@@ -21,6 +23,7 @@ public class RRGame extends Game {
 
     // entity sprites (players, enemies, projectiles)
     public static final String RSC_ROGUE_IMG = "DefaultImages/rogue.png";
+    public static final String RSC_SWORDSMAN_IMG = "DefaultImages/swordsman.png";
 
     // entity animations
 
@@ -38,10 +41,12 @@ public class RRGame extends Game {
         am = new AssetManager();
 
         am.load(RSC_ROGUE_IMG, Texture.class);
+        am.load(RSC_SWORDSMAN_IMG, Texture.class);
 
         am.load(RSC_ROOM1_IMG, Texture.class);
 
         batch = new SpriteBatch();
+        shapeRenderer = new ShapeRenderer();
 
         float h = Gdx.graphics.getHeight();
         float w = Gdx.graphics.getWidth();

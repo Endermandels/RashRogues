@@ -29,8 +29,10 @@ public class Stats {
 
     public void takeDamage(int damage) {
         this.health -= damage;
+        System.out.println("Yeouch! Just took " + damage + " damage!");
         if (this.health <= 0) {
             this.dead = true;
+            System.out.println("I'm dead...");
         }
     }
 

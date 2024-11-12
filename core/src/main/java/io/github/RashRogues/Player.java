@@ -14,12 +14,24 @@ public class Player extends Entity {
     private final float BASE_PLAYER_MOVE_SPEED = 15.0f;
     private final float BASE_PLAYER_DEXTERITY = 10f;
     public PlayerStats stats;
+    protected HurtBox hurtBox;
 
     Player(Texture texture, int x, int y, float width, float height) {
         super(texture, x, y, width, height);
         this.maxXVelocity = BASE_PLAYER_MOVE_SPEED;
         this.maxYVelocity = BASE_PLAYER_MOVE_SPEED;
         this.stats = new PlayerStats(BASE_PLAYER_HEALTH, BASE_PLAYER_DAMAGE, BASE_PLAYER_ATTACK_SPEED, BASE_PLAYER_MOVE_SPEED, BASE_PLAYER_DEXTERITY, this);
+        hitBox.disableLength = 10000f;
+        hurtBox = new HurtBox(hitBox, this);
+        setBoxPercentSize(0.01f, 0.01f, hitBox);
+        setBoxPercentSize(0.2f, 0.4f, hurtBox);
+        // this will obviously change based on a number of factors later
+    }
+
+    @Override
+    public void update(float delta) {
+        super.update(delta);
+        hurtBox.update(delta);
     }
 
     Player(Texture texture, int x, int y, float size) {
@@ -69,5 +81,26 @@ public class Player extends Entity {
 
         xVelocity = Math.max(-maxXVelocity, Math.min(xVelocity, maxXVelocity));
         yVelocity = Math.max(-maxYVelocity, Math.min(yVelocity, maxYVelocity));
+    }
+
+    @Override
+    public void onHit(Entity thingHit) {
+        // player hitting a hurtbox shouldn't necessarily do anything. Maybe if we make it so walls have 'hurtboxes'
+        // then that would happen but idk, for now the player has a hitbox because its an entity but it has a massive
+        // disable time so this method should never really fire off anyway.
+        return;
+    }
+
+    @Override
+    public void onHurt(Entity thingThatHurtMe) {
+        if (thingThatHurtMe instanceof Projectile) {
+            this.stats.takeDamage(((Projectile) thingThatHurtMe).damage);
+        }
+        else if (thingThatHurtMe instanceof Enemy) {
+            this.stats.takeDamage(((Enemy) thingThatHurtMe).stats.damage);
+        }
+        else {
+            System.out.println("This shouldn't ever happen...");
+        }
     }
 }

@@ -12,5 +12,7 @@ public class Swordsman extends Enemy {
     Swordsman(Texture texture, int x, int y, float size) {
         super(texture, x, y, size);
         this.stats = new EnemyStats(BASE_SWORDSMAN_HEALTH, BASE_SWORDSMAN_DAMAGE, BASE_SWORDSMAN_ATTACK_SPEED, BASE_SWORDSMAN_MOVE_SPEED, this);
+        setBoxPercentSize(0.4f, 0.4f, hitBox);
+        setBoxPercentSize(0.58f, 0.58f, hurtBox);
     }
 }
