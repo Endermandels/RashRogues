@@ -14,7 +14,6 @@ public class Player extends Entity {
     private final float BASE_PLAYER_MOVE_SPEED = 15.0f;
     private final float BASE_PLAYER_DEXTERITY = 10f;
     public PlayerStats stats;
-    private boolean moves = true;
     protected HurtBox hurtBox;
 
     public Player(Texture texture, int x, int y, float width, float height) {
@@ -27,12 +26,6 @@ public class Player extends Entity {
         setBoxPercentSize(0.01f, 0.01f, hitBox);
         setBoxPercentSize(0.2f, 0.4f, hurtBox);
         // this will obviously change based on a number of factors later
-    }
-
-
-    public Player(Texture texture, int x, int y, float width, float height, boolean moves) {
-       this(texture,x,y,width,height);
-       this.moves = moves;
     }
 
     Player(Texture texture, int x, int y, float size) {
@@ -51,9 +44,6 @@ public class Player extends Entity {
     }
 
     public void takeInput() {
-        if (this.moves == false){
-            return;
-        }
         float xVel = 0;
         float yVel = 0;
         if  (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {

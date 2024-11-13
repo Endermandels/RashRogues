@@ -42,7 +42,6 @@ public class PlayScreen extends ScreenAdapter implements Screen {
         /* Instance Creation */
         new Swordsman(game.am.get(RRGame.RSC_SWORDSMAN_IMG), 50, 30, 10);
         player = new Player(game.am.get(RRGame.RSC_ROGUE_IMG), RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, RRGame.PLAYER_SIZE);
-        new Player(game.am.get(RRGame.RSC_ROGUE_IMG), RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, RRGame.PLAYER_SIZE, RRGame.PLAYER_SIZE, false);
 
         /* Camera Setup */
         game.playerCam.bind(player);
