@@ -7,10 +7,11 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-public class LoadScreen extends ScreenAdapter {
+public class LoadScreen extends ScreenAdapter implements Screen{
     RRGame game;
 
     public LoadScreen(RRGame game) {
+        RRGame.globals.currentScreen = this;
         this.game = game;
     }
 
@@ -21,12 +22,19 @@ public class LoadScreen extends ScreenAdapter {
 
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 0, 1);
-        // let the AssetManager load for 15 milliseconds (~1 frame)
-        // this happens in another thread
         game.am.update(10);
-
         if (game.am.isFinished()) {
-            game.setScreen(new PlayScreen(game));
+            game.setScreen(new LobbyScreen(game));
         }
+    }
+
+    @Override
+    public void nextScreen() {
+
+    }
+
+    @Override
+    public void registerEntity(Entity entity) {
+        return;
     }
 }

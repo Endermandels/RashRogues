@@ -1,18 +1,28 @@
 package io.github.RashRogues;
 
+import Networking.Network;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Net;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
+import java.util.HashSet;
+
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class RRGame extends Game {
-    AssetManager am;
+    public static AssetManager am = new AssetManager();
     SpriteBatch batch;
     ShapeRenderer shapeRenderer;
     LaggingCamera playerCam;
+
+    public Network network;
+    public HashSet<Entity> globalEntities;
+
+    public static Globals globals = new Globals();
 
     // constants
     public static final float WORLD_WIDTH = 80;
@@ -25,6 +35,8 @@ public class RRGame extends Game {
     public static final String RSC_ROGUE_IMG = "DefaultImages/rogue.png";
     public static final String RSC_SWORDSMAN_IMG = "DefaultImages/swordsman.png";
 
+
+
     // entity animations
 
     // item/background sprites
@@ -36,23 +48,34 @@ public class RRGame extends Game {
 
     // music
 
+    // ui
+    public static final String RSC_BTN_HOST = "Buttons/host.png";
+    public static final String RSC_BTN_JOIN = "Buttons/join.png";
+    public static final String RSC_BTN_START_GAME = "Buttons/play.png";
+
     @Override
     public void create() {
-        am = new AssetManager();
 
         am.load(RSC_ROGUE_IMG, Texture.class);
         am.load(RSC_SWORDSMAN_IMG, Texture.class);
 
         am.load(RSC_ROOM1_IMG, Texture.class);
 
+        am.load(RSC_BTN_HOST, Texture.class);
+        am.load(RSC_BTN_JOIN, Texture.class);
+        am.load(RSC_BTN_START_GAME, Texture.class);
+
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
+
+        network = new Network();
+
+        globalEntities = new HashSet<>();
 
         float h = Gdx.graphics.getHeight();
         float w = Gdx.graphics.getWidth();
         playerCam = new LaggingCamera(CAMERA_SIZE, CAMERA_SIZE * (h/w));
-        playerCam.position.set(playerCam.viewportWidth / 2f, playerCam.viewportHeight / 2f, 0);
-        playerCam.update();
+        playerCam.center();
         setScreen(new LoadScreen(this));
     }
 
