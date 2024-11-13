@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 
-public class PlayScreen extends ScreenAdapter {
+public class PlayScreen extends ScreenAdapter implements Screen {
 
     private RRGame game;
     private Player player;
@@ -247,4 +247,8 @@ public class PlayScreen extends ScreenAdapter {
         }
     }
 
+    @Override
+    public void nextScreen() {
+
+    }
 }
