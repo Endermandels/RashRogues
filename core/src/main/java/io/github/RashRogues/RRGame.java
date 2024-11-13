@@ -1,7 +1,9 @@
 package io.github.RashRogues;
 
+import Networking.Network;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -13,6 +15,9 @@ public class RRGame extends Game {
     SpriteBatch batch;
     ShapeRenderer shapeRenderer;
     LaggingCamera playerCam;
+    Screen currentScreen;
+    public Network network;
+
 
     // constants
     public static final float WORLD_WIDTH = 80;
@@ -67,5 +72,9 @@ public class RRGame extends Game {
     public void dispose() {
         batch.dispose();
         am.dispose();
+    }
+
+    public Screen getCurrentScreen(){
+        return this.currentScreen;
     }
 }

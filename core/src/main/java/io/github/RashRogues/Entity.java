@@ -14,7 +14,7 @@ public class Entity extends Sprite {
     protected boolean flipped;
     protected EntityType type;
 
-    Entity(EntityType type, Texture texture, int x, int y, float width, float height) {
+    protected Entity(EntityType type, Texture texture, int x, int y, float width, float height) {
         super(texture);
         setSize(width, height);
         setOrigin(width/2, height/2);
