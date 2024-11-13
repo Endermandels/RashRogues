@@ -12,8 +12,9 @@ public class Entity extends Sprite {
     protected float yVelocity;
     protected HitBox hitBox;
     protected boolean flipped;
+    protected EntityType type;
 
-    Entity(Texture texture, int x, int y, float width, float height) {
+    Entity(EntityType type, Texture texture, int x, int y, float width, float height) {
         super(texture);
         setSize(width, height);
         setOrigin(width/2, height/2);

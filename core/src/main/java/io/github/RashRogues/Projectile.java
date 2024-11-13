@@ -15,7 +15,7 @@ public class Projectile extends Entity {
     protected boolean removeNextUpdate = false;
 
     Projectile(Texture texture, int x, int y, float width, float height) {
-        super(texture, x, y, width, height);
+        super(EntityType.PROJECTILE, texture, x, y, width, height);
         this.damage = 1;
         this.moveSpeed = 0.0f;
     }

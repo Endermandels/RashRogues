@@ -7,8 +7,8 @@ public class Enemy extends Entity {
     protected EnemyStats stats;
     protected HurtBox hurtBox;
 
-    Enemy(Texture texture, int x, int y, float width, float height) {
-        super(texture, x, y, width, height);
+    Enemy(EntityType type, Texture texture, int x, int y, float width, float height) {
+        super(type, texture, x, y, width, height);
         hurtBox = new HurtBox(hitBox, this);
         // this will obviously change based on a number of factors later
     }
@@ -18,8 +18,8 @@ public class Enemy extends Entity {
         hurtBox.update(delta);
     }
 
-    Enemy(Texture texture, int x, int y, float size) {
-        this(texture, x, y, size, size);
+    Enemy(EntityType type, Texture texture, int x, int y, float size) {
+        this(type, texture, x, y, size, size);
     }
 
     protected void levelUpEnemy() {

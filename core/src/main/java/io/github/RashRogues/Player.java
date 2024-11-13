@@ -17,7 +17,7 @@ public class Player extends Entity {
     protected HurtBox hurtBox;
 
     Player(Texture texture, int x, int y, float width, float height) {
-        super(texture, x, y, width, height);
+        super(EntityType.PLAYER, texture, x, y, width, height);
         this.maxXVelocity = BASE_PLAYER_MOVE_SPEED;
         this.maxYVelocity = BASE_PLAYER_MOVE_SPEED;
         this.stats = new PlayerStats(BASE_PLAYER_HEALTH, BASE_PLAYER_DAMAGE, BASE_PLAYER_ATTACK_SPEED, BASE_PLAYER_MOVE_SPEED, BASE_PLAYER_DEXTERITY, this);
