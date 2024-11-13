@@ -1,7 +1,6 @@
 package io.github.RashRogues;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -10,10 +9,14 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 
 public class PlayScreen extends ScreenAdapter {
 
+    private boolean debug = false;
+
     private RRGame game;
+    private HUD hud;
     private Player player;
     private ArrayList<Enemy> enemies;
     private ArrayList<Projectile> projectiles;
@@ -36,6 +39,8 @@ public class PlayScreen extends ScreenAdapter {
         loadRooms();
         setNextRoom();
         createCollisionGrids();
+        createHUDAndInputs();
+
     }
 
     @Override
@@ -48,7 +53,9 @@ public class PlayScreen extends ScreenAdapter {
         // update room/objects
 
         // update player(s)
-        player.takeInput();
+        if (!hud.isOpen()) {
+            player.takeInput();
+        }
         player.update(delta);
         game.playerCam.moveToPlayer(player.getX()+player.getWidth()/2f, player.getY()+player.getHeight()/2f, delta);
 
@@ -101,17 +108,40 @@ public class PlayScreen extends ScreenAdapter {
 
         game.batch.end();
 
-        // this is for debugging hitboxes, once hud is added this will be cleaner
+        game.hudBatch.begin();
+        hud.draw(game.hudBatch);
+        game.hudBatch.end();
+
+        // only debugging needs the ShapeRenderer, so we can have nice formatting by having an early return condition
+        if (!debug) { return; }
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         game.shapeRenderer.setProjectionMatrix(game.playerCam.combined);
         game.shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+
+        // hurtBoxes - green
         game.shapeRenderer.setColor(new Color(0, 1, 0, 0.5f));
-        game.shapeRenderer.rect(player.hurtBox.getX(), player.hurtBox.getY(), player.hurtBox.getWidth(), player.hurtBox.getHeight());
-        game.shapeRenderer.rect(enemies.get(0).hurtBox.getX(), enemies.get(0).hurtBox.getY(), enemies.get(0).hurtBox.getWidth(), enemies.get(0).hurtBox.getHeight());
+        game.shapeRenderer.rect(player.hurtBox.getX(), player.hurtBox.getY(), player.hurtBox.getWidth(),
+                player.hurtBox.getHeight());
+        for (Enemy enemy : enemies) {
+            game.shapeRenderer.rect(enemy.hurtBox.getX(), enemy.hurtBox.getY(), enemy.hurtBox.getWidth(),
+                    enemy.hurtBox.getHeight());
+        }
+
+        // hitBoxes - red
         game.shapeRenderer.setColor(new Color(1, 0, 0, 0.5f));
-        game.shapeRenderer.rect(player.hitBox.getX(), player.hitBox.getY(), player.hitBox.getWidth(), player.hitBox.getHeight());
-        game.shapeRenderer.rect(enemies.get(0).hitBox.getX(), enemies.get(0).hitBox.getY(), enemies.get(0).hitBox.getWidth(), enemies.get(0).hitBox.getHeight());
+        game.shapeRenderer.rect(player.hitBox.getX(), player.hitBox.getY(), player.hitBox.getWidth(),
+                player.hitBox.getHeight());
+        for (Enemy enemy : enemies) {
+            game.shapeRenderer.rect(enemy.hitBox.getX(), enemy.hitBox.getY(), enemy.hitBox.getWidth(),
+                    enemy.hitBox.getHeight());
+        }
+        for (Projectile projectile : projectiles) {
+            game.shapeRenderer.rect(projectile.hitBox.getX(), projectile.hitBox.getY(), projectile.hitBox.getWidth(),
+                    projectile.hitBox.getHeight());
+        }
+
         game.shapeRenderer.end();
         Gdx.gl.glDisable(GL20.GL_BLEND);
     }
@@ -245,6 +275,53 @@ public class PlayScreen extends ScreenAdapter {
                 }
             }
         }
+    }
+
+    public void createHUDAndInputs() {
+        hud = new HUD(game.am.get(RRGame.RSC_MONO_FONT));
+
+        // the HUD will show FPS always, by default.  Here's how
+        // to use the HUD interface to silence it (and other HUD Data)
+        hud.setDataVisibility(HUDViewCommand.Visibility.WHEN_OPEN);
+
+        // HUD Console Commands
+        hud.registerAction("debug", new HUDActionCommand() {
+            static final String help = "Toggle debug views on or off. Usage: debug ";
+            @Override
+            public String execute(String[] cmd) {
+                try {
+                    debug = !debug;
+                    return "ok!";
+                } catch (Exception e) {
+                    return help;
+                }
+            }
+
+            public String help(String[] cmd) {
+                return help;
+            }
+        });
+
+        // HUD Data
+
+
+        // we're adding an input processor AFTER the HUD has been created,
+        // so we need to be a bit careful here and make sure not to clobber
+        // the HUD's input controls. Do that by using an InputMultiplexer
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        // let the HUD's input processor handle things first....
+        multiplexer.addProcessor(Gdx.input.getInputProcessor());
+        multiplexer.addProcessor(new InputAdapter() {
+            @Override
+            public boolean keyDown(int keycode) {
+                if (hud.isOpen()) { return false; }
+                if (keycode == Input.Keys.ESCAPE) {
+                    // there should be a way to put movement in here as well, file this under a later issue
+                }
+                return false;
+            }
+        });
+        Gdx.input.setInputProcessor(multiplexer);
     }
 
 }
