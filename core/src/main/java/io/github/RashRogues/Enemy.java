@@ -8,7 +8,7 @@ public class Enemy extends Entity {
     protected HurtBox hurtBox;
 
     Enemy(EntityType type, Texture texture, int x, int y, float width, float height) {
-        super(type, texture, x, y, width, height);
+        super(type, texture, x, y, width, height, Layer.ENEMY);
         hurtBox = new HurtBox(hitBox, this);
         // this will obviously change based on a number of factors later
     }

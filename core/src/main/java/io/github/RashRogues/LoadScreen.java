@@ -11,6 +11,7 @@ public class LoadScreen extends ScreenAdapter implements Screen{
     RRGame game;
 
     public LoadScreen(RRGame game) {
+        RRGame.globals.currentScreen = this;
         this.game = game;
     }
 
@@ -33,5 +34,10 @@ public class LoadScreen extends ScreenAdapter implements Screen{
     @Override
     public void nextScreen() {
 
+    }
+
+    @Override
+    public void registerEntity(Entity entity) {
+        return;
     }
 }

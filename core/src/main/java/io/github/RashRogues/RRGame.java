@@ -3,11 +3,14 @@ package io.github.RashRogues;
 import Networking.Network;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Net;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+
+import java.util.HashSet;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class RRGame extends Game {
@@ -15,9 +18,11 @@ public class RRGame extends Game {
     SpriteBatch batch;
     ShapeRenderer shapeRenderer;
     LaggingCamera playerCam;
-    Screen currentScreen;
-    public Network network;
 
+    public Network network;
+    public HashSet<Entity> globalEntities;
+
+    public static Globals globals = new Globals();
 
     // constants
     public static final float WORLD_WIDTH = 80;
@@ -53,6 +58,10 @@ public class RRGame extends Game {
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
 
+        network = new Network();
+
+        globalEntities = new HashSet<>();
+
         float h = Gdx.graphics.getHeight();
         float w = Gdx.graphics.getWidth();
         playerCam = new LaggingCamera(CAMERA_SIZE, CAMERA_SIZE * (h/w));
@@ -72,9 +81,5 @@ public class RRGame extends Game {
     public void dispose() {
         batch.dispose();
         am.dispose();
-    }
-
-    public Screen getCurrentScreen(){
-        return this.currentScreen;
     }
 }
