@@ -65,8 +65,7 @@ public class RRGame extends Game {
         float h = Gdx.graphics.getHeight();
         float w = Gdx.graphics.getWidth();
         playerCam = new LaggingCamera(CAMERA_SIZE, CAMERA_SIZE * (h/w));
-        playerCam.position.set(playerCam.viewportWidth / 2f, playerCam.viewportHeight / 2f, 0);
-        playerCam.update();
+        playerCam.center();
         setScreen(new LoadScreen(this));
     }
 

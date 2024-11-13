@@ -20,6 +20,15 @@ public class Projectile extends Entity {
         this.moveSpeed = 0.0f;
     }
 
+    /**
+     * Polymorphic: called by parent class.
+     * Game logic. runs every frame.
+     * @param delta
+     */
+    public void updateEntity(float delta) {
+
+    }
+
     @Override
     public void onHit(Entity thingHit) {
         removeNextUpdate = true;

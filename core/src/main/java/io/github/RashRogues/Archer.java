@@ -13,4 +13,12 @@ public class Archer extends Enemy {
         super(EntityType.ARCHER, texture, x, y, size);
         this.stats = new EnemyStats(BASE_ARCHER_HEALTH, BASE_ARCHER_DAMAGE, BASE_ARCHER_ATTACK_SPEED, BASE_ARCHER_MOVE_SPEED, this);
     }
+
+    /**
+     * Update the game logic for this object. ran per frame.
+     * @param delta
+     */
+    public void updateEnemy(float delta) {
+
+    }
 }

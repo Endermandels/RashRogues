@@ -13,4 +13,12 @@ public class Bomber extends Enemy {
         super(EntityType.BOMBER, texture, x, y, size);
         this.stats = new EnemyStats(BASE_BOMBER_HEALTH, BASE_BOMBER_DAMAGE, BASE_BOMBER_ATTACK_SPEED, BASE_BOMBER_MOVE_SPEED, this);
     }
+
+    /**
+     * Update gamelogic for this object. Ran per frame.
+     * @param delta
+     */
+    public void updateEnemy(float delta) {
+
+    }
 }

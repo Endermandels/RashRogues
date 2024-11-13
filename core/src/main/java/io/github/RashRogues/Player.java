@@ -28,9 +28,14 @@ public class Player extends Entity {
         // this will obviously change based on a number of factors later
     }
 
-    @Override
-    public void update(float delta) {
-        super.update(delta);
+
+    /**
+     * Polymorphic: called by parent entity.
+     * Game logic goes here for player. Updates every frame.
+     * @param delta
+     */
+    public void updateEntity(float delta) {
+        takeInput();
         hurtBox.update(delta);
     }
 

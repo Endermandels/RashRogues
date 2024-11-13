@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Rectangle;
 
-public class Entity extends Sprite {
+public abstract class Entity extends Sprite {
 
     protected float maxXVelocity;
     protected float maxYVelocity;
@@ -32,7 +32,14 @@ public class Entity extends Sprite {
         RRGame.globals.currentScreen.registerEntity(this);
     }
 
+    /**
+     * Polymorphic: Update child instance
+     * @param delta
+     */
+    public abstract void updateEntity(float delta);
+
     public void update(float delta) {
+        updateEntity(delta);
         float x = getX();
         float y = getY();
         if (flipped) {

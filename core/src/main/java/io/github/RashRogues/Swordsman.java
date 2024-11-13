@@ -15,4 +15,12 @@ public class Swordsman extends Enemy {
         setBoxPercentSize(0.4f, 0.4f, hitBox);
         setBoxPercentSize(0.58f, 0.58f, hurtBox);
     }
+
+    /**
+     * Update gamelogic for this object. Ran per frame.
+     * @param delta
+     */
+    public void updateEnemy(float delta) {
+
+    }
 }

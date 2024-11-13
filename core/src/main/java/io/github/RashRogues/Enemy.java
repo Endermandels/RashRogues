@@ -2,7 +2,7 @@ package io.github.RashRogues;
 
 import com.badlogic.gdx.graphics.Texture;
 
-public class Enemy extends Entity {
+public abstract class Enemy extends Entity {
 
     protected EnemyStats stats;
     protected HurtBox hurtBox;
@@ -13,8 +13,17 @@ public class Enemy extends Entity {
         // this will obviously change based on a number of factors later
     }
 
-    public void update(float delta) {
-        super.update(delta);
+    /**
+     * Polymorphic: Update child instance
+     * @param delta
+     */
+    public abstract void updateEnemy(float delta);
+
+    /**
+     * Polymorphic: called from parent instance
+     * @param delta
+     */
+    public void updateEntity(float delta) {
         hurtBox.update(delta);
     }
 

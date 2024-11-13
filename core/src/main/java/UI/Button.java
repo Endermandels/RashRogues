@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import io.github.RashRogues.Entity;
 import io.github.RashRogues.EntityType;
+import io.github.RashRogues.Layer;
 import io.github.RashRogues.RRGame;
 
 public class Button extends Entity {
@@ -40,7 +41,7 @@ public class Button extends Entity {
      * @param action Action to perform on-click
      */
     public Button(RRGame game, Texture texture, int x, int y, ButtonActions action){
-        super(EntityType.UI,texture,x,y,128,64);
+        super(EntityType.UI,texture,x,y,128,64, Layer.FOREGROUND);
         this.setPosition(x,y);
         this.state = ButtonStates.IDLE;
         this.action = action;
@@ -64,7 +65,12 @@ public class Button extends Entity {
         return false;
     }
 
-    public void update(float delta){
+    /**
+     * Polymorphic: Called by parent instance.
+     * Game logic. Ran every frame.
+     * @param delta
+     */
+    public void updateEntity(float delta) {
         switch (state){
             case IDLE:
                 this.setColor(Color.WHITE);
@@ -92,8 +98,8 @@ public class Button extends Entity {
                 }
 
                 if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
-                   this.activate();
-                   timeoutActive = true;
+                    this.activate();
+                    timeoutActive = true;
                 }
                 break;
 

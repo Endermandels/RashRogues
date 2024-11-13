@@ -33,17 +33,16 @@ public class PlayScreen extends ScreenAdapter implements Screen {
         RRGame.globals.currentScreen = this;
         this.game = game;
         this.localEntities = new HashSet<>();
-        this.renderQueue = new PriorityQueue<>();
+        this.renderQueue = new PriorityQueue<>(new EntityComparator());
 
         this.player = new Player(game.am.get(RRGame.RSC_ROGUE_IMG), RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, RRGame.PLAYER_SIZE);
+        game.playerCam.bind(player);
+        game.playerCam.center();
 
-//        this.enemies = new ArrayList<Enemy>();
         Swordsman swordsman = new Swordsman(game.am.get(RRGame.RSC_SWORDSMAN_IMG), 50, 30, 10);
-//        enemies.add(swordsman);
- //       this.projectiles = new ArrayList<Projectile>();
         loadRooms();
         setNextRoom();
-        createCollisionGrids();
+        //createCollisionGrids();
     }
 
     @Override
@@ -52,82 +51,45 @@ public class PlayScreen extends ScreenAdapter implements Screen {
     }
 
     public void update(float delta) {
-
         for ( Entity e : localEntities ){
             e.update(delta);
             renderQueue.add(e);
         }
 
-        // update room/objects
-        // update player(s)
-//        player.takeInput();
-//        player.update(delta);
-//        game.playerCam.moveToPlayer(player.getX()+player.getWidth()/2f, player.getY()+player.getHeight()/2f, delta);
-//        // update enemies
-//        for (Iterator<Enemy> enemyIterator = enemies.iterator(); enemyIterator.hasNext();) {
-//            Enemy enemy = enemyIterator.next();
-//            enemy.update(delta);
-//            if (enemy.stats.isDead()) { enemyIterator.remove(); }
-//        }
-//
-//        // update projectiles
-//        for (Iterator<Projectile> projectileIterator = projectiles.iterator(); projectileIterator.hasNext();) {
-//            Projectile projectile = projectileIterator.next();
-//            projectile.update(delta);
-//            if (projectile.removeNextUpdate) { projectileIterator.remove(); }
-//        }
-
+        System.out.println(game.playerCam.position);
         // check/handle collisions
-        populateCollisionGrids();
-        calculateCollisions();
-
-        // update anything else
+        // populateCollisionGrids();
+        // calculateCollisions();
     }
 
     @Override
     public void render(float delta) {
         update(delta);
-        game.playerCam.update();
+
+        game.playerCam.update(delta);
         game.batch.setProjectionMatrix(game.playerCam.combined);
-        ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
+        ScreenUtils.clear(0.9f, 0.9f, 0.9f, 1f);
+
         game.batch.begin();
+        currentRoom.draw(game.batch);
         while (!renderQueue.isEmpty()){
             renderQueue.poll().draw(game.batch);
         }
         game.batch.end();
 
-//        // draw room/objects
-//        currentRoom.draw(game.batch);
-//
-//        // draw player(s)
-//        player.draw(game.batch);
-//
-//        // draw enemies
-//        for (Enemy enemy : enemies) {
-//            enemy.draw(game.batch);
-//        }
-//
-//        // draw projectiles
-//        for (Projectile projectile : projectiles) {
-//            projectile.draw(game.batch);
-//        }
-
-        // draw misc
-
-
         // this is for debugging hitboxes, once hud is added this will be cleaner
-//        Gdx.gl.glEnable(GL20.GL_BLEND);
-//        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-//        game.shapeRenderer.setProjectionMatrix(game.playerCam.combined);
-//        game.shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-//        game.shapeRenderer.setColor(new Color(0, 1, 0, 0.5f));
-//        game.shapeRenderer.rect(player.hurtBox.getX(), player.hurtBox.getY(), player.hurtBox.getWidth(), player.hurtBox.getHeight());
-//        game.shapeRenderer.rect(enemies.get(0).hurtBox.getX(), enemies.get(0).hurtBox.getY(), enemies.get(0).hurtBox.getWidth(), enemies.get(0).hurtBox.getHeight());
-//        game.shapeRenderer.setColor(new Color(1, 0, 0, 0.5f));
-//        game.shapeRenderer.rect(player.hitBox.getX(), player.hitBox.getY(), player.hitBox.getWidth(), player.hitBox.getHeight());
-//        game.shapeRenderer.rect(enemies.get(0).hitBox.getX(), enemies.get(0).hitBox.getY(), enemies.get(0).hitBox.getWidth(), enemies.get(0).hitBox.getHeight());
-//        game.shapeRenderer.end();
-//        Gdx.gl.glDisable(GL20.GL_BLEND);
+        //        Gdx.gl.glEnable(GL20.GL_BLEND);
+        //        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        //        game.shapeRenderer.setProjectionMatrix(game.playerCam.combined);
+        //        game.shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        //        game.shapeRenderer.setColor(new Color(0, 1, 0, 0.5f));
+        //        game.shapeRenderer.rect(player.hurtBox.getX(), player.hurtBox.getY(), player.hurtBox.getWidth(), player.hurtBox.getHeight());
+        //        game.shapeRenderer.rect(enemies.get(0).hurtBox.getX(), enemies.get(0).hurtBox.getY(), enemies.get(0).hurtBox.getWidth(), enemies.get(0).hurtBox.getHeight());
+        //        game.shapeRenderer.setColor(new Color(1, 0, 0, 0.5f));
+        //        game.shapeRenderer.rect(player.hitBox.getX(), player.hitBox.getY(), player.hitBox.getWidth(), player.hitBox.getHeight());
+        //        game.shapeRenderer.rect(enemies.get(0).hitBox.getX(), enemies.get(0).hitBox.getY(), enemies.get(0).hitBox.getWidth(), enemies.get(0).hitBox.getHeight());
+        //        game.shapeRenderer.end();
+        //        Gdx.gl.glDisable(GL20.GL_BLEND);
     }
 
     private void loadRooms() {
