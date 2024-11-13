@@ -15,10 +15,12 @@ public class Archer extends Enemy {
     }
 
     /**
-     * Update the game logic for this object. ran per frame.
+     * Ran every frame.
      * @param delta
      */
-    public void updateEnemy(float delta) {
+    private void Update(float delta){
 
     }
+
+    public void updateEnemy(float delta) {Update(delta);}
 }

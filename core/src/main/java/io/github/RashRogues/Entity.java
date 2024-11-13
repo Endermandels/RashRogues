@@ -33,13 +33,13 @@ public abstract class Entity extends Sprite {
     }
 
     /**
-     * Polymorphic: Update child instance
+     * Ran Every Frame.
+     * Calls update on children classes.
      * @param delta
      */
-    public abstract void updateEntity(float delta);
-
     public void update(float delta) {
         updateEntity(delta);
+
         float x = getX();
         float y = getY();
         if (flipped) {
@@ -51,6 +51,7 @@ public abstract class Entity extends Sprite {
 
         setX(x + delta * xVelocity);
         setY(y + delta * yVelocity);
+
         hitBox.update(delta);
     }
 
@@ -71,4 +72,6 @@ public abstract class Entity extends Sprite {
     public EntityType getType(){
         return this.type;
     }
+
+    public abstract void updateEntity(float delta);
 }

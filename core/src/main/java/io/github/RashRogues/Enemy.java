@@ -13,22 +13,17 @@ public abstract class Enemy extends Entity {
         // this will obviously change based on a number of factors later
     }
 
-    /**
-     * Polymorphic: Update child instance
-     * @param delta
-     */
-    public abstract void updateEnemy(float delta);
-
-    /**
-     * Polymorphic: called from parent instance
-     * @param delta
-     */
-    public void updateEntity(float delta) {
-        hurtBox.update(delta);
-    }
-
     Enemy(EntityType type, Texture texture, int x, int y, float size) {
         this(type, texture, x, y, size, size);
+    }
+
+    /**
+     * Ran every frame.
+     * @param delta
+     */
+    private void Update(float delta){
+        hurtBox.update(delta);
+
     }
 
     protected void levelUpEnemy() {
@@ -57,4 +52,9 @@ public abstract class Enemy extends Entity {
             return;
         }
     }
+
+    public abstract void updateEnemy(float delta);
+
+    public void updateEntity(float delta) {this.Update(delta);}
+
 }

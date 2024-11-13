@@ -15,10 +15,13 @@ public class Bomber extends Enemy {
     }
 
     /**
-     * Update gamelogic for this object. Ran per frame.
+     * Ran every frame.
      * @param delta
      */
-    public void updateEnemy(float delta) {
+    private void Update(float delta){
 
     }
+
+    public void updateEnemy(float delta) {this.Update(delta);}
+
 }

@@ -21,11 +21,9 @@ public class Projectile extends Entity {
     }
 
     /**
-     * Polymorphic: called by parent class.
-     * Game logic. runs every frame.
-     * @param delta
+     * Runs Every Frame
      */
-    public void updateEntity(float delta) {
+    private void Update(float delta){
 
     }
 
@@ -33,5 +31,7 @@ public class Projectile extends Entity {
     public void onHit(Entity thingHit) {
         removeNextUpdate = true;
     }
+
+    public void updateEntity(float delta) {Update(delta);}
 
 }

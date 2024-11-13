@@ -28,19 +28,19 @@ public class Player extends Entity {
         // this will obviously change based on a number of factors later
     }
 
-
-    /**
-     * Polymorphic: called by parent entity.
-     * Game logic goes here for player. Updates every frame.
-     * @param delta
-     */
-    public void updateEntity(float delta) {
-        takeInput();
-        hurtBox.update(delta);
-    }
-
     Player(Texture texture, int x, int y, float size) {
         this(texture, x, y, size, size);
+    }
+
+    /**
+     * Ran every frame.
+     * @param delta
+     */
+    private void Update(float delta){
+
+        takeInput();
+        hurtBox.update(delta);
+
     }
 
     public void takeInput() {
@@ -88,7 +88,6 @@ public class Player extends Entity {
         yVelocity = Math.max(-maxYVelocity, Math.min(yVelocity, maxYVelocity));
     }
 
-    @Override
     public void onHit(Entity thingHit) {
         // player hitting a hurtbox shouldn't necessarily do anything. Maybe if we make it so walls have 'hurtboxes'
         // then that would happen but idk, for now the player has a hitbox because its an entity but it has a massive
@@ -96,7 +95,6 @@ public class Player extends Entity {
         return;
     }
 
-    @Override
     public void onHurt(Entity thingThatHurtMe) {
         if (thingThatHurtMe instanceof Projectile) {
             this.stats.takeDamage(((Projectile) thingThatHurtMe).damage);
@@ -108,4 +106,7 @@ public class Player extends Entity {
             System.out.println("This shouldn't ever happen...");
         }
     }
+
+    public void updateEntity(float delta) {Update(delta);}
+
 }
