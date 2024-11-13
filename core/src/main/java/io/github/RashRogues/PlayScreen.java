@@ -1,27 +1,27 @@
 package io.github.RashRogues;
 
+import Networking.Network;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.utils.ScreenUtils;
 
+import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.HashSet;
-//import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.PriorityQueue;
 
 public class PlayScreen extends ScreenAdapter implements Screen {
 
     private RRGame game;
+    private Room currentRoom;
     private Player player;
     private ArrayList<Room> rooms;
     private HashSet<Entity> localEntities;
     private PriorityQueue<Entity> renderQueue;
-
-    private Room currentRoom;
     private final int COLLISION_GRID_ROWS = 32;
     private final int COLLISION_GRID_COLS = 16;
     private int collisionGridRowSize = (int) (RRGame.WORLD_WIDTH / COLLISION_GRID_ROWS); // these change immediately
@@ -30,19 +30,27 @@ public class PlayScreen extends ScreenAdapter implements Screen {
     private LinkedHashSet<HurtBox>[][] collisionGridHurtBoxes;
 
     public PlayScreen(RRGame game) {
+        /* Initialization */
         RRGame.globals.currentScreen = this;
         this.game = game;
-        this.localEntities = new HashSet<>();
-        this.renderQueue = new PriorityQueue<>(new EntityComparator());
-
-        this.player = new Player(game.am.get(RRGame.RSC_ROGUE_IMG), RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, RRGame.PLAYER_SIZE);
-        game.playerCam.bind(player);
-        game.playerCam.center();
-
-        Swordsman swordsman = new Swordsman(game.am.get(RRGame.RSC_SWORDSMAN_IMG), 50, 30, 10);
+        this.localEntities  = new HashSet<>();
+        this.renderQueue    = new PriorityQueue<>(new EntityComparator());
         loadRooms();
         setNextRoom();
         //createCollisionGrids();
+
+        /* Instance Creation */
+        new Swordsman(game.am.get(RRGame.RSC_SWORDSMAN_IMG), 50, 30, 10);
+        player = new Player(game.am.get(RRGame.RSC_ROGUE_IMG), RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, RRGame.PLAYER_SIZE);
+        new Player(game.am.get(RRGame.RSC_ROGUE_IMG), RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, RRGame.PLAYER_SIZE, RRGame.PLAYER_SIZE, false);
+
+        /* Camera Setup */
+        game.playerCam.bind(player);
+        game.playerCam.center();
+
+        if (game.network.type == Network.EndpointType.SERVER){
+            game.network.connection.dispatchCreate(player);
+        }
     }
 
     @Override
@@ -51,12 +59,16 @@ public class PlayScreen extends ScreenAdapter implements Screen {
     }
 
     public void update(float delta) {
+        game.network.connection.processMessages();
+        if (game.network.type == Network.EndpointType.SERVER){
+            game.network.connection.dispatchUpdate(this.player);
+        }
+
         for ( Entity e : localEntities ){
             e.update(delta);
             renderQueue.add(e);
         }
 
-        System.out.println(game.playerCam.position);
         // check/handle collisions
         // populateCollisionGrids();
         // calculateCollisions();
@@ -64,12 +76,16 @@ public class PlayScreen extends ScreenAdapter implements Screen {
 
     @Override
     public void render(float delta) {
+
+        /* Update Instances and Enqueue for rendering */
         update(delta);
 
+        /* Update Camera Position */
         game.playerCam.update(delta);
         game.batch.setProjectionMatrix(game.playerCam.combined);
-        ScreenUtils.clear(0.9f, 0.9f, 0.9f, 1f);
 
+        /* Render Background and Instances */
+        ScreenUtils.clear(0.9f, 0.9f, 0.9f, 1f);
         game.batch.begin();
         currentRoom.draw(game.batch);
         while (!renderQueue.isEmpty()){
@@ -128,8 +144,9 @@ public class PlayScreen extends ScreenAdapter implements Screen {
         }
     }
 
+    //TODO: make it work with new render/entity organization system.
     private void populateCollisionGrids() {
-//        // first, clear the grid
+        // first, clear the grid
 //        for (int i = 0; i < COLLISION_GRID_ROWS; i++) {
 //            for (int j = 0; j < COLLISION_GRID_COLS; j++) {
 //                collisionGridHitBoxes[i][j] = new LinkedHashSet<HitBox>();
@@ -203,6 +220,7 @@ public class PlayScreen extends ScreenAdapter implements Screen {
         return Math.max(0, Math.min(COLLISION_GRID_ROWS-1, row));
     }
 
+    //TODO: make it work with new render/entity organization system.
     private void calculateCollisions() {
         // absolutely horrid looking nested for loops, but it has to be done and this is better than O(n*m)
         // more hitboxes than hurtboxes, so calculate if each hitbox hits a hurtbox
@@ -223,12 +241,13 @@ public class PlayScreen extends ScreenAdapter implements Screen {
 //        }
     }
 
-    @Override
-    public void nextScreen() {
+    public void nextScreen() {return;}
 
-    }
-
-    @Override
+    /**
+     * This is called every time a class inheriting Entity is instantiated on this Screen.
+     * See the Entity class constructor for more information.
+     * @param entity A Locally Instantiated Entity
+     */
     public void registerEntity(Entity entity) {
         this.localEntities.add(entity);
     }

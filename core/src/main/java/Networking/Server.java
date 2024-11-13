@@ -66,4 +66,35 @@ public class Server implements Endpoint{
     public void processMessages() {
 
     }
+
+    @Override
+    public void dispatchStartGame() {
+        for (ClientListener cL : clients){
+           cL.dispatchStartGame();
+        }
+    }
+
+    public void dispatchCreate(Entity entity){
+        for (ClientListener cL : clients){
+            cL.dispatchCreate(entity);
+        }
+    }
+
+    public void dispatchCreate(Player player){
+        dispatchCreate((Entity) player);
+    }
+
+    @Override
+    public void dispatchUpdate(Entity entity) {
+        for (ClientListener cL : clients ){
+            cL.dispatchUpdate(entity);
+        }
+    }
+
+    @Override
+    public void dispatchUpdate(Player player) {
+        dispatchUpdate((Entity) player);
+    }
+
+
 }

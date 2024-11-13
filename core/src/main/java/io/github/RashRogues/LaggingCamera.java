@@ -27,7 +27,6 @@ public class LaggingCamera extends OrthographicCamera{
 
     public void moveToPlayer(float playerCenterX, float playerCenterY, float delta) {
         Vector3 pos = this.position;
-        System.out.println(this.position);
         pos.x += (playerCenterX - pos.x) * LERP * delta;
         if (pos.x + this.viewportWidth/2f - MIN_DIST_FROM_CAM_EDGE < playerCenterX) {
             pos.x = playerCenterX - this.viewportWidth/2f + MIN_DIST_FROM_CAM_EDGE;

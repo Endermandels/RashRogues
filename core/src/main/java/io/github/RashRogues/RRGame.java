@@ -14,7 +14,7 @@ import java.util.HashSet;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class RRGame extends Game {
-    AssetManager am;
+    public static AssetManager am = new AssetManager();
     SpriteBatch batch;
     ShapeRenderer shapeRenderer;
     LaggingCamera playerCam;
@@ -35,6 +35,8 @@ public class RRGame extends Game {
     public static final String RSC_ROGUE_IMG = "DefaultImages/rogue.png";
     public static final String RSC_SWORDSMAN_IMG = "DefaultImages/swordsman.png";
 
+
+
     // entity animations
 
     // item/background sprites
@@ -46,14 +48,22 @@ public class RRGame extends Game {
 
     // music
 
+    // ui
+    public static final String RSC_BTN_HOST = "Buttons/host.png";
+    public static final String RSC_BTN_JOIN = "Buttons/join.png";
+    public static final String RSC_BTN_START_GAME = "Buttons/play.png";
+
     @Override
     public void create() {
-        am = new AssetManager();
 
         am.load(RSC_ROGUE_IMG, Texture.class);
         am.load(RSC_SWORDSMAN_IMG, Texture.class);
 
         am.load(RSC_ROOM1_IMG, Texture.class);
+
+        am.load(RSC_BTN_HOST, Texture.class);
+        am.load(RSC_BTN_JOIN, Texture.class);
+        am.load(RSC_BTN_START_GAME, Texture.class);
 
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();

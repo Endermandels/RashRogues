@@ -4,5 +4,6 @@ public enum PacketType {
     WELCOME,
     CREATE,
     UPDATE,
-    DESTROY
+    DESTROY,
+    START_GAME
 }

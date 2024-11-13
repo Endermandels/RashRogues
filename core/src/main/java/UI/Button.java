@@ -10,15 +10,17 @@ import io.github.RashRogues.EntityType;
 import io.github.RashRogues.Layer;
 import io.github.RashRogues.RRGame;
 
+import java.util.ArrayList;
+
 public class Button extends Entity {
 
-    public static enum ButtonStates{
+    public static enum ButtonStates {
         IDLE,
         HOVER,
         DISABLED
     }
 
-    public static enum ButtonActions{
+    public static enum ButtonActions {
         JOIN_MULTIPLAYER,
         HOST_MULTIPLAYER,
         START_GAME,
@@ -28,6 +30,8 @@ public class Button extends Entity {
     private ButtonStates state;
     private ButtonActions action;
     private RRGame game;
+    private ArrayList<Button> dependents;
+    private ArrayList<Button> exclusives;
 
     public int timeoutTime = 15;
     private int timeoutElapsed = 0;
@@ -35,20 +39,23 @@ public class Button extends Entity {
 
     /**
      * Create a clickable button.
+     *
      * @param texture Texture to apply to button
-     * @param x X position of button on screen coordinates
-     * @param y Y position of button on screen coordinates
-     * @param action Action to perform on-click
+     * @param x       X position of button on screen coordinates
+     * @param y       Y position of button on screen coordinates
+     * @param action  Action to perform on-click
      */
-    public Button(RRGame game, Texture texture, int x, int y, ButtonActions action){
-        super(EntityType.UI,texture,x,y,128,64, Layer.FOREGROUND);
-        this.setPosition(x,y);
+    public Button(RRGame game, Texture texture, int x, int y, ButtonActions action) {
+        super(EntityType.UI, texture, x, y, 128, 64, Layer.FOREGROUND);
+        this.dependents = new ArrayList<>();
+        this.exclusives = new ArrayList<>();
+        this.setPosition(x, y);
         this.state = ButtonStates.IDLE;
         this.action = action;
         this.game = game;
     }
 
-    public boolean mouseover(){
+    public boolean mouseover() {
         float mouseX = Gdx.input.getX();
         float mouseY = Gdx.graphics.getHeight() - Gdx.input.getY();
 
@@ -57,24 +64,19 @@ public class Button extends Entity {
         float b = this.getY();
         float t = this.getY() + this.getHeight();
 
-        if (mouseX > l && mouseX < r){
-            if (mouseY > b && mouseY < t){
+        if (mouseX > l && mouseX < r) {
+            if (mouseY > b && mouseY < t) {
                 return true;
             }
         }
         return false;
     }
 
-    /**
-     * Polymorphic: Called by parent instance.
-     * Game logic. Ran every frame.
-     * @param delta
-     */
-    public void updateEntity(float delta) {
-        switch (state){
+    public void Update(float delta){
+        switch (state) {
             case IDLE:
                 this.setColor(Color.WHITE);
-                if (mouseover()){
+                if (mouseover()) {
                     state = ButtonStates.HOVER;
                 }
                 break;
@@ -89,15 +91,15 @@ public class Button extends Entity {
                 }
 
                 //button is cooling down
-                if (timeoutActive == true && timeoutElapsed < timeoutTime){
-                    timeoutElapsed +=1;
+                if (timeoutActive == true && timeoutElapsed < timeoutTime) {
+                    timeoutElapsed += 1;
                     break;
-                }else{
+                } else {
                     timeoutElapsed = 0;
                     timeoutActive = false;
                 }
 
-                if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
+                if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
                     this.activate();
                     timeoutActive = true;
                 }
@@ -111,14 +113,14 @@ public class Button extends Entity {
     /**
      * Render the button unclickable
      */
-    public void disable(){
+    public void disable() {
         this.state = ButtonStates.DISABLED;
     }
 
     /**
      * Render the button clickable
      */
-    public void enable(){
+    public void enable() {
         this.state = ButtonStates.IDLE;
     }
 
@@ -126,7 +128,7 @@ public class Button extends Entity {
     /**
      * Force execute the button's assigned on-click action.
      */
-    public void force(){
+    public void force() {
         this.activate();
     }
 
@@ -137,6 +139,23 @@ public class Button extends Entity {
     public void set(ButtonActions action){
         this.action = action;
     }
+
+    /**
+     * Make 'button' dependent on successful activation of this button.
+     * @param button
+     */
+    public void addDependent(Button button){
+        button.disable();
+        this.dependents.add(button);
+    }
+
+    /**
+     * Make so that if this button is clicked, then 'button' cannot be clicked.
+     */
+    public void addExclusive(Button button){
+        this.exclusives.add(button);
+    }
+
 
     /**
      * Perform action
@@ -159,11 +178,30 @@ public class Button extends Entity {
                break;
 
            case START_GAME:
+               //clients can't start games
+                if (game.network.type == Network.EndpointType.CLIENT){
+                    System.out.println("Only servers can start games silly");
+                }else{
+                    game.network.connection.dispatchStartGame();
+                }
+
+               game.globals.currentScreen.nextScreen();
                break;
 
            default:
                System.out.println("Warning: a button with no action binding was just triggered.");
                break;
        }
+
+       for (Button b : dependents ){
+           b.enable();
+       }
+
+       for (Button b : exclusives ){
+           b.disable();
+       }
     }
+
+    public void updateEntity(float delta) {Update(delta);}
+
 }

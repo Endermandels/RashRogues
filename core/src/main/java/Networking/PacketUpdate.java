@@ -5,9 +5,9 @@ import io.github.RashRogues.EntityType;
 public class PacketUpdate implements Packet {
     public final PacketType packetType = PacketType.UPDATE;
     public final EntityType entityType;
-    public final int uid;
-    public final int x;
-    public final int y;
+    public final String uid;
+    public final float x;
+    public final float y;
     public final String texture;
 
     /**
@@ -18,7 +18,7 @@ public class PacketUpdate implements Packet {
      * @param x X position to set the player to. To not change the x position, set this variable to -1
      * @param y Y position to set the player to. To not change the y position, set this variable to -1
      */
-    public PacketUpdate(EntityType entityType, int uid, String texture, int x, int y){
+    public PacketUpdate(EntityType entityType, String uid, String texture, float x, float y){
         this.entityType = entityType;
         this.texture = texture;
         this.uid = uid;
@@ -32,7 +32,7 @@ public class PacketUpdate implements Packet {
      * @param uid The unique identifier for the entity you are updating.
      * @param texture Texture to apply. To not apply a texture, set this variable to ""
      */
-    public PacketUpdate(EntityType entityType, int uid, String texture){
+    public PacketUpdate(EntityType entityType, String uid, String texture){
         this.entityType = entityType;
         this.texture=texture;
         this.uid = uid;
@@ -47,7 +47,7 @@ public class PacketUpdate implements Packet {
      * @param x X position to set the player to. To not change the x position, set this variable to -1
      * @param y Y position to set the player to. To not change the y position, set this variable to -1
      */
-    public PacketUpdate(EntityType entityType, int uid, int x, int y){
+    public PacketUpdate(EntityType entityType, String uid, float x, float y){
         this.entityType = entityType;
         this.uid = uid;
         this.texture="";

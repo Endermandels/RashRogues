@@ -95,6 +95,7 @@ public class ClientListener implements Endpoint {
         }
     }
 
+
     /* Dispatchers */
 
     /**
@@ -126,6 +127,39 @@ public class ClientListener implements Endpoint {
             e.printStackTrace();
         }
     }
+
+    public void dispatchCreate(Player player){
+        dispatchCreate((Entity) player);
+    }
+
+    /**
+     * 3. Start the game
+     */
+    public void dispatchStartGame() {
+        try{
+            objectOutputStream.writeObject(new PacketStartGame());
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void dispatchUpdate(Entity entity){
+        try{
+            EntityType type = entity.getType();
+            String uid = Integer.toString(this.pid) + '_' + entity.toString();
+            float x = entity.getX();
+            float y = entity.getY();
+            objectOutputStream.writeObject(new PacketUpdate(type,uid,x, y));
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void dispatchUpdate(Player player){
+        dispatchUpdate((Entity) player);
+    }
+
+
 
     /* Handlers */
     /**

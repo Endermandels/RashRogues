@@ -1,6 +1,7 @@
 package Networking;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.FileTextureData;
 import com.badlogic.gdx.net.Socket;
 import io.github.RashRogues.Entity;
@@ -9,6 +10,7 @@ import io.github.RashRogues.Player;
 import io.github.RashRogues.RRGame;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Client implements Endpoint {
@@ -18,6 +20,7 @@ public class Client implements Endpoint {
     private Socket socket;
     private Thread listeningThread;
     public ConcurrentLinkedQueue<Packet> messages = new ConcurrentLinkedQueue<>();
+    public HashMap<String,Entity> syncedEntities = new HashMap<>();
     private int pid;
 
     public Client() {
@@ -72,6 +75,9 @@ public class Client implements Endpoint {
                case DESTROY:
                    handleDestroy(p);
                    break;
+               case START_GAME:
+                   handleStartGame();
+                   break;
                case WELCOME:
                    handleInvite(p);
                    break;
@@ -81,7 +87,8 @@ public class Client implements Endpoint {
     }
 
 
-   /* Handlers */
+
+    /* Handlers */
 
     /**
      * Accept Invite To Server
@@ -89,6 +96,7 @@ public class Client implements Endpoint {
     public void handleInvite(Packet p){
         PacketWelcome invite = (PacketWelcome) p;
         this.pid = invite.pid;
+        System.out.println("Invite Received. PID Set.");
     }
 
     /**
@@ -96,6 +104,9 @@ public class Client implements Endpoint {
      */
     public void handleCreate(Packet p){
         PacketCreate create = (PacketCreate) p;
+        System.out.println("UID to create: " + create.uid);
+        Player ply = new Player(RRGame.am.get(create.texture, Texture.class),create.x,create.y,2,2);
+        syncedEntities.put(create.uid,ply);
         //register up!
     }
 
@@ -103,7 +114,10 @@ public class Client implements Endpoint {
      * Update an object on our client
      */
     public void handleUpdate(Packet p){
-
+        PacketUpdate update = (PacketUpdate) p;
+        System.out.println("UID to update: " + update.uid);
+        Player toUpdate = (Player) syncedEntities.get(update.uid);
+        toUpdate.setPosition(update.x,update.y);
     }
 
     /**
@@ -113,8 +127,21 @@ public class Client implements Endpoint {
 
     }
 
+    public void handleStartGame(){
+        RRGame.globals.currentScreen.nextScreen();
+        System.out.println("Start Game Request from server received. Starting Game.");
+    }
+
 
    /* Dispatchers */
+
+    public void dispatchStartGame() {
+
+    }
+
+    public void dispatchCreate(Player player){
+        dispatchCreate((Entity) player);
+    }
 
     /**
      * 1. Create a new entity on the client
@@ -136,4 +163,8 @@ public class Client implements Endpoint {
     public Network.EndpointType getType() {
         return Network.EndpointType.CLIENT;
     }
+
+    public void dispatchUpdate(Entity entity){}
+    public void dispatchUpdate(Player entity){}
+
 }

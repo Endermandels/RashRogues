@@ -55,6 +55,6 @@ public abstract class Enemy extends Entity {
 
     public abstract void updateEnemy(float delta);
 
-    public void updateEntity(float delta) {this.Update(delta);}
+    public void updateEntity(float delta) {this.Update(delta);this.updateEnemy(delta);}
 
 }
