@@ -55,4 +55,8 @@ public class Entity extends Sprite {
     public void onHurt(Entity thingThatHurtMe) {
         System.out.println("No defined behavior; add this function to the Entity");
     }
+    
+    public EntityType getType(){
+        return this.type;
+    }
 }

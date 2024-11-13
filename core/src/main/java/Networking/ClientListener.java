@@ -1,5 +1,7 @@
 package Networking;
 
+import com.badlogic.gdx.graphics.TextureData;
+import com.badlogic.gdx.graphics.glutils.FileTextureData;
 import com.badlogic.gdx.net.Socket;
 import io.github.RashRogues.Entity;
 import io.github.RashRogues.EntityType;
@@ -7,6 +9,7 @@ import io.github.RashRogues.Player;
 import io.github.RashRogues.RRGame;
 
 import java.io.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ClientListener implements Endpoint {
     private Socket socket;
@@ -15,6 +18,8 @@ public class ClientListener implements Endpoint {
     private ObjectInputStream objectInputStream;
     private ObjectOutputStream objectOutputStream;
     private Thread listeningThread;
+    public ConcurrentLinkedQueue<Packet> messages = new ConcurrentLinkedQueue<>();
+    private int pid = 0; //we are the server. PID 0
 
     public ClientListener(Socket socket, int pid) {
         try {
@@ -26,8 +31,8 @@ public class ClientListener implements Endpoint {
             objectInputStream = null;
             objectOutputStream = new ObjectOutputStream(out);
 
+            dispatchWelcome(pid);
             listen(in);
-            welcome(pid);
         } catch (IOException | InterruptedException e) {
             System.out.println("Catastrophic communication error! Exiting!");
             e.printStackTrace();
@@ -53,12 +58,9 @@ public class ClientListener implements Endpoint {
                 new Runnable() {
                     public void run() {
                         try {
-                            ObjectInputStream objInput = null;
-                            objInput = new ObjectInputStream(in);
+                            objectInputStream = new ObjectInputStream(in);
                             while (true) {
-                                Packet m = (Packet) objInput.readObject();
-                                System.out.println(m);
-                                System.out.flush();
+                                messages.add((Packet) objectInputStream.readObject());
                             }
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -72,11 +74,35 @@ public class ClientListener implements Endpoint {
     }
 
     /**
+     * Process all queued messages that are available.
+     */
+    public void processMessages() {
+        while (!this.messages.isEmpty()){
+            Packet p = this.messages.poll();
+            switch (p.getPacketType()){
+                case UPDATE:
+                    handleUpdate(p);
+                    break;
+                case CREATE:
+                    handleCreate(p);
+                    break;
+                case DESTROY:
+                    handleDestroy(p);
+                    break;
+                case WELCOME:
+                    break;
+            }
+        }
+    }
+
+    /* Dispatchers */
+
+    /**
      * 1. Initialize a new client with their playerID.
      *
      * @param pid Player ID to assign to new player.
      */
-    public void welcome(int pid) {
+    public void dispatchWelcome(int pid) {
         try {
             objectOutputStream.writeObject(new PacketWelcome(pid));
         } catch (IOException e) {
@@ -88,11 +114,11 @@ public class ClientListener implements Endpoint {
      * 2. Create a new entity on the client
      *
      */
-    public void create(Entity entity){
+    public void dispatchCreate(Entity entity){
         try{
-            EntityType type = EntityType.PLAYER;
-            String uid = "123456";
-            String texture = "tex";
+            EntityType type = entity.getType();
+            String uid = Integer.toString(this.pid) + '_' + entity.toString();
+            String texture = ((FileTextureData) entity.getTexture().getTextureData()).getFileHandle().path();
             float x = entity.getX();
             float y = entity.getY();
             objectOutputStream.writeObject(new PacketCreate(type,uid,texture,(int) x, (int) y));
@@ -101,8 +127,26 @@ public class ClientListener implements Endpoint {
         }
     }
 
-    public void processMessages() {
+    /* Handlers */
+    /**
+     * Create an object on our client
+     */
+    public void handleCreate(Packet p){
+        PacketCreate create = (PacketCreate) p;
+        //register up!
+    }
+
+    /**
+     * Update an object on our client
+     */
+    public void handleUpdate(Packet p){
 
     }
 
+    /**
+     * Destroy an object on our client
+     */
+    public void handleDestroy(Packet p){
+
+    }
 }
