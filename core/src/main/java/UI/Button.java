@@ -1,11 +1,10 @@
-package io.github.RashRogues.UI;
+package UI;
 
 import Networking.Network;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import io.github.Networking.Network;
 import io.github.RashRogues.Entity;
 import io.github.RashRogues.EntityType;
 import io.github.RashRogues.RRGame;
