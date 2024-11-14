@@ -1,14 +1,12 @@
 package io.github.RashRogues;
 
 import Networking.Network;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
-import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -16,12 +14,18 @@ import java.util.PriorityQueue;
 
 public class PlayScreen extends ScreenAdapter implements Screen {
 
+    private boolean debug = false;
+
     private RRGame game;
+    private HUD hud;
     private Room currentRoom;
     private Player player;
     private ArrayList<Room> rooms;
     private HashSet<Entity> localEntities;
     private PriorityQueue<Entity> renderQueue;
+    private ArrayList<Projectile> debugProjectileRenderList;
+    private ArrayList<Player> debugPlayerRenderList;
+    private ArrayList<Enemy> debugEnemyRenderList;
     private final int COLLISION_GRID_ROWS = 32;
     private final int COLLISION_GRID_COLS = 16;
     private int collisionGridRowSize = (int) (RRGame.WORLD_WIDTH / COLLISION_GRID_ROWS); // these change immediately
@@ -35,9 +39,13 @@ public class PlayScreen extends ScreenAdapter implements Screen {
         this.game = game;
         this.localEntities  = new HashSet<>();
         this.renderQueue    = new PriorityQueue<>(new EntityComparator());
+        this.debugProjectileRenderList = new ArrayList<>();
+        this.debugPlayerRenderList = new ArrayList<>();
+        this.debugEnemyRenderList = new ArrayList<>();
         loadRooms();
         setNextRoom();
         //createCollisionGrids();
+        createHUDAndInputs();
 
         /* Instance Creation */
         new Swordsman(game.am.get(RRGame.RSC_SWORDSMAN_IMG), 50, 30, 10);
@@ -63,10 +71,23 @@ public class PlayScreen extends ScreenAdapter implements Screen {
             game.network.connection.dispatchUpdate(this.player);
         }
 
+        if (debug) {
+            debugProjectileRenderList.clear();
+            debugPlayerRenderList.clear();
+            debugEnemyRenderList.clear();
+        }
+
         for ( Entity e : localEntities ){
             e.update(delta);
             renderQueue.add(e);
+            if (debug) {
+                if (e instanceof Projectile) { debugProjectileRenderList.add((Projectile) e); }
+                else if (e instanceof Player) { player.updateEntity(delta); debugPlayerRenderList.add((Player) e); }
+                else if (e instanceof Enemy) { debugEnemyRenderList.add((Enemy) e); }
+            }
         }
+        game.playerCam.update(delta);
+
 
         // check/handle collisions
         // populateCollisionGrids();
@@ -80,7 +101,7 @@ public class PlayScreen extends ScreenAdapter implements Screen {
         update(delta);
 
         /* Update Camera Position */
-        game.playerCam.update(delta);
+        game.playerCam.update();
         game.batch.setProjectionMatrix(game.playerCam.combined);
 
         /* Render Background and Instances */
@@ -92,19 +113,47 @@ public class PlayScreen extends ScreenAdapter implements Screen {
         }
         game.batch.end();
 
-        // this is for debugging hitboxes, once hud is added this will be cleaner
-        //        Gdx.gl.glEnable(GL20.GL_BLEND);
-        //        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-        //        game.shapeRenderer.setProjectionMatrix(game.playerCam.combined);
-        //        game.shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        //        game.shapeRenderer.setColor(new Color(0, 1, 0, 0.5f));
-        //        game.shapeRenderer.rect(player.hurtBox.getX(), player.hurtBox.getY(), player.hurtBox.getWidth(), player.hurtBox.getHeight());
-        //        game.shapeRenderer.rect(enemies.get(0).hurtBox.getX(), enemies.get(0).hurtBox.getY(), enemies.get(0).hurtBox.getWidth(), enemies.get(0).hurtBox.getHeight());
-        //        game.shapeRenderer.setColor(new Color(1, 0, 0, 0.5f));
-        //        game.shapeRenderer.rect(player.hitBox.getX(), player.hitBox.getY(), player.hitBox.getWidth(), player.hitBox.getHeight());
-        //        game.shapeRenderer.rect(enemies.get(0).hitBox.getX(), enemies.get(0).hitBox.getY(), enemies.get(0).hitBox.getWidth(), enemies.get(0).hitBox.getHeight());
-        //        game.shapeRenderer.end();
-        //        Gdx.gl.glDisable(GL20.GL_BLEND);
+
+        game.hudBatch.begin();
+        hud.draw(game.hudBatch);
+        game.hudBatch.end();
+
+
+        // only debugging needs the ShapeRenderer, so we can have nice formatting by having an early return condition
+        if (!debug) { return; }
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        game.shapeRenderer.setProjectionMatrix(game.playerCam.combined);
+        game.shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+        // hurtBoxes - green
+        game.shapeRenderer.setColor(new Color(0, 1, 0, 0.5f));
+        for (Player player : debugPlayerRenderList) {
+            drawHurtBox(player.hurtBox);
+        }
+        for (Enemy enemy : debugEnemyRenderList) {
+            drawHurtBox(enemy.hurtBox);
+        }
+
+        // hitBoxes - red
+        game.shapeRenderer.setColor(new Color(1, 0, 0, 0.5f));
+        for (Player player : debugPlayerRenderList) {
+            drawHitBox(player.hitBox);
+        }
+        for (Enemy enemy : debugEnemyRenderList) {
+            drawHitBox(enemy.hitBox);
+        }
+        for (Projectile projectile : debugProjectileRenderList) {
+            drawHitBox(projectile.hitBox);
+        }
+
+        game.shapeRenderer.end();
+        Gdx.gl.glDisable(GL20.GL_BLEND);
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        hud.resize(width, height, game);
     }
 
     private void loadRooms() {
@@ -238,6 +287,61 @@ public class PlayScreen extends ScreenAdapter implements Screen {
 //                }
 //            }
 //        }
+    }
+
+    public void createHUDAndInputs() {
+        hud = new HUD(RRGame.am.get(RRGame.RSC_MONO_FONT));
+
+        // the HUD will show FPS always, by default.  Here's how
+        // to use the HUD interface to silence it (and other HUD Data)
+        hud.setDataVisibility(HUDViewCommand.Visibility.ALWAYS);
+
+        // HUD Console Commands
+        hud.registerAction("debug", new HUDActionCommand() {
+            static final String help = "Toggle debug views on or off. Usage: debug ";
+            @Override
+            public String execute(String[] cmd) {
+                try {
+                    debug = !debug;
+                    return "ok!";
+                } catch (Exception e) {
+                    return help;
+                }
+            }
+
+            public String help(String[] cmd) {
+                return help;
+            }
+        });
+
+        // HUD Data
+
+
+        // we're adding an input processor AFTER the HUD has been created,
+        // so we need to be a bit careful here and make sure not to clobber
+        // the HUD's input controls. Do that by using an InputMultiplexer
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        // let the HUD's input processor handle things first....
+        multiplexer.addProcessor(Gdx.input.getInputProcessor());
+        multiplexer.addProcessor(new InputAdapter() {
+            @Override
+            public boolean keyDown(int keycode) {
+                if (hud.isOpen()) { return false; }
+                if (keycode == Input.Keys.ESCAPE) {
+                    // there should be a way to put movement in here as well, file this under a later issue
+                }
+                return false;
+            }
+        });
+        Gdx.input.setInputProcessor(multiplexer);
+    }
+
+    public void drawHurtBox(HurtBox hurtBox) {
+        game.shapeRenderer.rect(hurtBox.getX(), hurtBox.getY(), hurtBox.getWidth(), hurtBox.getHeight());
+    }
+
+    public void drawHitBox(HitBox hitBox) {
+        game.shapeRenderer.rect(hitBox.getX(), hitBox.getY(), hitBox.getWidth(), hitBox.getHeight());
     }
 
     public void nextScreen() {return;}
