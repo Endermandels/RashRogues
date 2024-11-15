@@ -6,9 +6,15 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Net;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.FileHandleResolver;
+import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGeneratorLoader;
+import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader;
 
 import java.util.HashSet;
 
@@ -16,6 +22,7 @@ import java.util.HashSet;
 public class RRGame extends Game {
     public static AssetManager am = new AssetManager();
     SpriteBatch batch;
+    SpriteBatch hudBatch;
     ShapeRenderer shapeRenderer;
     LaggingCamera playerCam;
 
@@ -30,6 +37,9 @@ public class RRGame extends Game {
     public static final int PLAYER_SPAWN_Y = 30;
     public static final float CAMERA_SIZE = 30;
     public static final float PLAYER_SIZE = 2;
+
+    public static final String RSC_MONO_FONT_FILE = "Fonts/JetBrainsMono-Regular.ttf";
+    public static final String RSC_MONO_FONT = "JBM.ttf";
 
     // entity sprites (players, enemies, projectiles)
     public static final String RSC_ROGUE_IMG = "DefaultImages/rogue.png";
@@ -56,6 +66,14 @@ public class RRGame extends Game {
     @Override
     public void create() {
 
+        FileHandleResolver resolver = new InternalFileHandleResolver();
+        am.setLoader(FreeTypeFontGenerator.class, new FreeTypeFontGeneratorLoader(resolver));
+        am.setLoader(BitmapFont.class, ".ttf", new FreetypeFontLoader(resolver));
+        FreetypeFontLoader.FreeTypeFontLoaderParameter myFont = new FreetypeFontLoader.FreeTypeFontLoaderParameter();
+        myFont.fontFileName = RSC_MONO_FONT_FILE;
+        myFont.fontParameters.size = 14;
+        am.load(RSC_MONO_FONT, BitmapFont.class, myFont);
+
         am.load(RSC_ROGUE_IMG, Texture.class);
         am.load(RSC_SWORDSMAN_IMG, Texture.class);
 
@@ -66,6 +84,7 @@ public class RRGame extends Game {
         am.load(RSC_BTN_START_GAME, Texture.class);
 
         batch = new SpriteBatch();
+        hudBatch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
 
         network = new Network();
@@ -76,6 +95,7 @@ public class RRGame extends Game {
         float w = Gdx.graphics.getWidth();
         playerCam = new LaggingCamera(CAMERA_SIZE, CAMERA_SIZE * (h/w));
         playerCam.center();
+        playerCam.update();
         setScreen(new LoadScreen(this));
     }
 
@@ -84,11 +104,14 @@ public class RRGame extends Game {
         playerCam.viewportWidth = CAMERA_SIZE;
         playerCam.viewportHeight = CAMERA_SIZE * ((float) height/width);
         playerCam.update();
+        if (globals.currentScreen instanceof PlayScreen) { ((PlayScreen) globals.currentScreen).resize(width, height); }
+        // this will be nicer after the refactor I believe
     }
 
     @Override
     public void dispose() {
         batch.dispose();
+        hudBatch.dispose();
         am.dispose();
     }
 }
