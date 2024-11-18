@@ -82,7 +82,7 @@ public class PlayScreen extends ScreenAdapter implements Screen {
             renderQueue.add(e);
             if (debug) {
                 if (e instanceof Projectile) { debugProjectileRenderList.add((Projectile) e); }
-                else if (e instanceof Player) { player.updateEntity(delta); debugPlayerRenderList.add((Player) e); }
+                else if (e instanceof Player) { debugPlayerRenderList.add((Player) e); }
                 else if (e instanceof Enemy) { debugEnemyRenderList.add((Enemy) e); }
             }
         }

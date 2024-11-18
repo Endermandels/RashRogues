@@ -18,10 +18,9 @@ public class Bomber extends Enemy {
      * Ran every frame.
      * @param delta
      */
-    private void Update(float delta){
-
+    public void update(float delta){
+        super.update(delta);
+        // do bomber pathfinding
     }
-
-    public void updateEnemy(float delta) {this.Update(delta);}
 
 }

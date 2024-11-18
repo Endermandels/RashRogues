@@ -17,7 +17,7 @@ public class Player extends Entity {
     protected HurtBox hurtBox;
 
     public Player(Texture texture, int x, int y, float width, float height) {
-        super(EntityType.PLAYER, texture, x, y, width, height, Layer.PLAYER);
+        super(EntityType.PLAYER, EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER);
         this.maxXVelocity = BASE_PLAYER_MOVE_SPEED;
         this.maxYVelocity = BASE_PLAYER_MOVE_SPEED;
         this.stats = new PlayerStats(BASE_PLAYER_HEALTH, BASE_PLAYER_DAMAGE, BASE_PLAYER_ATTACK_SPEED, BASE_PLAYER_MOVE_SPEED, BASE_PLAYER_DEXTERITY, this);
@@ -36,11 +36,10 @@ public class Player extends Entity {
      * Ran every frame.
      * @param delta
      */
-    private void Update(float delta){
-
+    public void update(float delta){
         takeInput();
+        super.update(delta);
         hurtBox.update(delta);
-
     }
 
     public void takeInput() {
@@ -96,7 +95,7 @@ public class Player extends Entity {
     }
 
     public void onHurt(Entity thingThatHurtMe) {
-        if (thingThatHurtMe instanceof Projectile) {
+        if (thingThatHurtMe instanceof Projectile && thingThatHurtMe.alignment == EntityAlignment.ENEMY) {
             this.stats.takeDamage(((Projectile) thingThatHurtMe).damage);
         }
         else if (thingThatHurtMe instanceof Enemy) {
@@ -106,7 +105,5 @@ public class Player extends Entity {
             System.out.println("This shouldn't ever happen...");
         }
     }
-
-    public void updateEntity(float delta) {Update(delta);}
 
 }
