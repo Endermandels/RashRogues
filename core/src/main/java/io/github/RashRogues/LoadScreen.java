@@ -7,7 +7,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-public class LoadScreen extends ScreenAdapter implements Screen{
+public class LoadScreen extends ScreenAdapter implements RRScreen {
     RRGame game;
 
     public LoadScreen(RRGame game) {
@@ -22,8 +22,8 @@ public class LoadScreen extends ScreenAdapter implements Screen{
 
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 0, 1);
-        game.am.update(10);
-        if (game.am.isFinished()) {
+        RRGame.am.update(10);
+        if (RRGame.am.isFinished()) {
             game.setScreen(new LobbyScreen(game));
         }
     }
@@ -35,6 +35,11 @@ public class LoadScreen extends ScreenAdapter implements Screen{
 
     @Override
     public void registerEntity(Entity entity) {
+        return;
+    }
+
+    @Override
+    public void removeEntity(Entity entity) {
         return;
     }
 }

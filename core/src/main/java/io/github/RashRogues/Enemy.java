@@ -21,7 +21,8 @@ public abstract class Enemy extends Entity {
      * Ran every frame.
      * @param delta
      */
-    public void update(float delta){
+    public void update(float delta) {
+        if (stats.isDead()) { this.removeSelf(); return; }
         super.update(delta);
         hurtBox.update(delta);
     }

@@ -9,7 +9,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import java.util.HashSet;
 import java.util.PriorityQueue;
 
-public class LobbyScreen extends ScreenAdapter implements Screen{
+public class LobbyScreen extends ScreenAdapter implements RRScreen {
     RRGame game;
     PriorityQueue<Entity> renderQueue = new PriorityQueue<>(new EntityComparator());
     HashSet<Entity> localEntities = new HashSet<>();
@@ -56,6 +56,12 @@ public class LobbyScreen extends ScreenAdapter implements Screen{
     @Override
     public void registerEntity(Entity entity) {
         this.localEntities.add(entity);
+        return;
+    }
+
+    @Override
+    public void removeEntity(Entity entity) {
+        this.localEntities.remove(entity);
         return;
     }
 }
