@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.PriorityQueue;
 
-public class PlayScreen extends ScreenAdapter implements Screen {
+public class PlayScreen extends ScreenAdapter implements RRScreen {
 
     private boolean debug = false;
 
@@ -238,5 +238,14 @@ public class PlayScreen extends ScreenAdapter implements Screen {
      */
     public void registerEntity(Entity entity) {
         this.localEntities.add(entity);
+    }
+
+    /**
+     * This is called any time a class inheriting Entity is removed from this Screen.
+     * See the Entity class constructor for more information.
+     * @param entity A Locally Instantiated Entity
+     */
+    public void removeEntity(Entity entity) {
+        this.localEntities.remove(entity);
     }
 }

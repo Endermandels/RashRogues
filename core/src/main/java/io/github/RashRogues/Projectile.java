@@ -22,7 +22,8 @@ public class Projectile extends Entity {
      * Runs Every Frame
      * @param delta
      */
-    public void update(float delta){
+    public void update(float delta) {
+        if (removeNextUpdate) { this.removeSelf(); return;}
         super.update(delta);
         // technically this isn't even needed right now because a projectile just wants to move whatever
         // direction it's going; however, I foresee specific projectiles needing special logic

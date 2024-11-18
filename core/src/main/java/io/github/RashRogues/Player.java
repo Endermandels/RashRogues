@@ -36,7 +36,9 @@ public class Player extends Entity {
      * Ran every frame.
      * @param delta
      */
-    public void update(float delta){
+    public void update(float delta) {
+        // we likely want some resurrection sort of ability or even just a ghost camera you can move
+        if (stats.isDead()) { this.removeSelf(); return; }
         takeInput();
         super.update(delta);
         hurtBox.update(delta);

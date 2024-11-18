@@ -75,4 +75,8 @@ public abstract class Entity extends Sprite {
         return this.type;
     }
 
+    protected void removeSelf() {
+        RRGame.globals.currentScreen.removeEntity(this);
+    }
+
 }
