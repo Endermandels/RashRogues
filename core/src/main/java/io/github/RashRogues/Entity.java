@@ -13,9 +13,11 @@ public abstract class Entity extends Sprite {
     protected HitBox hitBox;
     protected boolean flipped;
     protected EntityType type;
+    protected EntityAlignment alignment;
     protected Layer layer;
 
-    protected Entity(EntityType type, Texture texture, int x, int y, float width, float height, Layer layer) {
+    protected Entity(EntityType type, EntityAlignment alignment, Texture texture, int x, int y,
+                     float width, float height, Layer layer) {
         super(texture);
         setSize(width, height);
         setOrigin(width/2, height/2);
@@ -26,7 +28,9 @@ public abstract class Entity extends Sprite {
         // this can be whatever, I imagine each enemy might have its own speed but for now this works,
         // just override the maxVelocities on the subclasses.
         this.flipped = false;
+        this.type = type;
         this.layer = layer;
+        this.alignment = alignment;
 
         //add our entity to the current screen.
         RRGame.globals.currentScreen.registerEntity(this);
@@ -38,8 +42,6 @@ public abstract class Entity extends Sprite {
      * @param delta
      */
     public void update(float delta) {
-        updateEntity(delta);
-
         float x = getX();
         float y = getY();
         if (flipped) {
@@ -73,5 +75,4 @@ public abstract class Entity extends Sprite {
         return this.type;
     }
 
-    public abstract void updateEntity(float delta);
 }

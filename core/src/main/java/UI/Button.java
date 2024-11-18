@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import io.github.RashRogues.Entity;
 import io.github.RashRogues.EntityType;
+import io.github.RashRogues.EntityAlignment;
 import io.github.RashRogues.Layer;
 import io.github.RashRogues.RRGame;
 
@@ -46,7 +47,7 @@ public class Button extends Entity {
      * @param action  Action to perform on-click
      */
     public Button(RRGame game, Texture texture, int x, int y, ButtonActions action) {
-        super(EntityType.UI, texture, x, y, 128, 64, Layer.FOREGROUND);
+        super(EntityType.UI, EntityAlignment.X, texture, x, y, 128, 64, Layer.FOREGROUND);
         this.dependents = new ArrayList<>();
         this.exclusives = new ArrayList<>();
         this.setPosition(x, y);
@@ -72,7 +73,7 @@ public class Button extends Entity {
         return false;
     }
 
-    public void Update(float delta){
+    public void update(float delta){
         switch (state) {
             case IDLE:
                 this.setColor(Color.WHITE);
@@ -202,6 +203,6 @@ public class Button extends Entity {
        }
     }
 
-    public void updateEntity(float delta) {Update(delta);}
+    //public void updateEntity(float delta) {Update(delta);}
 
 }
