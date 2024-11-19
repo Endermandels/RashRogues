@@ -8,7 +8,7 @@ public abstract class Enemy extends Entity {
     protected HurtBox hurtBox;
 
     Enemy(EntityType type, Texture texture, int x, int y, float width, float height) {
-        super(type, texture, x, y, width, height, Layer.ENEMY);
+        super(type, EntityAlignment.ENEMY, texture, x, y, width, height, Layer.ENEMY);
         hurtBox = new HurtBox(hitBox, this);
         // this will obviously change based on a number of factors later
     }
@@ -21,9 +21,10 @@ public abstract class Enemy extends Entity {
      * Ran every frame.
      * @param delta
      */
-    private void Update(float delta){
+    public void update(float delta) {
+        if (stats.isDead()) { this.removeSelf(); return; }
+        super.update(delta);
         hurtBox.update(delta);
-
     }
 
     protected void levelUpEnemy() {
@@ -41,20 +42,13 @@ public abstract class Enemy extends Entity {
 
     @Override
     public void onHurt(Entity thingThatHurtMe) {
-        if (thingThatHurtMe instanceof Projectile) {
+        if (thingThatHurtMe instanceof Projectile && thingThatHurtMe.alignment == EntityAlignment.PLAYER) {
             this.stats.takeDamage(((Projectile) thingThatHurtMe).damage);
-        }
-        else if (thingThatHurtMe instanceof Player) { // this should actually be a Projectile as well
-            this.stats.takeDamage(((Player) thingThatHurtMe).stats.damage);
         }
         else {
             // if an enemy hitBox is what hurt us, then ignore it
             return;
         }
     }
-
-    public abstract void updateEnemy(float delta);
-
-    public void updateEntity(float delta) {this.Update(delta);this.updateEnemy(delta);}
 
 }

@@ -104,8 +104,7 @@ public class RRGame extends Game {
         playerCam.viewportWidth = CAMERA_SIZE;
         playerCam.viewportHeight = CAMERA_SIZE * ((float) height/width);
         playerCam.update();
-        if (globals.currentScreen instanceof PlayScreen) { ((PlayScreen) globals.currentScreen).resize(width, height); }
-        // this will be nicer after the refactor I believe
+        this.screen.resize(width, height);
     }
 
     @Override

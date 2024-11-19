@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.PriorityQueue;
 
-public class PlayScreen extends ScreenAdapter implements Screen {
+public class PlayScreen extends ScreenAdapter implements RRScreen {
 
     private boolean debug = false;
 
@@ -26,12 +26,7 @@ public class PlayScreen extends ScreenAdapter implements Screen {
     private ArrayList<Projectile> debugProjectileRenderList;
     private ArrayList<Player> debugPlayerRenderList;
     private ArrayList<Enemy> debugEnemyRenderList;
-    private final int COLLISION_GRID_ROWS = 32;
-    private final int COLLISION_GRID_COLS = 16;
-    private int collisionGridRowSize = (int) (RRGame.WORLD_WIDTH / COLLISION_GRID_ROWS); // these change immediately
-    private int collisionGridColSize = (int) (RRGame.WORLD_WIDTH / COLLISION_GRID_COLS);
-    private LinkedHashSet<HitBox>[][] collisionGridHitBoxes;
-    private LinkedHashSet<HurtBox>[][] collisionGridHurtBoxes;
+    public static CollisionGrid collisionGrid = new CollisionGrid();
 
     public PlayScreen(RRGame game) {
         /* Initialization */
@@ -44,7 +39,6 @@ public class PlayScreen extends ScreenAdapter implements Screen {
         this.debugEnemyRenderList = new ArrayList<>();
         loadRooms();
         setNextRoom();
-        //createCollisionGrids();
         createHUDAndInputs();
 
         /* Instance Creation */
@@ -82,7 +76,7 @@ public class PlayScreen extends ScreenAdapter implements Screen {
             renderQueue.add(e);
             if (debug) {
                 if (e instanceof Projectile) { debugProjectileRenderList.add((Projectile) e); }
-                else if (e instanceof Player) { player.updateEntity(delta); debugPlayerRenderList.add((Player) e); }
+                else if (e instanceof Player) { debugPlayerRenderList.add((Player) e); }
                 else if (e instanceof Enemy) { debugEnemyRenderList.add((Enemy) e); }
             }
         }
@@ -90,8 +84,8 @@ public class PlayScreen extends ScreenAdapter implements Screen {
 
 
         // check/handle collisions
-        // populateCollisionGrids();
-        // calculateCollisions();
+        collisionGrid.populateCollisionGrid(localEntities);
+        collisionGrid.calculateCollisions();
     }
 
     @Override
@@ -177,116 +171,7 @@ public class PlayScreen extends ScreenAdapter implements Screen {
             currentRoom = rooms.get(rooms.indexOf(currentRoom) + 1);
         }
         game.playerCam.changeWorldSize(currentRoom.roomWidth, currentRoom.roomHeight);
-        collisionGridRowSize = currentRoom.roomHeight / COLLISION_GRID_ROWS;
-        collisionGridColSize = currentRoom.roomWidth / COLLISION_GRID_COLS;
-    }
-
-    private void createCollisionGrids() {
-        collisionGridHitBoxes = new LinkedHashSet[COLLISION_GRID_ROWS][COLLISION_GRID_COLS];
-        collisionGridHurtBoxes = new LinkedHashSet[COLLISION_GRID_ROWS][COLLISION_GRID_COLS];
-        for (int i = 0; i < COLLISION_GRID_ROWS; i++) {
-            for (int j = 0; j < COLLISION_GRID_COLS; j++) {
-                collisionGridHitBoxes[i][j] = new LinkedHashSet<HitBox>();
-                collisionGridHurtBoxes[i][j] = new LinkedHashSet<HurtBox>();
-            }
-        }
-    }
-
-    //TODO: make it work with new render/entity organization system.
-    private void populateCollisionGrids() {
-        // first, clear the grid
-//        for (int i = 0; i < COLLISION_GRID_ROWS; i++) {
-//            for (int j = 0; j < COLLISION_GRID_COLS; j++) {
-//                collisionGridHitBoxes[i][j] = new LinkedHashSet<HitBox>();
-//                collisionGridHurtBoxes[i][j] = new LinkedHashSet<HurtBox>();
-//            }
-//        }
-//
-//        // place player hit/hurt boxes in the correct boxes
-//        // this needs to be updated for multiple players
-//        int leftSideColNum = clampedCollisionColNum((int) (player.hitBox.x) / collisionGridColSize);
-//        int rightSideColNum = clampedCollisionColNum((int) (player.hitBox.x + player.hitBox.width) / collisionGridColSize);
-//        int bottomSideRowNum = clampedCollisionRowNum((int) (player.hitBox.y) / collisionGridRowSize);
-//        int topSideRowNum = clampedCollisionRowNum((int) (player.hitBox.y + player.hitBox.height) / collisionGridRowSize);
-//        collisionGridHitBoxes[bottomSideRowNum][leftSideColNum].add(player.hitBox);
-//        collisionGridHitBoxes[bottomSideRowNum][rightSideColNum].add(player.hitBox);
-//        collisionGridHitBoxes[topSideRowNum][leftSideColNum].add(player.hitBox);
-//        collisionGridHitBoxes[topSideRowNum][rightSideColNum].add(player.hitBox);
-//
-//        leftSideColNum = clampedCollisionColNum((int) (player.hurtBox.x) / collisionGridColSize);
-//        rightSideColNum = clampedCollisionColNum((int) (player.hurtBox.x + player.hurtBox.width) / collisionGridColSize);
-//        bottomSideRowNum = clampedCollisionRowNum((int) (player.hurtBox.y) / collisionGridRowSize);
-//        topSideRowNum = clampedCollisionRowNum((int) (player.hurtBox.y + player.hurtBox.height) / collisionGridRowSize);
-//        collisionGridHurtBoxes[bottomSideRowNum][leftSideColNum].add(player.hurtBox);
-//        collisionGridHurtBoxes[bottomSideRowNum][rightSideColNum].add(player.hurtBox);
-//        collisionGridHurtBoxes[topSideRowNum][leftSideColNum].add(player.hurtBox);
-//        collisionGridHurtBoxes[topSideRowNum][rightSideColNum].add(player.hurtBox);
-//
-//        // place enemy hit/hurt boxes in the correct boxes
-//        for (Enemy enemy : enemies) {
-//            // this logic reduces the need for if statements at no cost by using hashSet
-//            // hitboxes
-//            leftSideColNum = clampedCollisionColNum((int) (enemy.hitBox.x) / collisionGridColSize);
-//            rightSideColNum = clampedCollisionColNum((int) (enemy.hitBox.x + enemy.hitBox.width) / collisionGridColSize);
-//            bottomSideRowNum = clampedCollisionRowNum((int) (enemy.hitBox.y) / collisionGridRowSize);
-//            topSideRowNum = clampedCollisionRowNum((int) (enemy.hitBox.y + enemy.hitBox.height) / collisionGridRowSize);
-//            collisionGridHitBoxes[bottomSideRowNum][leftSideColNum].add(enemy.hitBox);
-//            collisionGridHitBoxes[bottomSideRowNum][rightSideColNum].add(enemy.hitBox);
-//            collisionGridHitBoxes[topSideRowNum][leftSideColNum].add(enemy.hitBox);
-//            collisionGridHitBoxes[topSideRowNum][rightSideColNum].add(enemy.hitBox);
-//
-//            // hurtboxes
-//            leftSideColNum = clampedCollisionColNum((int) (enemy.hurtBox.x) / collisionGridColSize);
-//            rightSideColNum = clampedCollisionColNum((int) (enemy.hurtBox.x + enemy.hurtBox.width) / collisionGridColSize);
-//            bottomSideRowNum = clampedCollisionRowNum((int) (enemy.hurtBox.y) / collisionGridRowSize);
-//            topSideRowNum = clampedCollisionRowNum((int) (enemy.hurtBox.y + enemy.hurtBox.height) / collisionGridRowSize);
-//            collisionGridHurtBoxes[bottomSideRowNum][leftSideColNum].add(enemy.hurtBox);
-//            collisionGridHurtBoxes[bottomSideRowNum][rightSideColNum].add(enemy.hurtBox);
-//            collisionGridHurtBoxes[topSideRowNum][leftSideColNum].add(enemy.hurtBox);
-//            collisionGridHurtBoxes[topSideRowNum][rightSideColNum].add(enemy.hurtBox);
-//        }
-//
-//        // place projectile hitboxes in the correct boxes
-//        for (Projectile projectile : projectiles) {
-//            // hitboxes
-//            leftSideColNum = clampedCollisionColNum((int) (projectile.hitBox.x) / collisionGridColSize);
-//            rightSideColNum = clampedCollisionColNum((int) (projectile.hitBox.x + projectile.hitBox.width) / collisionGridColSize);
-//            bottomSideRowNum = clampedCollisionRowNum((int) (projectile.hitBox.y) / collisionGridRowSize);
-//            topSideRowNum = clampedCollisionRowNum((int) (projectile.hitBox.y + projectile.hitBox.height) / collisionGridRowSize);
-//            collisionGridHitBoxes[bottomSideRowNum][leftSideColNum].add(projectile.hitBox);
-//            collisionGridHitBoxes[bottomSideRowNum][rightSideColNum].add(projectile.hitBox);
-//            collisionGridHitBoxes[topSideRowNum][leftSideColNum].add(projectile.hitBox);
-//            collisionGridHitBoxes[topSideRowNum][rightSideColNum].add(projectile.hitBox);
-//        }
-    }
-
-    private int clampedCollisionColNum(int col) {
-        return Math.max(0, Math.min(COLLISION_GRID_COLS-1, col));
-    }
-
-    private int clampedCollisionRowNum(int row) {
-        return Math.max(0, Math.min(COLLISION_GRID_ROWS-1, row));
-    }
-
-    //TODO: make it work with new render/entity organization system.
-    private void calculateCollisions() {
-        // absolutely horrid looking nested for loops, but it has to be done and this is better than O(n*m)
-        // more hitboxes than hurtboxes, so calculate if each hitbox hits a hurtbox
-//        for (int i = 0; i < COLLISION_GRID_ROWS; i++) {
-//            for (int j = 0; j < COLLISION_GRID_COLS; j++) {
-//                LinkedHashSet<HitBox> hitBoxes = collisionGridHitBoxes[i][j];
-//                LinkedHashSet<HurtBox> hurtBoxes = collisionGridHurtBoxes[i][j];
-//                for (Iterator<HitBox> hitBoxIterator = hitBoxes.iterator(); hitBoxIterator.hasNext();) {
-//                    HitBox hitBox = hitBoxIterator.next();
-//                    for (Iterator<HurtBox> hurtBoxIterator = hurtBoxes.iterator(); hurtBoxIterator.hasNext();) {
-//                        HurtBox hurtBox = hurtBoxIterator.next();
-//                        if (hitBox.overlaps(hurtBox)) {
-//                            hitBox.hitHurtBox(hurtBox);
-//                        }
-//                    }
-//                }
-//            }
-//        }
+        collisionGrid.updateCollisionGridRoomValues(currentRoom.roomWidth, currentRoom.roomHeight);
     }
 
     public void createHUDAndInputs() {
@@ -328,9 +213,47 @@ public class PlayScreen extends ScreenAdapter implements Screen {
             public boolean keyDown(int keycode) {
                 if (hud.isOpen()) { return false; }
                 if (keycode == Input.Keys.ESCAPE) {
-                    // there should be a way to put movement in here as well, file this under a later issue
+                    // cancel any selections
                 }
-                return false;
+                if (keycode == Input.Keys.A || keycode == Input.Keys.LEFT) {
+                    player.moveLeft(true);
+                }
+                if (keycode == Input.Keys.D || keycode == Input.Keys.RIGHT) {
+                    player.moveRight(true);
+                }
+                if (keycode == Input.Keys.S || keycode == Input.Keys.DOWN) {
+                    player.moveDown(true);
+                }
+                if (keycode == Input.Keys.W || keycode == Input.Keys.UP) {
+                    player.moveUp(true);
+                }
+                if (keycode == Input.Keys.SPACE) {
+                    player.dash();
+                }
+                if (keycode == Input.Keys.E) {
+                    player.useAbility();
+                }
+                if (keycode == Input.Keys.Q) {
+                    player.useConsumable();
+                }
+                return true;
+            }
+
+            @Override
+            public boolean keyUp(int keycode) {
+                if (keycode == Input.Keys.A || keycode == Input.Keys.LEFT) {
+                    player.moveLeft(false);
+                }
+                if (keycode == Input.Keys.D || keycode == Input.Keys.RIGHT) {
+                    player.moveRight(false);
+                }
+                if (keycode == Input.Keys.S || keycode == Input.Keys.DOWN) {
+                    player.moveDown(false);
+                }
+                if (keycode == Input.Keys.W || keycode == Input.Keys.UP) {
+                    player.moveUp(false);
+                }
+                return true;
             }
         });
         Gdx.input.setInputProcessor(multiplexer);
@@ -353,5 +276,14 @@ public class PlayScreen extends ScreenAdapter implements Screen {
      */
     public void registerEntity(Entity entity) {
         this.localEntities.add(entity);
+    }
+
+    /**
+     * This is called any time a class inheriting Entity is removed from this Screen.
+     * See the Entity class constructor for more information.
+     * @param entity A Locally Instantiated Entity
+     */
+    public void removeEntity(Entity entity) {
+        this.localEntities.remove(entity);
     }
 }

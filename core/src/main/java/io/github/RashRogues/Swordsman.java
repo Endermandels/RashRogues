@@ -20,11 +20,9 @@ public class Swordsman extends Enemy {
      * Ran every frame.
      * @param delta
      */
-    private void Update(float delta){
+    public void update(float delta){
+        super.update(delta);
+        // do swordsman pathfinding
     }
 
-    /**
-     * Polymorphic. Called by parent.
-     */
-    public void updateEnemy(float delta) {Update(delta);}
 }
