@@ -15,11 +15,26 @@ public class Player extends Entity {
     private final float BASE_PLAYER_DEXTERITY = 10f;
     public PlayerStats stats;
     protected HurtBox hurtBox;
+    private boolean leftMove;
+    private boolean rightMove;
+    private boolean downMove;
+    private boolean upMove;
+    private float dashTimer;
+    private final float DASH_COOLDOWN = 1f;
+    private float attackTimer;
+    private float abilityTimer;
+    private float abilityCooldown = 5f; // idk maybe this changes based on ability, not sure yet.
+    private float consumableTimer;
+    private final float CONSUMABLE_COOLDOWN = 0.2f;
 
     public Player(Texture texture, int x, int y, float width, float height) {
         super(EntityType.PLAYER, EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER);
         this.maxXVelocity = BASE_PLAYER_MOVE_SPEED;
         this.maxYVelocity = BASE_PLAYER_MOVE_SPEED;
+        this.attackTimer = 0f;
+        this.dashTimer = 0f;
+        this.abilityTimer = 0f;
+        this.consumableTimer = 0f;
         this.stats = new PlayerStats(BASE_PLAYER_HEALTH, BASE_PLAYER_DAMAGE, BASE_PLAYER_ATTACK_SPEED, BASE_PLAYER_MOVE_SPEED, BASE_PLAYER_DEXTERITY, this);
         hitBox.disableLength = 10000f;
         hurtBox = new HurtBox(hitBox, this);
@@ -37,28 +52,60 @@ public class Player extends Entity {
      * @param delta
      */
     public void update(float delta) {
+        attackTimer += delta;
+        dashTimer += delta;
+        abilityTimer += delta;
+        consumableTimer += delta;
         // we likely want some resurrection sort of ability or even just a ghost camera you can move
         if (stats.isDead()) { this.removeSelf(); return; }
-        takeInput();
+        adjustVelocity();
         super.update(delta);
         hurtBox.update(delta);
+        if (attackTimer >= (1 / stats.getAttackSpeed())) { attack(); attackTimer = 0f; }
     }
 
-    public void takeInput() {
+    public void moveLeft(boolean t) { leftMove = t; }
+    public void moveRight(boolean t) { rightMove = t; }
+    public void moveDown(boolean t) { downMove = t; }
+    public void moveUp(boolean t) { upMove = t; }
+
+    public void attack() {
+        System.out.println("Attack");
+    }
+
+    public void dash() {
+        if (dashTimer < DASH_COOLDOWN) { return; }
+        dashTimer = 0f;
+        System.out.println("Dash");
+    }
+
+    public void useAbility() {
+        if (abilityTimer < abilityCooldown) { return; }
+        abilityTimer = 0f;
+        System.out.println("Use Ability");
+    }
+
+    public void useConsumable() {
+        if (consumableTimer < CONSUMABLE_COOLDOWN) { return; }
+        consumableTimer = 0f;
+        System.out.println("Use Consumable");
+    }
+
+    public void adjustVelocity() {
         float xVel = 0;
         float yVel = 0;
-        if  (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+        if  (leftMove) {
             xVel -= ACCELERATION;
             this.flipped = true;
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+        if (rightMove) {
             xVel += ACCELERATION;
             this.flipped = false;
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+        if (downMove) {
             yVel -= ACCELERATION;
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) {
+        if (upMove) {
             yVel += ACCELERATION;
         }
 
