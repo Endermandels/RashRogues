@@ -55,8 +55,7 @@ public class CollisionGrid {
             collisionGridHitBoxes[topSideRowNum][rightSideColNum].add(e.hitBox);
 
             // populate the hurtBoxes if not a projectile
-            if (e instanceof Projectile) { continue; }
-            else if (e instanceof Player) {
+            if (e instanceof Player) {
                 Player player = (Player) e;
                 leftSideColNum = clampedCollisionColNum((int) (player.hurtBox.x) / collisionGridColSize);
                 rightSideColNum = clampedCollisionColNum((int) (player.hurtBox.x + player.hurtBox.width) / collisionGridColSize);
