@@ -15,14 +15,23 @@ public class Projectile extends Entity {
     protected boolean removeNextUpdate = false;
 
     Projectile(Texture texture, int x, int y, float width, float height) {
-        super(texture, x, y, width, height);
+        super(EntityType.PROJECTILE, texture, x, y, width, height, Layer.PROJECTILE);
         this.damage = 1;
         this.moveSpeed = 0.0f;
+    }
+
+    /**
+     * Runs Every Frame
+     */
+    private void Update(float delta){
+
     }
 
     @Override
     public void onHit(Entity thingHit) {
         removeNextUpdate = true;
     }
+
+    public void updateEntity(float delta) {Update(delta);}
 
 }

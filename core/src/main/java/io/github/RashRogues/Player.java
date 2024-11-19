@@ -16,8 +16,8 @@ public class Player extends Entity {
     public PlayerStats stats;
     protected HurtBox hurtBox;
 
-    Player(Texture texture, int x, int y, float width, float height) {
-        super(texture, x, y, width, height);
+    public Player(Texture texture, int x, int y, float width, float height) {
+        super(EntityType.PLAYER, texture, x, y, width, height, Layer.PLAYER);
         this.maxXVelocity = BASE_PLAYER_MOVE_SPEED;
         this.maxYVelocity = BASE_PLAYER_MOVE_SPEED;
         this.stats = new PlayerStats(BASE_PLAYER_HEALTH, BASE_PLAYER_DAMAGE, BASE_PLAYER_ATTACK_SPEED, BASE_PLAYER_MOVE_SPEED, BASE_PLAYER_DEXTERITY, this);
@@ -28,14 +28,19 @@ public class Player extends Entity {
         // this will obviously change based on a number of factors later
     }
 
-    @Override
-    public void update(float delta) {
-        super.update(delta);
-        hurtBox.update(delta);
-    }
-
     Player(Texture texture, int x, int y, float size) {
         this(texture, x, y, size, size);
+    }
+
+    /**
+     * Ran every frame.
+     * @param delta
+     */
+    private void Update(float delta){
+
+        takeInput();
+        hurtBox.update(delta);
+
     }
 
     public void takeInput() {
@@ -83,7 +88,6 @@ public class Player extends Entity {
         yVelocity = Math.max(-maxYVelocity, Math.min(yVelocity, maxYVelocity));
     }
 
-    @Override
     public void onHit(Entity thingHit) {
         // player hitting a hurtbox shouldn't necessarily do anything. Maybe if we make it so walls have 'hurtboxes'
         // then that would happen but idk, for now the player has a hitbox because its an entity but it has a massive
@@ -91,7 +95,6 @@ public class Player extends Entity {
         return;
     }
 
-    @Override
     public void onHurt(Entity thingThatHurtMe) {
         if (thingThatHurtMe instanceof Projectile) {
             this.stats.takeDamage(((Projectile) thingThatHurtMe).damage);
@@ -103,4 +106,7 @@ public class Player extends Entity {
             System.out.println("This shouldn't ever happen...");
         }
     }
+
+    public void updateEntity(float delta) {Update(delta);}
+
 }

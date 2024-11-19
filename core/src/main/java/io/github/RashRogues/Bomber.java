@@ -10,7 +10,18 @@ public class Bomber extends Enemy {
     private final float BASE_BOMBER_MOVE_SPEED = 12f;
 
     Bomber(Texture texture, int x, int y, float size) {
-        super(texture, x, y, size);
+        super(EntityType.BOMBER, texture, x, y, size);
         this.stats = new EnemyStats(BASE_BOMBER_HEALTH, BASE_BOMBER_DAMAGE, BASE_BOMBER_ATTACK_SPEED, BASE_BOMBER_MOVE_SPEED, this);
     }
+
+    /**
+     * Ran every frame.
+     * @param delta
+     */
+    private void Update(float delta){
+
+    }
+
+    public void updateEnemy(float delta) {this.Update(delta);}
+
 }

@@ -4,7 +4,9 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 
-public class LaggingCamera extends OrthographicCamera {
+public class LaggingCamera extends OrthographicCamera{
+
+    private Player following;
 
     private final float LERP = 10f;
     private final float MIN_DIST_FROM_CAM_EDGE = 3f;
@@ -51,6 +53,21 @@ public class LaggingCamera extends OrthographicCamera {
 
         this.position.x = MathUtils.clamp(this.position.x, effectiveViewportWidth/2f, this.roomWidth-effectiveViewportWidth/2f);
         this.position.y = MathUtils.clamp(this.position.y, effectiveViewportHeight/2f, this.roomHeight-effectiveViewportHeight/2f);
+    }
+
+    public void update(float delta){
+        super.update();
+        if (this.following != null){
+            this.moveToPlayer(following.getX()+following.getWidth()/2f, following.getY()+following.getHeight()/2f,delta);
+        }
+    }
+
+    public void center(){
+        position.set(viewportWidth / 2f, viewportHeight / 2f, 0);
+    }
+
+    public void bind(Player player){
+        this.following = player;
     }
 
     // useful info for any sort of input things to translate from pixel/world units

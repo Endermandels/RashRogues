@@ -2,24 +2,28 @@ package io.github.RashRogues;
 
 import com.badlogic.gdx.graphics.Texture;
 
-public class Enemy extends Entity {
+public abstract class Enemy extends Entity {
 
     protected EnemyStats stats;
     protected HurtBox hurtBox;
 
-    Enemy(Texture texture, int x, int y, float width, float height) {
-        super(texture, x, y, width, height);
+    Enemy(EntityType type, Texture texture, int x, int y, float width, float height) {
+        super(type, texture, x, y, width, height, Layer.ENEMY);
         hurtBox = new HurtBox(hitBox, this);
         // this will obviously change based on a number of factors later
     }
 
-    public void update(float delta) {
-        super.update(delta);
-        hurtBox.update(delta);
+    Enemy(EntityType type, Texture texture, int x, int y, float size) {
+        this(type, texture, x, y, size, size);
     }
 
-    Enemy(Texture texture, int x, int y, float size) {
-        this(texture, x, y, size, size);
+    /**
+     * Ran every frame.
+     * @param delta
+     */
+    private void Update(float delta){
+        hurtBox.update(delta);
+
     }
 
     protected void levelUpEnemy() {
@@ -48,4 +52,9 @@ public class Enemy extends Entity {
             return;
         }
     }
+
+    public abstract void updateEnemy(float delta);
+
+    public void updateEntity(float delta) {this.Update(delta);this.updateEnemy(delta);}
+
 }
