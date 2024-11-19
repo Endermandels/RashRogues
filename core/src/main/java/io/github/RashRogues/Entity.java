@@ -16,7 +16,7 @@ public abstract class Entity extends Sprite {
     protected EntityAlignment alignment;
     protected Layer layer;
 
-    protected Entity(EntityType type, EntityAlignment alignment, Texture texture, int x, int y,
+    protected Entity(EntityType type, EntityAlignment alignment, Texture texture, float x, float y,
                      float width, float height, Layer layer) {
         super(texture);
         setSize(width, height);

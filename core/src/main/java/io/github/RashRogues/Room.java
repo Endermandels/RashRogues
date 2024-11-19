@@ -8,9 +8,15 @@ public class Room extends Sprite {
     // other stuff like bounding box idk yet, would be nice to keep all that logic out of PlayScreen.java
     public int roomWidth;
     public int roomHeight;
+    protected int doorPositionX;
+    protected int doorPositionY;
+    // enemies would likely be spawned in here
+    // this would include the one that drops the key.
 
-    Room(Texture texture) {
+    Room(Texture texture, int doorPositionX, int doorPositionY) {
         super(texture);
+        this.doorPositionX = doorPositionX;
+        this.doorPositionY = doorPositionY;
         /*
         the logic below scales whatever the size of the map is to be 500m wide and
         whatever the proportional height is to that based on the texture.
