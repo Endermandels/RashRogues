@@ -213,9 +213,47 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             public boolean keyDown(int keycode) {
                 if (hud.isOpen()) { return false; }
                 if (keycode == Input.Keys.ESCAPE) {
-                    // there should be a way to put movement in here as well, file this under a later issue
+                    // cancel any selections
                 }
-                return false;
+                if (keycode == Input.Keys.A || keycode == Input.Keys.LEFT) {
+                    player.moveLeft(true);
+                }
+                if (keycode == Input.Keys.D || keycode == Input.Keys.RIGHT) {
+                    player.moveRight(true);
+                }
+                if (keycode == Input.Keys.S || keycode == Input.Keys.DOWN) {
+                    player.moveDown(true);
+                }
+                if (keycode == Input.Keys.W || keycode == Input.Keys.UP) {
+                    player.moveUp(true);
+                }
+                if (keycode == Input.Keys.SPACE) {
+                    player.dash();
+                }
+                if (keycode == Input.Keys.E) {
+                    player.useAbility();
+                }
+                if (keycode == Input.Keys.Q) {
+                    player.useConsumable();
+                }
+                return true;
+            }
+
+            @Override
+            public boolean keyUp(int keycode) {
+                if (keycode == Input.Keys.A || keycode == Input.Keys.LEFT) {
+                    player.moveLeft(false);
+                }
+                if (keycode == Input.Keys.D || keycode == Input.Keys.RIGHT) {
+                    player.moveRight(false);
+                }
+                if (keycode == Input.Keys.S || keycode == Input.Keys.DOWN) {
+                    player.moveDown(false);
+                }
+                if (keycode == Input.Keys.W || keycode == Input.Keys.UP) {
+                    player.moveUp(false);
+                }
+                return true;
             }
         });
         Gdx.input.setInputProcessor(multiplexer);

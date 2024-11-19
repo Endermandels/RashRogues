@@ -8,8 +8,9 @@ import java.util.LinkedHashSet;
 
 public class CollisionGrid {
 
-    private final int COLLISION_GRID_ROWS = 32;
-    private final int COLLISION_GRID_COLS = 32;
+    // if hitbox too big then uh oh
+    private final int COLLISION_GRID_ROWS = 8;
+    private final int COLLISION_GRID_COLS = 8;
     private int collisionGridRowSize = (int) (RRGame.WORLD_WIDTH / COLLISION_GRID_ROWS); // these change immediately
     private int collisionGridColSize = (int) (RRGame.WORLD_WIDTH / COLLISION_GRID_COLS);
     private LinkedHashSet<HitBox>[][] collisionGridHitBoxes;
