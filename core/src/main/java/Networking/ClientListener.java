@@ -11,6 +11,8 @@ import io.github.RashRogues.RRGame;
 import java.io.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import static Networking.PacketType.*;
+
 public class ClientListener implements Endpoint {
     private Socket socket;
     private InputStream in;
@@ -18,8 +20,10 @@ public class ClientListener implements Endpoint {
     private ObjectInputStream objectInputStream;
     private ObjectOutputStream objectOutputStream;
     private Thread listeningThread;
-    public ConcurrentLinkedQueue<Packet> messages = new ConcurrentLinkedQueue<>();
+    public ConcurrentLinkedQueue<byte[]> messages = new ConcurrentLinkedQueue<>();
     private int pid = 0; //we are the server. PID 0
+    private int client_pid;
+    private volatile boolean listening;
 
     public ClientListener(Socket socket, int pid) {
         try {
@@ -31,8 +35,9 @@ public class ClientListener implements Endpoint {
             objectInputStream = null;
             objectOutputStream = new ObjectOutputStream(out);
 
-            dispatchWelcome(pid);
-            listen(in);
+            this.client_pid = pid;
+            this.dispatchWelcome(this.client_pid);
+            this.listen(in);
         } catch (IOException | InterruptedException e) {
             System.out.println("Catastrophic communication error! Exiting!");
             e.printStackTrace();
@@ -40,14 +45,7 @@ public class ClientListener implements Endpoint {
         }
     }
 
-    /**
-     * Endpoint type of current endpoint.
-     *
-     * @return Endpoint Type
-     */
-    public Network.EndpointType getType() {
-        return Network.EndpointType.SERVER;
-    }
+
 
     /**
      * Listen for and handle messages from client.
@@ -55,20 +53,30 @@ public class ClientListener implements Endpoint {
      */
     private void listen(InputStream in) throws IOException, InterruptedException {
         this.listeningThread = new Thread(
-                new Runnable() {
-                    public void run() {
-                        try {
-                            objectInputStream = new ObjectInputStream(in);
-                            while (true) {
-                                messages.add((Packet) objectInputStream.readObject());
+            new Runnable() {
+                public void run() {
+                    try {
+                        listening = true;
+                        while (listening) {
+                            byte[] msg = new byte[256];
+                            int c = 0;
+                            int b;
+                            System.out.println("BYTES:");
+                            while (((byte)(b = in.read()) != '*') && (c < 256)){
+                                System.out.println(b);
+                                msg[c] = (byte) b;
+                                c++;
                             }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        } catch (ClassNotFoundException e) {
-                            e.printStackTrace();
+                            System.out.println("ENDBYTES");
+                            System.out.flush();
+                            messages.add(msg);
                         }
+                    } catch (IOException ex) {
+                        System.out.println("Listening to client #" + Integer.toString(client_pid) + " stopped.");
+                        System.out.flush();
                     }
                 }
+            }
         );
         this.listeningThread.start();
     }
@@ -76,97 +84,80 @@ public class ClientListener implements Endpoint {
     /**
      * Process all queued messages that are available.
      */
-    public void processMessages() {
+    public void processMessages(){
         while (!this.messages.isEmpty()){
-            Packet p = this.messages.poll();
-            switch (p.getPacketType()){
-                case UPDATE:
-                    handleUpdate(p);
-                    break;
-                case CREATE:
-                    handleCreate(p);
-                    break;
-                case DESTROY:
-                    handleDestroy(p);
-                    break;
-                case WELCOME:
-                    break;
+            byte[] msg = this.messages.poll();
+            int msgType = (int) msg[0];
+            System.out.println(msg[0]);
+            if (msgType == START_GAME.getvalue()){
+                continue;
+            }else if (msgType == WELCOME.getvalue()){
+                continue;
+            }else if (msgType == FAREWELL.getvalue()){
+                this.handleFarewell();
             }
         }
     }
 
-
     /* Dispatchers */
-
     /**
-     * 1. Initialize a new client with their playerID.
-     *
-     * @param pid Player ID to assign to new player.
+     * Officially welcome the client to the game, supplying them with a player ID.
      */
     public void dispatchWelcome(int pid) {
         try {
-            objectOutputStream.writeObject(new PacketWelcome(pid));
+            byte[] stream = StreamMaker.welcome(pid);
+            out.write(stream);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    /**
-     * 2. Create a new entity on the client
-     *
-     */
     public void dispatchCreate(Entity entity){
-        try{
-            EntityType type = entity.getType();
-            String uid = Integer.toString(this.pid) + '_' + entity.toString();
-            String texture = ((FileTextureData) entity.getTexture().getTextureData()).getFileHandle().path();
-            float x = entity.getX();
-            float y = entity.getY();
-            objectOutputStream.writeObject(new PacketCreate(type,uid,texture,(int) x, (int) y));
-        } catch (IOException e){
-            e.printStackTrace();
-        }
+        return;
     }
 
     public void dispatchCreate(Player player){
-        dispatchCreate((Entity) player);
+        return;
     }
 
-    /**
-     * 3. Start the game
-     */
     public void dispatchStartGame() {
         try{
-            objectOutputStream.writeObject(new PacketStartGame());
+            byte[] stream = StreamMaker.startGame();
+            out.write(stream);
+            out.flush();
         } catch (IOException e){
             e.printStackTrace();
         }
     }
 
     public void dispatchUpdate(Entity entity){
-        try{
-            EntityType type = entity.getType();
-            String uid = Integer.toString(this.pid) + '_' + entity.toString();
-            float x = entity.getX();
-            float y = entity.getY();
-            objectOutputStream.writeObject(new PacketUpdate(type,uid,x, y));
-        } catch (IOException e){
-            e.printStackTrace();
-        }
+        return;
     }
 
     public void dispatchUpdate(Player player){
-        dispatchUpdate((Entity) player);
+        return;
     }
 
-
+    /**
+     * Sends a farewell packet to the client, informing them
+     * that we are leaving. Closes the input stream.
+     */
+    public void dispatchFarewell(){
+        byte[] stream = StreamMaker.farewell();
+        try {
+            out.write(stream);
+            in.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     /* Handlers */
     /**
      * Create an object on our client
      */
     public void handleCreate(Packet p){
-        PacketCreate create = (PacketCreate) p;
+//        PacketCreate create = (PacketCreate) p;
         //register up!
     }
 
@@ -182,5 +173,31 @@ public class ClientListener implements Endpoint {
      */
     public void handleDestroy(Packet p){
 
+    }
+
+    /**
+     * After receiving a farewell packet, we are clear to close our streams,
+     * and dispose of our socket.
+     */
+    public void handleFarewell(){
+        this.listening = false;
+        try {
+            out.close();
+            in.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        socket.dispose();
+        System.out.println("Connection to client " + Integer.toString(this.client_pid) + " closed.");
+    }
+
+    public void dispose(){
+        this.listening = false;
+        dispatchFarewell();
+        socket.dispose();
+    }
+
+    public Network.EndpointType getType() {
+        return Network.EndpointType.SERVER;
     }
 }

@@ -24,6 +24,7 @@ DefaultImages/room1.png
 DefaultImages/swordsman.png
 DefaultImages/throne.png
 Fonts/JetBrainsMono-Regular.ttf
+Images/Merchant/list-item.png
 Images/bomb sprite sheet.png
 Images/chest sprite sheet.png
 Images/door sprite sheet.png

@@ -25,7 +25,7 @@ public class Server implements Endpoint{
     private List<ClientListener> clients; // 1. data connection to connected clients.
     private ServerSocket primarySocket;   // 2. primary connection where we listen for new clients.
     private Thread primarySocketThread;   // 3. thread on which we listen to primary connection for new clients
-
+    private volatile boolean listening;
     /**
      * Begin hosting a server.
      * Accepted clients will break out into individual data connections on a separate thread.
@@ -38,7 +38,8 @@ public class Server implements Endpoint{
         primarySocketThread = new Thread(
             new Runnable() {
                 public void run(){
-                    while (true){
+                    listening = true;
+                    while (listening){
                         try{
                             Socket client = primarySocket.accept(null);
                             clients.add(new ClientListener(client,clients.size()+1));
@@ -48,53 +49,70 @@ public class Server implements Endpoint{
                             if (clients.size() == Network.MAX_CLIENTS){
                                 System.out.println("Server full. Stopped listening for new connections.");
                                 System.out.flush();
+                                listening = false;
                                 break;
                             }
                         }catch(GdxRuntimeException e){
-                            System.out.println("Server stopped: " + e.toString());
+                            System.out.println(e.toString());
                             System.out.flush();
-                            e.printStackTrace();
                         }
                     }
-                    primarySocket.dispose();
                 }
             }
         );
         primarySocketThread.start();
     }
 
-    public void processMessages() {
+    /**
+     * Instructs all connections to send farwell messages and close.
+     * Effectively ends the multiplayer game.
+     */
+    public void dispatchFarewell(){
+        for (ClientListener c : clients){
+            c.dispatchFarewell();
+        }
+        clients.clear();
+    }
 
+    @Override
+    public void processMessages() {
+        for (ClientListener c : clients){
+            c.processMessages();
+        }
     }
 
     @Override
     public void dispatchStartGame() {
-        for (ClientListener cL : clients){
-           cL.dispatchStartGame();
+        System.out.println("Starting game.");
+        for (ClientListener c : clients){
+            c.dispatchStartGame();
         }
     }
 
-    public void dispatchCreate(Entity entity){
-        for (ClientListener cL : clients){
-            cL.dispatchCreate(entity);
-        }
+    @Override
+    public void dispatchCreate(Entity entity) {
+
     }
 
-    public void dispatchCreate(Player player){
-        dispatchCreate((Entity) player);
+    @Override
+    public void dispatchCreate(Player player) {
+
     }
 
     @Override
     public void dispatchUpdate(Entity entity) {
-        for (ClientListener cL : clients ){
-            cL.dispatchUpdate(entity);
-        }
+
     }
 
     @Override
-    public void dispatchUpdate(Player player) {
-        dispatchUpdate((Entity) player);
+    public void dispatchUpdate(Player entity) {
+
     }
 
-
+    @Override
+    public void dispose() {
+        this.listening = false;
+        this.primarySocket.dispose();
+        this.dispatchFarewell();
+    }
 }

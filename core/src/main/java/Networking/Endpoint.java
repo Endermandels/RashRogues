@@ -14,4 +14,5 @@ public interface Endpoint {
     public void dispatchCreate(Player player);
     public void dispatchUpdate(Entity entity);
     public void dispatchUpdate(Player entity);
+    public void dispose();
 }

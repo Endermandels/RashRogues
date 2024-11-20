@@ -1,6 +1,7 @@
 package Networking;
 
 import com.badlogic.gdx.Net;
+import io.github.RashRogues.RRGame;
 
 public class Network {
    public static enum MsgType{
@@ -35,6 +36,12 @@ public class Network {
             this.connection = new Server();
             ((Server) this.connection).host();
             break;
+      }
+   }
+
+   public void dispose(){
+      if (this.type != EndpointType.UNSET){
+         this.connection.dispose();
       }
    }
 }
