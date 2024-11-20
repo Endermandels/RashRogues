@@ -25,5 +25,6 @@ public class HurtBox extends Rectangle {
         // please see HitBox.java's hitHurtBox function for a detailed explanation and example on which entities are
         // responsible for what.
         parent.onHurt(hitBox.parent);
+        if (hitBox.getEffect() != Effect.NONE) { parent.addEffect(hitBox.getEffect()); }
     }
 }
