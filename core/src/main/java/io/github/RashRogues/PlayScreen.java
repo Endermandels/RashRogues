@@ -1,6 +1,7 @@
 package io.github.RashRogues;
 
 import Networking.Network;
+import UI.Button;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.graphics.Color;
@@ -20,12 +21,10 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     private HUD hud;
     private Room currentRoom;
     private Player player;
+    private Door currentDoor;
     private ArrayList<Room> rooms;
     private HashSet<Entity> localEntities;
     private PriorityQueue<Entity> renderQueue;
-    private ArrayList<Projectile> debugProjectileRenderList;
-    private ArrayList<Player> debugPlayerRenderList;
-    private ArrayList<Enemy> debugEnemyRenderList;
     public static CollisionGrid collisionGrid = new CollisionGrid();
 
     public PlayScreen(RRGame game) {
@@ -34,16 +33,14 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         this.game = game;
         this.localEntities  = new HashSet<>();
         this.renderQueue    = new PriorityQueue<>(new EntityComparator());
-        this.debugProjectileRenderList = new ArrayList<>();
-        this.debugPlayerRenderList = new ArrayList<>();
-        this.debugEnemyRenderList = new ArrayList<>();
         loadRooms();
         setNextRoom();
         createHUDAndInputs();
 
         /* Instance Creation */
-        new Swordsman(game.am.get(RRGame.RSC_SWORDSMAN_IMG), 50, 30, 10);
-        player = new Player(game.am.get(RRGame.RSC_ROGUE_IMG), RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, RRGame.PLAYER_SIZE);
+        new Swordsman(RRGame.am.get(RRGame.RSC_SWORDSMAN_IMG), 50, 30, 10);
+        player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG), RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, RRGame.PLAYER_SIZE);
+        new Key(30, 280);
 
         /* Camera Setup */
         game.playerCam.bind(player);
@@ -65,20 +62,9 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             game.network.connection.dispatchUpdate(this.player);
         }
 
-        if (debug) {
-            debugProjectileRenderList.clear();
-            debugPlayerRenderList.clear();
-            debugEnemyRenderList.clear();
-        }
-
         for ( Entity e : localEntities ){
             e.update(delta);
             renderQueue.add(e);
-            if (debug) {
-                if (e instanceof Projectile) { debugProjectileRenderList.add((Projectile) e); }
-                else if (e instanceof Player) { debugPlayerRenderList.add((Player) e); }
-                else if (e instanceof Enemy) { debugEnemyRenderList.add((Enemy) e); }
-            }
         }
         game.playerCam.update(delta);
 
@@ -86,6 +72,10 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         // check/handle collisions
         collisionGrid.populateCollisionGrid(localEntities);
         collisionGrid.calculateCollisions();
+
+        // determine if all the players are at the door to progress to the next room
+        // the door kill itself when it's ready to move on, so we just need to check:
+        if (!localEntities.contains(currentDoor)) { setNextRoom(); }
     }
 
     @Override
@@ -120,27 +110,25 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         game.shapeRenderer.setProjectionMatrix(game.playerCam.combined);
         game.shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
-        // hurtBoxes - green
-        game.shapeRenderer.setColor(new Color(0, 1, 0, 0.5f));
-        for (Player player : debugPlayerRenderList) {
-            drawHurtBox(player.hurtBox);
-        }
-        for (Enemy enemy : debugEnemyRenderList) {
-            drawHurtBox(enemy.hurtBox);
-        }
+        for (Entity e : localEntities) {
 
-        // hitBoxes - red
-        game.shapeRenderer.setColor(new Color(1, 0, 0, 0.5f));
-        for (Player player : debugPlayerRenderList) {
-            drawHitBox(player.hitBox);
-        }
-        for (Enemy enemy : debugEnemyRenderList) {
-            drawHitBox(enemy.hitBox);
-        }
-        for (Projectile projectile : debugProjectileRenderList) {
-            drawHitBox(projectile.hitBox);
-        }
+            // hitBoxes - red
+            game.shapeRenderer.setColor(new Color(1, 0, 0, 0.4f));
+            // draw the hitBoxes
+            drawHitBox(e.hitBox);
 
+            // hurtBoxes - green
+            game.shapeRenderer.setColor(new Color(0, 1, 0, 0.4f));
+            // populate the hurtBoxes if enemy or player
+            if (e instanceof Player) {
+                Player player = (Player) e;
+                drawHurtBox(player.hurtBox);
+            }
+            else if (e instanceof Enemy) {
+                Enemy enemy = (Enemy) e;
+                drawHurtBox(enemy.hurtBox);
+            }
+        }
         game.shapeRenderer.end();
         Gdx.gl.glDisable(GL20.GL_BLEND);
     }
@@ -152,7 +140,8 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
     private void loadRooms() {
         this.rooms = new ArrayList<>();
-        rooms.add(new Room(game.am.get(RRGame.RSC_ROOM1_IMG)));
+        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM1_IMG), 35, 301));
+        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM2_IMG), 35, 301));
         // other rooms will go below here
     }
 
@@ -170,6 +159,16 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         else {
             currentRoom = rooms.get(rooms.indexOf(currentRoom) + 1);
         }
+        HashSet<Entity> tempLocalEntities = new HashSet<>();
+        for (Entity e : localEntities) {
+            if (e instanceof Player) {
+                Player player = (Player) e;
+                player.resetForNewRoom();
+                tempLocalEntities.add(e);
+            }
+        }
+        localEntities = tempLocalEntities;
+        currentDoor = new Door(currentRoom.doorPositionX, currentRoom.doorPositionY);
         game.playerCam.changeWorldSize(currentRoom.roomWidth, currentRoom.roomHeight);
         collisionGrid.updateCollisionGridRoomValues(currentRoom.roomWidth, currentRoom.roomHeight);
     }
@@ -199,8 +198,34 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             }
         });
 
-        // HUD Data
+        hud.registerAction("tp", new HUDActionCommand() {
+            static final String help = "Teleport to a specific location. Usage: tp <x> <y> ";
+            @Override
+            public String execute(String[] cmd) {
+                try {
+                    int x = Integer.parseInt(cmd[1]);
+                    int y = Integer.parseInt(cmd[2]);
+                    if (x < 0 || x > currentRoom.roomWidth-player.getWidth() || y < 0 ||
+                            y > currentRoom.roomHeight-player.getHeight()) return "Cannot tp out of bounds";
+                    player.setPosition(x, y);
+                    return "ok!";
+                } catch (Exception e) {
+                    return help;
+                }
+            }
 
+            public String help(String[] cmd) {
+                return help;
+            }
+        });
+
+        // HUD Data
+        hud.registerView("Number of Players:", new HUDViewCommand(HUDViewCommand.Visibility.WHEN_OPEN) {
+            @Override
+            public String execute(boolean consoleIsOpen) {
+                return Integer.toString(RRGame.globals.currentNumPlayers);
+            }
+        });
 
         // we're adding an input processor AFTER the HUD has been created,
         // so we need to be a bit careful here and make sure not to clobber

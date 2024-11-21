@@ -3,6 +3,8 @@ package io.github.RashRogues;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 
 public class Player extends Entity {
 
@@ -26,15 +28,22 @@ public class Player extends Entity {
     private float abilityCooldown = 5f; // idk maybe this changes based on ability, not sure yet.
     private float consumableTimer;
     private final float CONSUMABLE_COOLDOWN = 0.2f;
+    private boolean holdingKey;
+    private Sprite keySprite;
 
-    public Player(Texture texture, int x, int y, float width, float height) {
+    public Player(Texture texture, float x, float y, float width, float height) {
         super(EntityType.PLAYER, EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER);
+        RRGame.globals.currentNumPlayers++;
         this.maxXVelocity = BASE_PLAYER_MOVE_SPEED;
         this.maxYVelocity = BASE_PLAYER_MOVE_SPEED;
         this.attackTimer = 0f;
         this.dashTimer = 0f;
         this.abilityTimer = 0f;
         this.consumableTimer = 0f;
+        this.holdingKey = false;
+        this.keySprite = new Sprite(RRGame.am.get(RRGame.RSC_KEY_IMG, Texture.class));
+        this.keySprite.setSize(width*2, height*2);
+        this.keySprite.setOrigin(width, height);
         this.stats = new PlayerStats(BASE_PLAYER_HEALTH, BASE_PLAYER_DAMAGE, BASE_PLAYER_ATTACK_SPEED, BASE_PLAYER_MOVE_SPEED, BASE_PLAYER_DEXTERITY, this);
         hitBox.disableLength = 10000f;
         hurtBox = new HurtBox(hitBox, this);
@@ -43,7 +52,7 @@ public class Player extends Entity {
         // this will obviously change based on a number of factors later
     }
 
-    Player(Texture texture, int x, int y, float size) {
+    Player(Texture texture, float x, float y, float size) {
         this(texture, x, y, size, size);
     }
 
@@ -57,10 +66,12 @@ public class Player extends Entity {
         abilityTimer += delta;
         consumableTimer += delta;
         // we likely want some resurrection sort of ability or even just a ghost camera you can move
-        if (stats.isDead()) { this.removeSelf(); return; }
+        if (stats.isDead()) { this.dropKey(); this.removeSelf(); return; }
         adjustVelocity();
         super.update(delta);
         hurtBox.update(delta);
+        keySprite.setX(getX()-getWidth()/2);
+        keySprite.setY(getY()+getHeight()/2);
         if (attackTimer >= (1 / stats.getAttackSpeed())) { attack(); attackTimer = 0f; }
     }
 
@@ -136,6 +147,13 @@ public class Player extends Entity {
         yVelocity = Math.max(-maxYVelocity, Math.min(yVelocity, maxYVelocity));
     }
 
+    public boolean isHoldingKey() { return holdingKey; }
+    public void grabKey() { holdingKey = true; }
+    public void dropKey() {
+        holdingKey = false;
+        new Key(getX(), getY());
+    }
+
     public void onHit(Entity thingHit) {
         // player hitting a hurtbox shouldn't necessarily do anything. Maybe if we make it so walls have 'hurtboxes'
         // then that would happen but idk, for now the player has a hitbox because its an entity but it has a massive
@@ -150,9 +168,32 @@ public class Player extends Entity {
         else if (thingThatHurtMe instanceof Enemy) {
             this.stats.takeDamage(((Enemy) thingThatHurtMe).stats.damage);
         }
+        else if (thingThatHurtMe instanceof Key) {
+            this.grabKey();
+        }
+        else if (thingThatHurtMe instanceof Door) {
+            // actually don't need this
+        }
         else {
             System.out.println("This shouldn't ever happen...");
         }
+    }
+
+    public void resetForNewRoom() {
+        this.setPosition(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y);
+        this.holdingKey = false;
+        this.attackTimer = 0f;
+        this.dashTimer = 0f;
+        this.abilityTimer = 0f;
+        this.consumableTimer = 0f;
+    }
+
+    @Override
+    public void draw(Batch batch) {
+        if (holdingKey) {
+            keySprite.draw(batch);
+        }
+        super.draw(batch);
     }
 
 }

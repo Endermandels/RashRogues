@@ -46,8 +46,8 @@ public class Button extends Entity {
      * @param y       Y position of button on screen coordinates
      * @param action  Action to perform on-click
      */
-    public Button(RRGame game, Texture texture, int x, int y, ButtonActions action) {
-        super(EntityType.UI, EntityAlignment.X, texture, x, y, 128, 64, Layer.FOREGROUND);
+    public Button(RRGame game, Texture texture, float x, float y, ButtonActions action) {
+        super(EntityType.UI, EntityAlignment.UI, texture, x, y, 128, 64, Layer.FOREGROUND);
         this.dependents = new ArrayList<>();
         this.exclusives = new ArrayList<>();
         this.setPosition(x, y);
