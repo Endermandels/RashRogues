@@ -1,7 +1,6 @@
 package io.github.RashRogues;
 
 import Networking.Network;
-import UI.Button;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.graphics.Color;
@@ -10,7 +9,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.PriorityQueue;
 
 public class PlayScreen extends ScreenAdapter implements RRScreen {
@@ -24,6 +22,8 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     private Door currentDoor;
     private ArrayList<Room> rooms;
     private HashSet<Entity> localEntities;
+    private HashSet<Entity> newlyAddedEntities;
+    private HashSet<Entity> entitiesToRemove;
     private PriorityQueue<Entity> renderQueue;
     public static CollisionGrid collisionGrid = new CollisionGrid();
 
@@ -32,14 +32,16 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         RRGame.globals.currentScreen = this;
         this.game = game;
         this.localEntities  = new HashSet<>();
+        this.newlyAddedEntities = new HashSet<>();
+        this.entitiesToRemove = new HashSet<>();
         this.renderQueue    = new PriorityQueue<>(new EntityComparator());
         loadRooms();
         setNextRoom();
         createHUDAndInputs();
 
         /* Instance Creation */
-        new Swordsman(RRGame.am.get(RRGame.RSC_SWORDSMAN_IMG), 50, 30, 10);
-        player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG), RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, RRGame.PLAYER_SIZE);
+        new Swordsman(50, 30, 10);
+        player = new Player(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, RRGame.PLAYER_SIZE);
         new Key(30, 280);
 
         /* Camera Setup */
@@ -72,6 +74,14 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         // check/handle collisions
         collisionGrid.populateCollisionGrid(localEntities);
         collisionGrid.calculateCollisions();
+
+        // add newlyAddedEntities to the localEntities list
+        localEntities.addAll(newlyAddedEntities);
+        newlyAddedEntities.clear();
+
+        // delete entitiesToRemove from the localEntities list
+        localEntities.removeAll(entitiesToRemove);
+        entitiesToRemove.clear();
 
         // determine if all the players are at the door to progress to the next room
         // the door kill itself when it's ready to move on, so we just need to check:
@@ -219,6 +229,127 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             }
         });
 
+        hud.registerAction("addPots", new HUDActionCommand() {
+            static final String help = "Add health potions to your inventory. Usage: addPots <amount> ";
+            @Override
+            public String execute(String[] cmd) {
+                try {
+                    int amount = Integer.parseInt(cmd[1]);
+                    for (int i = 0; i < amount; i++) {
+                        player.pickUpConsumable();
+                    }
+                    return "ok!";
+                } catch (Exception e) {
+                    return help;
+                }
+            }
+
+            public String help(String[] cmd) {
+                return help;
+            }
+        });
+
+        hud.registerAction("is", new HUDActionCommand() {
+            static final String help = "Increase a stat. Usage: is <statName> <amount> ";
+            @Override
+            public String execute(String[] cmd) {
+                try {
+                    String statName = cmd[1];
+                    String amount = cmd[2];
+                    switch (statName) {
+                        case "h":
+                        case "health":
+                        case "Health":
+                            player.stats.increaseHealth(Integer.parseInt(amount));
+                            break;
+                        case "d":
+                        case "damage":
+                        case "Damage":
+                            player.stats.increaseDamage(Integer.parseInt(amount));
+                            break;
+                        case "as":
+                        case "attackSpeed":
+                        case "AttackSpeed":
+                        case "attack_speed":
+                        case "attackspeed":
+                        case "atkspd":
+                        case "AtkSpd":
+                        case "atkSpd":
+                            player.stats.increaseAttackSpeed(Float.parseFloat(amount));
+                            break;
+                        case "ms":
+                        case "moveSpeed":
+                        case "MoveSpeed":
+                        case "move_speed":
+                        case "movespeed":
+                        case "MoveSpd":
+                        case "movespd":
+                        case "moveSpd":
+                            player.stats.increaseMoveSpeed(Float.parseFloat(amount));
+                            break;
+                        case "dx":
+                        case "de":
+                        case "dex":
+                        case "dexterity":
+                        case "Dexterity":
+                        case "Dex":
+                            player.stats.increaseDexterity(Float.parseFloat(amount));
+                            break;
+                        default:
+                            return "Valid statNames: health, damage, attackSpeed, moveSpeed, dexterity";
+                    }
+                    return "ok!";
+                } catch (Exception e) {
+                    return help;
+                }
+            }
+
+            public String help(String[] cmd) {
+                return help;
+            }
+        });
+
+        hud.registerAction("spawn", new HUDActionCommand() {
+            static final String help = "Spawn an Enemy at a location. Usage: spawn <EnemyType> <x> <y> " +
+                    "\nValid EnemyTypes: Archer, Bomber, Swordsman ";
+            @Override
+            public String execute(String[] cmd) {
+                try {
+                    String enemyClassName = cmd[1];
+                    int x = Integer.parseInt(cmd[2]);
+                    int y = Integer.parseInt(cmd[3]);
+                    if (x < 0 || x > currentRoom.roomWidth-RRGame.STANDARD_ENEMY_SIZE || y < 0 ||
+                            y > currentRoom.roomHeight-RRGame.STANDARD_ENEMY_SIZE) return "Cannot spawn out of bounds";
+                    switch (enemyClassName) {
+                        case "a":
+                        case "archer":
+                        case "Archer":
+                            new Archer(x, y, RRGame.STANDARD_ENEMY_SIZE);
+                            break;
+                        case "b":
+                        case "bomber":
+                        case "Bomber":
+                            new Bomber(x, y, RRGame.STANDARD_ENEMY_SIZE);
+                            break;
+                        case "s":
+                        case "swordsman":
+                        case "Swordsman":
+                            new Swordsman(x, y, RRGame.STANDARD_ENEMY_SIZE);
+                            break;
+                        default:
+                            return "Valid EnemyTypes: Archer, Bomber, Swordsman";
+                    }
+                    return "ok!";
+                } catch (Exception e) {
+                    return help;
+                }
+            }
+
+            public String help(String[] cmd) {
+                return help;
+            }
+        });
+
         // HUD Data
         hud.registerView("Number of Players:", new HUDViewCommand(HUDViewCommand.Visibility.WHEN_OPEN) {
             @Override
@@ -256,10 +387,10 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                     player.dash();
                 }
                 if (keycode == Input.Keys.E) {
-                    player.useAbility();
+                    player.useConsumable();
                 }
                 if (keycode == Input.Keys.Q) {
-                    player.useConsumable();
+                    player.useAbility();
                 }
                 return true;
             }
@@ -300,7 +431,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
      * @param entity A Locally Instantiated Entity
      */
     public void registerEntity(Entity entity) {
-        this.localEntities.add(entity);
+        this.newlyAddedEntities.add(entity);
     }
 
     /**
@@ -309,6 +440,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
      * @param entity A Locally Instantiated Entity
      */
     public void removeEntity(Entity entity) {
-        this.localEntities.remove(entity);
+        this.entitiesToRemove.add(entity);
     }
 }
