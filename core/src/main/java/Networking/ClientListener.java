@@ -17,13 +17,11 @@ public class ClientListener implements Endpoint {
     private Socket socket;
     private InputStream in;
     private OutputStream out;
-    private ObjectInputStream objectInputStream;
-    private ObjectOutputStream objectOutputStream;
     private Thread listeningThread;
     public ConcurrentLinkedQueue<byte[]> messages = new ConcurrentLinkedQueue<>();
     private int pid = 0; //we are the server. PID 0
     private int client_pid;
-    private volatile boolean listening;
+    public volatile boolean listening = true;
 
     public ClientListener(Socket socket, int pid) {
         try {
@@ -31,10 +29,6 @@ public class ClientListener implements Endpoint {
 
             this.in = socket.getInputStream();
             this.out = socket.getOutputStream();
-
-            objectInputStream = null;
-            objectOutputStream = new ObjectOutputStream(out);
-
             this.client_pid = pid;
             this.dispatchWelcome(this.client_pid);
             this.listen(in);
@@ -45,8 +39,6 @@ public class ClientListener implements Endpoint {
         }
     }
 
-
-
     /**
      * Listen for and handle messages from client.
      * listen() determines the lifetime of the connection; when this function concludes the socket/streams will close.
@@ -56,20 +48,17 @@ public class ClientListener implements Endpoint {
             new Runnable() {
                 public void run() {
                     try {
-                        listening = true;
                         while (listening) {
-                            byte[] msg = new byte[256];
-                            int c = 0;
-                            int b;
-                            System.out.println("BYTES:");
-                            while (((byte)(b = in.read()) != '*') && (c < 256)){
-                                System.out.println(b);
-                                msg[c] = (byte) b;
-                                c++;
-                            }
-                            System.out.println("ENDBYTES");
-                            System.out.flush();
-                            messages.add(msg);
+                                byte[] msg = new byte[128];
+                                int read = in.read(msg,0,128);
+                                if (read > 0) {
+                                    messages.add(msg);
+                                }
+                                // DEBUG
+                                //for (int i = 0; i < 128; i++){
+                                //  System.out.print(msg[i] + "-");
+                                //}
+                                //System.out.flush();
                         }
                     } catch (IOException ex) {
                         System.out.println("Listening to client #" + Integer.toString(client_pid) + " stopped.");
@@ -88,13 +77,16 @@ public class ClientListener implements Endpoint {
         while (!this.messages.isEmpty()){
             byte[] msg = this.messages.poll();
             int msgType = (int) msg[0];
-            System.out.println(msg[0]);
-            if (msgType == START_GAME.getvalue()){
+            if (msgType == UPDATE_PLAYER.getvalue()){
+                this.handleUpdatePlayer(msg);
+            }else if (msgType == START_GAME.getvalue()){
                 continue;
             }else if (msgType == WELCOME.getvalue()){
                 continue;
             }else if (msgType == FAREWELL.getvalue()){
                 this.handleFarewell();
+            }else if (msgType == CREATE_PLAYER.getvalue()){
+                this.handleCreatePlayer(msg);
             }
         }
     }
@@ -107,17 +99,10 @@ public class ClientListener implements Endpoint {
         try {
             byte[] stream = StreamMaker.welcome(pid);
             out.write(stream);
+            out.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public void dispatchCreate(Entity entity){
-        return;
-    }
-
-    public void dispatchCreate(Player player){
-        return;
     }
 
     public void dispatchStartGame() {
@@ -130,14 +115,6 @@ public class ClientListener implements Endpoint {
         }
     }
 
-    public void dispatchUpdate(Entity entity){
-        return;
-    }
-
-    public void dispatchUpdate(Player player){
-        return;
-    }
-
     /**
      * Sends a farewell packet to the client, informing them
      * that we are leaving. Closes the input stream.
@@ -146,33 +123,37 @@ public class ClientListener implements Endpoint {
         byte[] stream = StreamMaker.farewell();
         try {
             out.write(stream);
-            in.close();
+            out.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        this.listening = false;
+        this.dispose();
+    }
+
+    /**
+     * Tells server about our player.
+     */
+    public void dispatchCreatePlayer(int x, int y){
+        byte[] stream = StreamMaker.createPlayer(0, x, y);
+        try {
+            this.out.write(stream);
+            this.out.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     /* Handlers */
-    /**
-     * Create an object on our client
-     */
-    public void handleCreate(Packet p){
-//        PacketCreate create = (PacketCreate) p;
-        //register up!
+
+    public void handleCreatePlayer(byte[] packet){
+        int x = ((packet[2] >> 24) | (packet[3] >> 16) | (packet[4] >> 8) | (packet[5]));
+        int y = ((packet[6] >> 24) | (packet[7] >> 16) | (packet[8] >> 8) | (packet[9]));
+        new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y, RRGame.PLAYER_SIZE);
     }
 
-    /**
-     * Update an object on our client
-     */
-    public void handleUpdate(Packet p){
-
-    }
-
-    /**
-     * Destroy an object on our client
-     */
-    public void handleDestroy(Packet p){
-
+    public void handleUpdatePlayer(byte [] packet){
+        System.out.println("Client " + Integer.toString((int) packet[1]) + " requests us to execute a keypress.");
     }
 
     /**
@@ -180,21 +161,24 @@ public class ClientListener implements Endpoint {
      * and dispose of our socket.
      */
     public void handleFarewell(){
+        this.dispose();
+        System.out.println("Client #" + Integer.toString(this.client_pid) + " left the game.");
+    }
+
+    public void dispose(){
+        if (this.listening){
+            this.dispatchFarewell();
+        }
         this.listening = false;
         try {
             out.close();
             in.close();
         } catch (IOException e) {
-            e.printStackTrace();
-        }
-        socket.dispose();
-        System.out.println("Connection to client " + Integer.toString(this.client_pid) + " closed.");
-    }
+        }finally {
+            socket.dispose();
+            messages.clear();
 
-    public void dispose(){
-        this.listening = false;
-        dispatchFarewell();
-        socket.dispose();
+        }
     }
 
     public Network.EndpointType getType() {

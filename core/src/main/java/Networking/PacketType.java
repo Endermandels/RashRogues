@@ -1,12 +1,14 @@
 package Networking;
 
 public enum PacketType {
-    WELCOME(1),
-    FAREWELL(2),
-    CREATE(3),
-    UPDATE(4),
-    DESTROY(5),
-    START_GAME(6);
+    WELCOME(21),
+    FAREWELL(22),
+    CREATE(23),
+    UPDATE(24),
+    DESTROY(25),
+    START_GAME(26),
+    CREATE_PLAYER(27),
+    UPDATE_PLAYER(28);
 
     private final int value;
     PacketType(int value){

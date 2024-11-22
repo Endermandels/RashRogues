@@ -4,13 +4,16 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.net.ServerSocket;
 import com.badlogic.gdx.net.Socket;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.Queue;
 import io.github.RashRogues.Entity;
 import io.github.RashRogues.Player;
 import io.github.RashRogues.RRGame;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * The server class is the central control hub for multiplayer games.
@@ -22,7 +25,8 @@ import java.util.List;
  * For network settings, such as port & protocol configuration, see the Network class.
  */
 public class Server implements Endpoint{
-    private List<ClientListener> clients; // 1. data connection to connected clients.
+    private List<ClientListener> clients;       // 1. data connections to connected clients.
+    private Queue<Integer> cleanupQueue; // 1.1 data connections to stop.
     private ServerSocket primarySocket;   // 2. primary connection where we listen for new clients.
     private Thread primarySocketThread;   // 3. thread on which we listen to primary connection for new clients
     private volatile boolean listening;
@@ -33,6 +37,7 @@ public class Server implements Endpoint{
     public void host(){
         primarySocket = Gdx.net.newServerSocket(Network.PROTOCOL,"localhost",Network.PORT,null);
         clients = Collections.synchronizedList(new ArrayList<ClientListener>());
+        cleanupQueue = new Queue<>();
         System.out.println("Server listening on 127.0.0.1:" + Integer.toString(Network.PORT));//TODO: listen on other interfaces other than loopback..
 
         primarySocketThread = new Thread(
@@ -53,8 +58,7 @@ public class Server implements Endpoint{
                                 break;
                             }
                         }catch(GdxRuntimeException e){
-                            System.out.println(e.toString());
-                            System.out.flush();
+                            System.out.println("Server stopped.");
                         }
                     }
                 }
@@ -76,8 +80,20 @@ public class Server implements Endpoint{
 
     @Override
     public void processMessages() {
-        for (ClientListener c : clients){
-            c.processMessages();
+
+        //process messages from existing connections.
+        for (int i = 0; i < clients.size(); i++){
+            if (clients.get(i).listening) {
+                clients.get(i).processMessages();
+            }else{
+                cleanupQueue.addLast(i);
+            }
+        }
+
+        //Cleanup closed connections.
+        while (!cleanupQueue.isEmpty()){
+            int toRemove = cleanupQueue.removeFirst();
+            clients.remove(toRemove);
         }
     }
 
@@ -90,23 +106,12 @@ public class Server implements Endpoint{
     }
 
     @Override
-    public void dispatchCreate(Entity entity) {
-
-    }
-
-    @Override
-    public void dispatchCreate(Player player) {
-
-    }
-
-    @Override
-    public void dispatchUpdate(Entity entity) {
-
-    }
-
-    @Override
-    public void dispatchUpdate(Player entity) {
-
+    public void dispatchCreatePlayer(int x, int y) {
+        System.out.println("Creating a player on the client.");
+        for (ClientListener c : clients){
+            System.out.println("told a handler to dispatch our player to the client");
+            c.dispatchCreatePlayer(x,y);
+        }
     }
 
     @Override

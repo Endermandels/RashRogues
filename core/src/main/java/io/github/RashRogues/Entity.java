@@ -33,6 +33,10 @@ public abstract class Entity extends Sprite {
         this.alignment = alignment;
 
         //add our entity to the current screen.
+        System.out.println("registering on -----");
+        System.out.println(type);
+        System.out.println(RRGame.globals.currentScreen);
+        System.out.println("-----");
         RRGame.globals.currentScreen.registerEntity(this);
     }
 

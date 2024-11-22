@@ -43,7 +43,7 @@ public class Player extends Entity {
         // this will obviously change based on a number of factors later
     }
 
-    Player(Texture texture, int x, int y, float size) {
+    public Player(Texture texture, int x, int y, float size) {
         this(texture, x, y, size, size);
     }
 

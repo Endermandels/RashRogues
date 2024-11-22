@@ -9,7 +9,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.PriorityQueue;
 
 public class PlayScreen extends ScreenAdapter implements RRScreen {
@@ -45,13 +44,11 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         new Swordsman(game.am.get(RRGame.RSC_SWORDSMAN_IMG), 50, 30, 10);
         player = new Player(game.am.get(RRGame.RSC_ROGUE_IMG), RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, RRGame.PLAYER_SIZE);
 
+        this.game.network.connection.dispatchCreatePlayer((int) player.getX(), (int) player.getY());
+
         /* Camera Setup */
         game.playerCam.bind(player);
         game.playerCam.center();
-
-        if (game.network.type == Network.EndpointType.SERVER){
-            game.network.connection.dispatchCreate(player);
-        }
     }
 
     @Override
@@ -61,15 +58,13 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
     public void update(float delta) {
         game.network.connection.processMessages();
-        if (game.network.type == Network.EndpointType.SERVER){
-            game.network.connection.dispatchUpdate(this.player);
-        }
 
         if (debug) {
             debugProjectileRenderList.clear();
             debugPlayerRenderList.clear();
             debugEnemyRenderList.clear();
         }
+
 
         for ( Entity e : localEntities ){
             e.update(delta);
@@ -81,7 +76,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             }
         }
         game.playerCam.update(delta);
-
 
         // check/handle collisions
         collisionGrid.populateCollisionGrid(localEntities);
@@ -107,11 +101,9 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         }
         game.batch.end();
 
-
         game.hudBatch.begin();
         hud.draw(game.hudBatch);
         game.hudBatch.end();
-
 
         // only debugging needs the ShapeRenderer, so we can have nice formatting by having an early return condition
         if (!debug) { return; }
@@ -212,29 +204,37 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             @Override
             public boolean keyDown(int keycode) {
                 if (hud.isOpen()) { return false; }
+                byte[] inputMask = new byte[8];
                 if (keycode == Input.Keys.ESCAPE) {
                     // cancel any selections
                 }
                 if (keycode == Input.Keys.A || keycode == Input.Keys.LEFT) {
                     player.moveLeft(true);
+                    inputMask[0] = (byte) 1;
                 }
                 if (keycode == Input.Keys.D || keycode == Input.Keys.RIGHT) {
                     player.moveRight(true);
+                    inputMask[1] = (byte) 1;
                 }
                 if (keycode == Input.Keys.S || keycode == Input.Keys.DOWN) {
                     player.moveDown(true);
+                    inputMask[2] = (byte) 1;
                 }
                 if (keycode == Input.Keys.W || keycode == Input.Keys.UP) {
                     player.moveUp(true);
+                    inputMask[3] = (byte) 1;
                 }
                 if (keycode == Input.Keys.SPACE) {
                     player.dash();
+                    inputMask[4] = (byte) 1;
                 }
                 if (keycode == Input.Keys.E) {
                     player.useAbility();
+                    inputMask[5] = (byte) 1;
                 }
                 if (keycode == Input.Keys.Q) {
                     player.useConsumable();
+                    inputMask[6] = (byte) 1;
                 }
                 return true;
             }
@@ -275,6 +275,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
      * @param entity A Locally Instantiated Entity
      */
     public void registerEntity(Entity entity) {
+        System.out.println("registyerd");
         this.localEntities.add(entity);
     }
 

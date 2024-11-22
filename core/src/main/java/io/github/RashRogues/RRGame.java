@@ -45,8 +45,6 @@ public class RRGame extends Game {
     public static final String RSC_ROGUE_IMG = "DefaultImages/rogue.png";
     public static final String RSC_SWORDSMAN_IMG = "DefaultImages/swordsman.png";
 
-    public static final String RSC_MERCHANT_LIST_ITEM_IMG = "Images/Merchant/list-item.png";
-
     // entity animations
 
     // item/background sprites
@@ -82,8 +80,6 @@ public class RRGame extends Game {
         am.load(RSC_BTN_HOST, Texture.class);
         am.load(RSC_BTN_JOIN, Texture.class);
         am.load(RSC_BTN_START_GAME, Texture.class);
-
-        am.load(RSC_MERCHANT_LIST_ITEM_IMG, Texture.class);
 
         batch = new SpriteBatch();
         hudBatch = new SpriteBatch();

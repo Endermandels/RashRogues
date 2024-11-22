@@ -183,8 +183,8 @@ public class Button extends Entity {
                 if (game.network.type == Network.EndpointType.CLIENT){
                     System.out.println("Only servers can start games silly");
                 }else{
-                    game.globals.currentScreen.nextScreen();
                     game.network.connection.dispatchStartGame();
+                    game.globals.currentScreen.nextScreen();
                 }
                break;
 
