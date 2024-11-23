@@ -46,5 +46,19 @@ public class StreamMaker {
       return stream;
    }
 
+   public static byte[] keys(int pid, byte[] keymask){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.KEYS.getvalue();
+      stream[1] = (byte) pid;
+      for (int i = 0; i < keymask.length; i++){
+         stream[i+2] = keymask[i];
+      }
+      return stream;
+   }
+
+   public static byte[] reckonPlayerPosition(float x, float y){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.UPDATE_PLAYER_POSITION.getValue();
+   }
 
 }

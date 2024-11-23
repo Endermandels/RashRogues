@@ -10,7 +10,7 @@ public class Player extends Entity {
     private final int BASE_PLAYER_DAMAGE = 10;
     private final float BASE_PLAYER_ATTACK_SPEED = 0.5f;
     private final float ACCELERATION = 50.0f;
-    private final float FRICTION = 100.0f;
+    private final float FRICTION = 25.0f;
     private final float BASE_PLAYER_MOVE_SPEED = 15.0f;
     private final float BASE_PLAYER_DEXTERITY = 10f;
     public PlayerStats stats;
@@ -64,10 +64,28 @@ public class Player extends Entity {
         if (attackTimer >= (1 / stats.getAttackSpeed())) { attack(); attackTimer = 0f; }
     }
 
-    public void moveLeft(boolean t) { leftMove = t; }
-    public void moveRight(boolean t) { rightMove = t; }
-    public void moveDown(boolean t) { downMove = t; }
-    public void moveUp(boolean t) { upMove = t; }
+//    public void moveLeft(boolean t) { leftMove = t; }
+//    public void moveRight(boolean t) { rightMove = t; }
+//    public void moveDown(boolean t) { downMove = t; }
+//    public void moveUp(boolean t) { upMove = t; }
+
+    public void moveLeft(){
+        xVelocity -= ACCELERATION;
+        this.flipped = true;
+    }
+
+    public void moveRight(){
+        xVelocity += ACCELERATION;
+        this.flipped = false;
+    }
+
+    public void moveUp(){
+        yVelocity += ACCELERATION;
+    }
+
+    public void moveDown(){
+        yVelocity -= ACCELERATION;
+    }
 
     public void attack() {
         System.out.println("Attack");
@@ -92,45 +110,29 @@ public class Player extends Entity {
     }
 
     public void adjustVelocity() {
-        float xVel = 0;
-        float yVel = 0;
-        if  (leftMove) {
-            xVel -= ACCELERATION;
-            this.flipped = true;
-        }
-        if (rightMove) {
-            xVel += ACCELERATION;
-            this.flipped = false;
-        }
-        if (downMove) {
-            yVel -= ACCELERATION;
-        }
-        if (upMove) {
-            yVel += ACCELERATION;
+        // normalize diagonal movement
+        if (xVelocity != 0 && yVelocity != 0) {
+            xVelocity = (float) (xVelocity / Math.sqrt(2));
+            yVelocity = (float) (yVelocity / Math.sqrt(2));
         }
 
-        // this is to ensure speed is constant even when going diagonal
-        if (xVel != 0 && yVel != 0) {
-            xVel = (float) (xVel / Math.sqrt(2));
-            yVel = (float) (yVel / Math.sqrt(2));
-        }
-        if (xVel == 0 && xVelocity != 0) {
-            float sign = Math.signum(xVelocity);
-            xVelocity -= sign*FRICTION;
-            if (sign != Math.signum(xVelocity)) {
+        //apply horizontal friction
+        if (xVelocity != 0){
+            float xDir = Math.signum(xVelocity);
+            xVelocity -= (xDir * FRICTION);
+            if (Math.signum(xVelocity) != xDir){
                 xVelocity = 0;
             }
         }
-        if (yVel == 0 && yVelocity != 0) {
-            float sign = Math.signum(yVelocity);
-            yVelocity -= sign*FRICTION;
-            if (sign != Math.signum(yVelocity)) {
+
+        //apply vertical friction
+        if (yVelocity != 0){
+            float yDir = Math.signum(yVelocity);
+            yVelocity -= (yDir * FRICTION);
+            if (Math.signum(yVelocity) != yDir){
                 yVelocity = 0;
             }
         }
-
-        xVelocity += xVel;
-        yVelocity += yVel;
 
         xVelocity = Math.max(-maxXVelocity, Math.min(xVelocity, maxXVelocity));
         yVelocity = Math.max(-maxYVelocity, Math.min(yVelocity, maxYVelocity));

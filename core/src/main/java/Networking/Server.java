@@ -120,4 +120,9 @@ public class Server implements Endpoint{
         this.primarySocket.dispose();
         this.dispatchFarewell();
     }
+
+    @Override
+    public void dispatchKeys(byte[] keymask) {
+
+    }
 }

@@ -106,9 +106,12 @@ public class Client implements Endpoint {
     }
 
     public void handleCreatePlayer(byte[] packet){
+        int new_pid = packet[1];
         int x = ((packet[2] >> 24) | (packet[3] >> 16) | (packet[4] >> 8) | (packet[5]));
         int y = ((packet[6] >> 24) | (packet[7] >> 16) | (packet[8] >> 8) | (packet[9]));
-        new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y, RRGame.PLAYER_SIZE);
+        Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y, RRGame.PLAYER_SIZE);
+        RRGame.globals.players.put(new_pid,player);
+        System.out.println("Server Created player for pid: " + Integer.toString(new_pid));
     }
 
     /**
@@ -158,6 +161,21 @@ public class Client implements Endpoint {
         }
         this.listening = false;
         this.dispose();
+    }
+
+
+    /**
+     * Communicate to server which keys are pressed down.
+     * @param keymask Keys pressed.
+     */
+    public void dispatchKeys(byte[] keymask){
+        byte[] stream = StreamMaker.keys(pid, keymask);
+        try {
+            out.write(stream);
+            out.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

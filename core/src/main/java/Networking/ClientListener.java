@@ -3,6 +3,7 @@ package Networking;
 import com.badlogic.gdx.graphics.TextureData;
 import com.badlogic.gdx.graphics.glutils.FileTextureData;
 import com.badlogic.gdx.net.Socket;
+import com.badlogic.gdx.utils.Queue;
 import io.github.RashRogues.Entity;
 import io.github.RashRogues.EntityType;
 import io.github.RashRogues.Player;
@@ -22,6 +23,7 @@ public class ClientListener implements Endpoint {
     private int pid = 0; //we are the server. PID 0
     private int client_pid;
     public volatile boolean listening = true;
+    public Queue<byte[]> inputQueue = new Queue<byte[]>();
 
     public ClientListener(Socket socket, int pid) {
         try {
@@ -74,6 +76,10 @@ public class ClientListener implements Endpoint {
      * Process all queued messages that are available.
      */
     public void processMessages(){
+        if (inputQueue.notEmpty()){
+            this.handleKeys(inputQueue.removeFirst());
+        }
+
         while (!this.messages.isEmpty()){
             byte[] msg = this.messages.poll();
             int msgType = (int) msg[0];
@@ -87,6 +93,8 @@ public class ClientListener implements Endpoint {
                 this.handleFarewell();
             }else if (msgType == CREATE_PLAYER.getvalue()){
                 this.handleCreatePlayer(msg);
+            }else if (msgType == KEYS.getvalue()){
+                inputQueue.addLast(msg);
             }
         }
     }
@@ -144,16 +152,70 @@ public class ClientListener implements Endpoint {
         }
     }
 
+    public void dispatchReckonPlayerPosition(){
+        Player clientP = RRGame.globals.players.get(this.client_pid);
+        byte[] stream = StreamMaker.reckonPlayerPosition(clientP.getX(), clientP.getY());
+        try {
+            this.out.write(stream);
+            this.out.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     /* Handlers */
 
     public void handleCreatePlayer(byte[] packet){
+        int new_pid = packet[1];
         int x = ((packet[2] >> 24) | (packet[3] >> 16) | (packet[4] >> 8) | (packet[5]));
         int y = ((packet[6] >> 24) | (packet[7] >> 16) | (packet[8] >> 8) | (packet[9]));
-        new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y, RRGame.PLAYER_SIZE);
+        Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y, RRGame.PLAYER_SIZE);
+        RRGame.globals.players.put(new_pid,player);
     }
 
+    public void handleKeys(byte[] packet){
+       Player p = RRGame.globals.players.get((int) packet[1]);
+       if (packet[2] == 1){
+            p.moveUp();
+       }
+       if (packet[3] == 1){
+           p.moveDown();
+       }
+       if (packet[4] == 1){
+           p.moveRight();
+       }
+       if (packet[5] == 1){
+           p.moveLeft();
+       }
+       if (packet[6] == 1){
+            p.dash();
+       }
+       if (packet[7] == 1){
+            p.useAbility();
+       }
+       if (packet[8] == 1){
+            p.useConsumable();
+       }
+    }
+
+//    public void handleKeysUp(byte[] packet){
+//        Player p = RRGame.globals.players.get((int) packet[1]);
+//        if (packet[2] == 1){
+//            p.moveLeft(false);
+//        }
+//        if (packet[3] == 1){
+//            p.moveRight(false);
+//        }
+//        if (packet[4] == 1){
+//            p.moveDown(false);
+//        }
+//        if (packet[5] == 1){
+//            p.moveUp(false);
+//        }
+//    }
+
     public void handleUpdatePlayer(byte [] packet){
-        System.out.println("Client " + Integer.toString((int) packet[1]) + " requests us to execute a keypress.");
+        return;
     }
 
     /**
@@ -177,8 +239,12 @@ public class ClientListener implements Endpoint {
         }finally {
             socket.dispose();
             messages.clear();
-
         }
+    }
+
+    @Override
+    public void dispatchKeys(byte[] keymask) {
+        return;
     }
 
     public Network.EndpointType getType() {

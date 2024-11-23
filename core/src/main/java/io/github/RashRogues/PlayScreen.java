@@ -1,6 +1,5 @@
 package io.github.RashRogues;
 
-import Networking.Network;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.graphics.Color;
@@ -8,13 +7,13 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.PriorityQueue;
 
 public class PlayScreen extends ScreenAdapter implements RRScreen {
 
     private boolean debug = false;
-
     private RRGame game;
     private HUD hud;
     private Room currentRoom;
@@ -25,7 +24,11 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     private ArrayList<Projectile> debugProjectileRenderList;
     private ArrayList<Player> debugPlayerRenderList;
     private ArrayList<Enemy> debugEnemyRenderList;
+    private HashMap<Integer, Boolean> inputs;
+
+
     public static CollisionGrid collisionGrid = new CollisionGrid();
+    private byte frameID = 0; //simply used to distinguish which relative frame an input was read.
 
     public PlayScreen(RRGame game) {
         /* Initialization */
@@ -36,6 +39,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         this.debugProjectileRenderList = new ArrayList<>();
         this.debugPlayerRenderList = new ArrayList<>();
         this.debugEnemyRenderList = new ArrayList<>();
+        initInputs();
         loadRooms();
         setNextRoom();
         createHUDAndInputs();
@@ -56,8 +60,49 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         Gdx.app.log("PlayScreen", "show");
     }
 
+    /**
+     * Act on inputs. Communicate inputs to network.
+     */
+    public void input() {
+        byte[] keyMask = new byte[8];
+        if (inputs.get(Input.Keys.UP)) {
+            this.player.moveUp();
+            keyMask[0] = 1;
+        }
+        if (inputs.get(Input.Keys.DOWN)) {
+            this.player.moveDown();
+            keyMask[1] = 1;
+        }
+        if (inputs.get(Input.Keys.RIGHT)) {
+            this.player.moveRight();
+            keyMask[2] = 1;
+        }
+        if (inputs.get(Input.Keys.LEFT)) {
+            this.player.moveLeft();
+            keyMask[3] = 1;
+        }
+        if (inputs.get(Input.Keys.SPACE)) {
+            player.dash();
+            inputs.put(Input.Keys.SPACE, false);
+            keyMask[4] = 1;
+        }
+        if (inputs.get(Input.Keys.E)) {
+            player.useAbility();
+            inputs.put(Input.Keys.E, false);
+            keyMask[5] = 1;
+        }
+        if (inputs.get(Input.Keys.Q)){
+            player.useConsumable();
+            inputs.put(Input.Keys.Q, false);
+            keyMask[6] = 1;
+        }
+        game.network.connection.dispatchKeys(keyMask);
+    }
+
     public void update(float delta) {
         game.network.connection.processMessages();
+
+        input();
 
         if (debug) {
             debugProjectileRenderList.clear();
@@ -80,6 +125,8 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         // check/handle collisions
         collisionGrid.populateCollisionGrid(localEntities);
         collisionGrid.calculateCollisions();
+
+        this.frameID+=1;  //this'll overflow. That's ok because we are just using it to differentiate frames.
     }
 
     @Override
@@ -142,6 +189,17 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         hud.resize(width, height, game);
     }
 
+    private void initInputs(){
+        this.inputs = new HashMap<>();
+        this.inputs.put(Input.Keys.RIGHT, false);
+        this.inputs.put(Input.Keys.LEFT, false);
+        this.inputs.put(Input.Keys.UP, false);
+        this.inputs.put(Input.Keys.DOWN, false);
+        this.inputs.put(Input.Keys.SPACE, false);
+        this.inputs.put(Input.Keys.E, false);
+        this.inputs.put(Input.Keys.Q, false);
+    }
+
     private void loadRooms() {
         this.rooms = new ArrayList<>();
         rooms.add(new Room(game.am.get(RRGame.RSC_ROOM1_IMG)));
@@ -193,48 +251,56 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
         // HUD Data
 
-
         // we're adding an input processor AFTER the HUD has been created,
         // so we need to be a bit careful here and make sure not to clobber
         // the HUD's input controls. Do that by using an InputMultiplexer
+        /*
+        proposition 11/22 CT - Executing player actions on both keyup and keydown has presented a huge challenge in the
+        networking.
+
+        We can still using the multiplexor, but instead of acting on both key-up/key-down, we are instead setting
+        the state of those keys to an input hashmap that we can poll during the update event.
+
+        This way we only have to worry about whether the key is being pressed or not during a given frame.
+        Otherwise we have to worry about which key-down pertains to which key-up etc, and which frames those happened on.
+        */
         InputMultiplexer multiplexer = new InputMultiplexer();
         // let the HUD's input processor handle things first....
         multiplexer.addProcessor(Gdx.input.getInputProcessor());
         multiplexer.addProcessor(new InputAdapter() {
+
             @Override
             public boolean keyDown(int keycode) {
                 if (hud.isOpen()) { return false; }
-                byte[] inputMask = new byte[8];
                 if (keycode == Input.Keys.ESCAPE) {
                     // cancel any selections
                 }
                 if (keycode == Input.Keys.A || keycode == Input.Keys.LEFT) {
-                    player.moveLeft(true);
-                    inputMask[0] = (byte) 1;
+                    inputs.put(Input.Keys.LEFT, true);
                 }
+
                 if (keycode == Input.Keys.D || keycode == Input.Keys.RIGHT) {
-                    player.moveRight(true);
-                    inputMask[1] = (byte) 1;
+                    inputs.put(Input.Keys.RIGHT, true);
                 }
+
                 if (keycode == Input.Keys.S || keycode == Input.Keys.DOWN) {
-                    player.moveDown(true);
-                    inputMask[2] = (byte) 1;
+                    inputs.put(Input.Keys.DOWN, true);
                 }
+
                 if (keycode == Input.Keys.W || keycode == Input.Keys.UP) {
-                    player.moveUp(true);
-                    inputMask[3] = (byte) 1;
+                    inputs.put(Input.Keys.UP, true);
                 }
+
                 if (keycode == Input.Keys.SPACE) {
-                    player.dash();
-                    inputMask[4] = (byte) 1;
+                    inputs.put(Input.Keys.SPACE, true);
                 }
+
                 if (keycode == Input.Keys.E) {
-                    player.useAbility();
-                    inputMask[5] = (byte) 1;
+                    inputs.put(Input.Keys.E, true);
                 }
+
                 if (keycode == Input.Keys.Q) {
-                    player.useConsumable();
-                    inputMask[6] = (byte) 1;
+                    inputs.put(Input.Keys.Q, true);
                 }
                 return true;
             }
@@ -242,16 +308,16 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             @Override
             public boolean keyUp(int keycode) {
                 if (keycode == Input.Keys.A || keycode == Input.Keys.LEFT) {
-                    player.moveLeft(false);
+                    inputs.put(Input.Keys.LEFT,false);
                 }
                 if (keycode == Input.Keys.D || keycode == Input.Keys.RIGHT) {
-                    player.moveRight(false);
+                    inputs.put(Input.Keys.RIGHT,false);
                 }
                 if (keycode == Input.Keys.S || keycode == Input.Keys.DOWN) {
-                    player.moveDown(false);
+                    inputs.put(Input.Keys.DOWN,false);
                 }
                 if (keycode == Input.Keys.W || keycode == Input.Keys.UP) {
-                    player.moveUp(false);
+                    inputs.put(Input.Keys.UP,false);
                 }
                 return true;
             }

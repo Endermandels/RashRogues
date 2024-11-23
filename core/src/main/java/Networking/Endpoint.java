@@ -12,4 +12,5 @@ public interface Endpoint {
     public void dispatchStartGame();
     public void dispatchCreatePlayer(int x, int y);
     public void dispose();
+    public void dispatchKeys(byte[] keyMask);
 }
