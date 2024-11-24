@@ -4,36 +4,48 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.FileTextureData;
 import com.badlogic.gdx.net.Socket;
+import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.Queue;
 import io.github.RashRogues.Entity;
 import io.github.RashRogues.EntityType;
 import io.github.RashRogues.Player;
 import io.github.RashRogues.RRGame;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import static Networking.PacketType.*;
 
 public class Client implements Endpoint {
     private InputStream in;
     private OutputStream out;
-    private ObjectOutputStream objectOutputStream;
     private Socket socket;
     private Thread listeningThread;
-    public ConcurrentLinkedQueue<Packet> messages = new ConcurrentLinkedQueue<>();
-    public HashMap<String,Entity> syncedEntities = new HashMap<>();
+    public ConcurrentLinkedQueue<byte[]> messages = new ConcurrentLinkedQueue<>();
+    public HashMap<String, Entity> syncedEntities = new HashMap<>();
     private int pid;
+    public volatile boolean listening = true;
+    public Queue<byte[]> inputQueue = new Queue<byte[]>();
 
     public Client() {
-        this.socket = Gdx.net.newClientSocket(Network.PROTOCOL, "localhost", Network.PORT, null);
-        System.out.println("Connected to server on localhost:" + Integer.toString(Network.PORT));
+        try {
+            this.socket = Gdx.net.newClientSocket(Network.PROTOCOL, "localhost", Network.PORT, null);
+        } catch (GdxRuntimeException e) {
+            System.out.println(">>! Unable to connect to server.");
+            return;
+        }
+        System.out.println(">>> Connected to server on localhost:" + this.socket.getRemoteAddress() + Integer.toString(Network.PORT));
         this.in = socket.getInputStream();
         this.out = socket.getOutputStream();
-        try{
-            this.objectOutputStream = new ObjectOutputStream(this.out);
+
+        try {
             listen(in);
-        }catch(IOException | InterruptedException e){
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
+
     }
 
     private void listen(InputStream in) throws IOException, InterruptedException {
@@ -41,18 +53,22 @@ public class Client implements Endpoint {
                 new Runnable() {
                     public void run() {
                         try {
-                            ObjectInputStream objStream = null;
-                            objStream = new ObjectInputStream(in); //blocks until data comes through.
-                            while (true) {
-                                messages.add((Packet) objStream.readObject());
+                            while (listening) {
+                                byte[] msg = new byte[128];
+                                int read = in.read(msg, 0, 128);
+                                if (read > 0) {
+                                    messages.add(msg);
+                                }
+                                //DEBUG
+                                //for (int i = 0; i < 128; i++){
+                                //    System.out.print(msg[i] + "-");
+                                //}
+                                //System.out.println("|");
+                                //System.out.flush();
                             }
                         } catch (IOException e) {
-                            e.printStackTrace();
-                        } catch (ClassNotFoundException e) {
-                            e.printStackTrace();
+                            System.out.flush();
                         }
-                        System.out.println("Disconnected.");
-                        System.out.flush();
                     }
                 }
         );
@@ -63,108 +79,181 @@ public class Client implements Endpoint {
      * Process all queued messages that are available.
      */
     public void processMessages() {
-        while (!this.messages.isEmpty()){
-           Packet p = this.messages.poll();
-           switch (p.getPacketType()){
-               case UPDATE:
-                   handleUpdate(p);
-                   break;
-               case CREATE:
-                   handleCreate(p);
-                   break;
-               case DESTROY:
-                   handleDestroy(p);
-                   break;
-               case START_GAME:
-                   handleStartGame();
-                   break;
-               case WELCOME:
-                   handleInvite(p);
-                   break;
-           }
+        while (!this.messages.isEmpty()) {
+            byte[] msg = this.messages.poll();
+            int msgType = (int) msg[0];
+            if (msgType == START_GAME.getvalue()) {
+                handleStartGame();
+            } else if (msgType == WELCOME.getvalue()) {
+                handleInvite(msg);
+            } else if (msgType == FAREWELL.getvalue()) {
+                this.handleFarewell();
+            } else if (msgType == CREATE_PLAYER.getvalue()) {
+                this.handleCreatePlayer(msg);
+            } else if (msgType == KEYS.getvalue()) {
+                this.inputQueue.addLast(msg);
+            } else if (msgType == UPDATE_PLAYER_POSITION.getvalue()) {
+                this.handleUpdatePlayerPosition(msg);
+            }
         }
-
+        if (this.inputQueue.notEmpty()){
+            this.handleKeys(this.inputQueue.removeFirst());
+        }
     }
-
-
 
     /* Handlers */
 
     /**
      * Accept Invite To Server
      */
-    public void handleInvite(Packet p){
-        PacketWelcome invite = (PacketWelcome) p;
-        this.pid = invite.pid;
-        System.out.println("Invite Received. PID Set.");
+    public void handleInvite(byte[] packet) {
+        this.pid = (int) packet[1];
     }
 
-    /**
-     * Create an object on our client
-     */
-    public void handleCreate(Packet p){
-        PacketCreate create = (PacketCreate) p;
-        System.out.println("UID to create: " + create.uid);
-        Player ply = new Player(RRGame.am.get(create.texture, Texture.class),create.x,create.y,2,2);
-        syncedEntities.put(create.uid,ply);
-        //register up!
-    }
-
-    /**
-     * Update an object on our client
-     */
-    public void handleUpdate(Packet p){
-        PacketUpdate update = (PacketUpdate) p;
-        System.out.println("UID to update: " + update.uid);
-        Player toUpdate = (Player) syncedEntities.get(update.uid);
-        toUpdate.setPosition(update.x,update.y);
-    }
-
-    /**
-     * Destroy an object on our client
-     */
-    public void handleDestroy(Packet p){
-
-    }
-
-    public void handleStartGame(){
+    public void handleStartGame() {
+        System.out.println("Server started the game.");
         RRGame.globals.currentScreen.nextScreen();
-        System.out.println("Start Game Request from server received. Starting Game.");
     }
 
-
-   /* Dispatchers */
-
-    public void dispatchStartGame() {
-
-    }
-
-    public void dispatchCreate(Player player){
-        dispatchCreate((Entity) player);
+    public void handleCreatePlayer(byte[] packet) {
+        int new_pid = packet[1];
+        int x = ((packet[2] >> 24) | (packet[3] >> 16) | (packet[4] >> 8) | (packet[5]));
+        int y = ((packet[6] >> 24) | (packet[7] >> 16) | (packet[8] >> 8) | (packet[9]));
+        Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG), x, y, RRGame.PLAYER_SIZE);
+        RRGame.globals.players.put(new_pid, player);
     }
 
     /**
-     * 1. Create a new entity on the client
+     * We received a farewell message from the server.
+     * The connection is closed and we can dipose of our
+     * input/output streams, as well as our socket.
      */
-    public void dispatchCreate(Entity entity) {
-        try {
-            EntityType type = entity.getType();
-            String uid = Integer.toString(this.pid) + '_' + entity.toString();
-            String texture = ((FileTextureData) entity.getTexture().getTextureData()).getFileHandle().path();
-            float x = entity.getX();
-            float y = entity.getY();
-            this.objectOutputStream.writeObject(new PacketCreate(type, uid, texture, (int) x, (int) y));
-        } catch (IOException e) {
-            e.printStackTrace();
+    public void handleFarewell() {
+        System.out.println("Server connection closed.");
+        this.dispose();
+    }
+
+    public void handleUpdatePlayerPosition(byte[] packet) {
+        int pid = packet[1];
+        System.out.println("SERVER TOLD US TO UPDATE THE PLAYER WITH PID: " + Integer.toString(pid));
+        Player p = RRGame.globals.players.get(pid);
+        System.out.println("Player is: ");
+        System.out.println(p);
+        if (p == null){
+           return;
+        }
+        float x = ByteBuffer.wrap(new byte[]{packet[2], packet[3], packet[4], packet[5]}).getFloat();
+        float y = ByteBuffer.wrap(new byte[]{packet[6], packet[7], packet[8], packet[9]}).getFloat();
+
+        p.setPosition(x,y);
+    }
+
+
+    public void handleKeys(byte[] packet){
+        Player p = RRGame.globals.players.get((int) packet[1]);
+        if (packet[2] == 1){
+            p.moveUp();
+        }
+        if (packet[3] == 1){
+            p.moveDown();
+        }
+        if (packet[4] == 1){
+            p.moveRight();
+        }
+        if (packet[5] == 1){
+            p.moveLeft();
+        }
+        if (packet[6] == 1){
+            p.dash();
+        }
+        if (packet[7] == 1){
+            p.useAbility();
+        }
+        if (packet[8] == 1){
+            p.useConsumable();
         }
     }
 
+   /* Dispatchers */
 
+    /**
+     * Tells server about our player.
+     */
+    public void dispatchCreatePlayer(Player player){
+       RRGame.globals.players.put(this.pid,player);
+       byte[] stream = StreamMaker.createPlayer(this.pid, (int) player.getX(),(int) player.getY());
+        try {
+            this.out.write(stream);
+            this.out.flush();
+        } catch (IOException e) {
+            System.out.println(">>! Unable to communicate with client.");
+        }
+    }
+
+    /**
+     * Clients can't start games so this method is just
+     * fufilling the interface.
+     */
+    public void dispatchStartGame() {
+        return;
+    }
+
+    /**
+     * Sends a farewell packet to the server, informing the server
+     * that we are leaving. Closes the input stream.
+     */
+    public void dispatchFarewell(){
+        byte[] stream = StreamMaker.farewell();
+        try {
+            out.write(stream);
+            out.flush();
+        } catch (IOException e) {
+            System.out.println(">>! Unable to communicate with client.");
+        }
+        this.listening = false;
+        this.dispose();
+    }
+
+
+    /**
+     * Communicate to server which keys are pressed down.
+     * @param keymask Keys pressed.
+     */
+    public void dispatchKeys(byte[] keymask){
+        byte[] stream = StreamMaker.keys(pid, keymask);
+        try {
+            out.write(stream);
+            out.flush();
+        } catch (IOException e) {
+            System.out.println(">>! Unable to communicate with client.");
+        }
+    }
+
+    /**
+     * Safely informs the server that we are disconnecting,
+     * and then closes all streams/sockets.
+     */
+    public void dispose(){
+        if (this.listening){
+            this.dispatchFarewell();
+        }
+        this.listening = false;
+        try {
+            this.in.close();
+            this.out.close();
+        } catch (IOException ignored) {
+        }finally {
+            socket.dispose();
+            messages.clear();
+        }
+    }
+
+    /**
+     * What type of endpoint are we?
+     * @return Endpoint type.
+     */
     public Network.EndpointType getType() {
         return Network.EndpointType.CLIENT;
     }
-
-    public void dispatchUpdate(Entity entity){}
-    public void dispatchUpdate(Player entity){}
 
 }

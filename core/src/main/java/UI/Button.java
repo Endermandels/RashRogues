@@ -184,9 +184,8 @@ public class Button extends Entity {
                     System.out.println("Only servers can start games silly");
                 }else{
                     game.network.connection.dispatchStartGame();
+                    game.globals.currentScreen.nextScreen();
                 }
-
-               game.globals.currentScreen.nextScreen();
                break;
 
            default:

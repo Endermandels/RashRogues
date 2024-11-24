@@ -121,5 +121,4 @@ public class Projectile extends Entity {
             removeNextUpdate = true;
         }
     }
-
 }

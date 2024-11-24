@@ -4,13 +4,16 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.net.ServerSocket;
 import com.badlogic.gdx.net.Socket;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.Queue;
 import io.github.RashRogues.Entity;
 import io.github.RashRogues.Player;
 import io.github.RashRogues.RRGame;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * The server class is the central control hub for multiplayer games.
@@ -22,9 +25,11 @@ import java.util.List;
  * For network settings, such as port & protocol configuration, see the Network class.
  */
 public class Server implements Endpoint{
-    private List<ClientListener> clients; // 1. data connection to connected clients.
+    private List<ClientListener> clients;       // 1. data connections to connected clients.
+    private Queue<Integer> cleanupQueue; // 1.1 data connections to stop.
     private ServerSocket primarySocket;   // 2. primary connection where we listen for new clients.
     private Thread primarySocketThread;   // 3. thread on which we listen to primary connection for new clients
+    private volatile boolean listening;
 
     /**
      * Begin hosting a server.
@@ -33,68 +38,92 @@ public class Server implements Endpoint{
     public void host(){
         primarySocket = Gdx.net.newServerSocket(Network.PROTOCOL,"localhost",Network.PORT,null);
         clients = Collections.synchronizedList(new ArrayList<ClientListener>());
-        System.out.println("Server listening on 127.0.0.1:" + Integer.toString(Network.PORT));//TODO: listen on other interfaces other than loopback..
+        cleanupQueue = new Queue<>();
+        System.out.println(">>> Server listening on 127.0.0.1:" + Integer.toString(Network.PORT));
 
         primarySocketThread = new Thread(
             new Runnable() {
                 public void run(){
-                    while (true){
+                    listening = true;
+                    while (listening){
                         try{
                             Socket client = primarySocket.accept(null);
                             clients.add(new ClientListener(client,clients.size()+1));
-                            System.out.println(client.getRemoteAddress().substring(1) + " Connected.");
+                            System.out.println(">>> " + client.getRemoteAddress().substring(1) + " Connected.");
                             System.out.flush();
 
                             if (clients.size() == Network.MAX_CLIENTS){
-                                System.out.println("Server full. Stopped listening for new connections.");
+                                System.out.println(">>> Game full. No longer accepting clients.");
                                 System.out.flush();
+                                listening = false;
                                 break;
                             }
                         }catch(GdxRuntimeException e){
-                            System.out.println("Server stopped: " + e.toString());
-                            System.out.flush();
-                            e.printStackTrace();
+                            System.out.println(">>! Server stopped.");
                         }
                     }
-                    primarySocket.dispose();
                 }
             }
         );
         primarySocketThread.start();
     }
 
+    /**
+     * Instructs all connections to send farwell messages and close.
+     * Effectively ends the multiplayer game.
+     */
+    public void dispatchFarewell(){
+        for (ClientListener c : clients){
+            c.dispatchFarewell();
+        }
+        clients.clear();
+    }
+
+    @Override
     public void processMessages() {
 
+        //process messages from existing connections.
+        for (int i = 0; i < clients.size(); i++){
+            if (clients.get(i).listening) {
+                clients.get(i).processMessages();
+            }else{
+                cleanupQueue.addLast(i);
+            }
+        }
+
+        //Cleanup closed connections.
+        while (!cleanupQueue.isEmpty()){
+            int toRemove = cleanupQueue.removeFirst();
+            clients.remove(toRemove);
+        }
     }
 
     @Override
     public void dispatchStartGame() {
-        for (ClientListener cL : clients){
-           cL.dispatchStartGame();
-        }
-    }
-
-    public void dispatchCreate(Entity entity){
-        for (ClientListener cL : clients){
-            cL.dispatchCreate(entity);
-        }
-    }
-
-    public void dispatchCreate(Player player){
-        dispatchCreate((Entity) player);
-    }
-
-    @Override
-    public void dispatchUpdate(Entity entity) {
-        for (ClientListener cL : clients ){
-            cL.dispatchUpdate(entity);
+        System.out.println(">>> Starting game.");
+        for (ClientListener c : clients){
+            c.dispatchStartGame();
         }
     }
 
     @Override
-    public void dispatchUpdate(Player player) {
-        dispatchUpdate((Entity) player);
+    public void dispatchCreatePlayer(Player player) {
+        for (ClientListener c : clients){
+            c.dispatchCreatePlayer(player);
+        }
     }
 
+    @Override
+    public void dispose() {
+        this.listening = false;
+        this.primarySocket.dispose();
+        this.dispatchFarewell();
+    }
 
+    @Override
+    public void dispatchKeys(byte[] keymask) {
+        for (ClientListener c : clients){
+            c.dispatchKeys(keymask);
+        }
+    }
 }
