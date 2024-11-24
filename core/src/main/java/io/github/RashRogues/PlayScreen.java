@@ -1,5 +1,6 @@
 package io.github.RashRogues;
 
+import Networking.Network;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.graphics.Color;
@@ -26,7 +27,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     private ArrayList<Enemy> debugEnemyRenderList;
     private HashMap<Integer, Boolean> inputs;
 
-
     public static CollisionGrid collisionGrid = new CollisionGrid();
     private byte frameID = 0; //simply used to distinguish which relative frame an input was read.
 
@@ -48,7 +48,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         new Swordsman(game.am.get(RRGame.RSC_SWORDSMAN_IMG), 50, 30, 10);
         player = new Player(game.am.get(RRGame.RSC_ROGUE_IMG), RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, RRGame.PLAYER_SIZE);
 
-        this.game.network.connection.dispatchCreatePlayer((int) player.getX(), (int) player.getY());
+        this.game.network.connection.dispatchCreatePlayer(player);
 
         /* Camera Setup */
         game.playerCam.bind(player);
@@ -82,17 +82,14 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             keyMask[3] = 1;
         }
         if (inputs.get(Input.Keys.SPACE)) {
-            player.dash();
             inputs.put(Input.Keys.SPACE, false);
             keyMask[4] = 1;
         }
         if (inputs.get(Input.Keys.E)) {
-            player.useAbility();
             inputs.put(Input.Keys.E, false);
             keyMask[5] = 1;
         }
         if (inputs.get(Input.Keys.Q)){
-            player.useConsumable();
             inputs.put(Input.Keys.Q, false);
             keyMask[6] = 1;
         }
@@ -341,7 +338,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
      * @param entity A Locally Instantiated Entity
      */
     public void registerEntity(Entity entity) {
-        System.out.println("registyerd");
         this.localEntities.add(entity);
     }
 

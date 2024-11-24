@@ -9,7 +9,8 @@ public enum PacketType {
     START_GAME(26),
     CREATE_PLAYER(27),
     UPDATE_PLAYER(28),
-    KEYS(29);
+    KEYS(29),
+    UPDATE_PLAYER_POSITION(30);
 
     private final int value;
     PacketType(int value){

@@ -12,6 +12,7 @@ import io.github.RashRogues.Player;
 import io.github.RashRogues.RRGame;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -23,7 +24,7 @@ public class Client implements Endpoint {
     private Socket socket;
     private Thread listeningThread;
     public ConcurrentLinkedQueue<byte[]> messages = new ConcurrentLinkedQueue<>();
-    public HashMap<String,Entity> syncedEntities = new HashMap<>();
+    public HashMap<String, Entity> syncedEntities = new HashMap<>();
     private int pid;
     public volatile boolean listening = true;
     public Queue<byte[]> inputQueue = new Queue<byte[]>();
@@ -31,16 +32,16 @@ public class Client implements Endpoint {
     public Client() {
         try {
             this.socket = Gdx.net.newClientSocket(Network.PROTOCOL, "localhost", Network.PORT, null);
-        }catch(GdxRuntimeException e){
+        } catch (GdxRuntimeException e) {
             System.out.println("unable to connect to server !");
             return;
         }
         System.out.println("Connected to server on localhost:" + Integer.toString(Network.PORT));
         this.in = socket.getInputStream();
         this.out = socket.getOutputStream();
-        try{
+        try {
             listen(in);
-        }catch(IOException | InterruptedException e){
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -52,7 +53,7 @@ public class Client implements Endpoint {
                         try {
                             while (listening) {
                                 byte[] msg = new byte[128];
-                                int read = in.read(msg,0,128);
+                                int read = in.read(msg, 0, 128);
                                 if (read > 0) {
                                     messages.add(msg);
                                 }
@@ -64,7 +65,6 @@ public class Client implements Endpoint {
                                 //System.out.flush();
                             }
                         } catch (IOException e) {
-                            System.out.println("Listening stopped.");
                             System.out.flush();
                         }
                     }
@@ -77,23 +77,25 @@ public class Client implements Endpoint {
      * Process all queued messages that are available.
      */
     public void processMessages() {
-        while (!this.messages.isEmpty()){
-           byte[] msg = this.messages.poll();
-           int msgType = (int) msg[0];
-           if (msgType == START_GAME.getvalue()){
-               handleStartGame();
-           }else if (msgType == WELCOME.getvalue()){
-               handleInvite(msg);
-           }else if (msgType == FAREWELL.getvalue()){
-               this.handleFarewell();
-           }else if (msgType == CREATE_PLAYER.getvalue()){
-               this.handleCreatePlayer(msg);
-           }else if (msgType == KEYS.getvalue()){
-               inputQueue.addLast(msg);
-               if (inputQueue.notEmpty()){
-                   handleKeys(inputQueue.removeFirst());
-               }
-           }
+        while (!this.messages.isEmpty()) {
+            byte[] msg = this.messages.poll();
+            int msgType = (int) msg[0];
+            if (msgType == START_GAME.getvalue()) {
+                handleStartGame();
+            } else if (msgType == WELCOME.getvalue()) {
+                handleInvite(msg);
+            } else if (msgType == FAREWELL.getvalue()) {
+                this.handleFarewell();
+            } else if (msgType == CREATE_PLAYER.getvalue()) {
+                this.handleCreatePlayer(msg);
+            } else if (msgType == KEYS.getvalue()) {
+                this.inputQueue.addLast(msg);
+            } else if (msgType == UPDATE_PLAYER_POSITION.getvalue()) {
+                this.handleUpdatePlayerPosition(msg);
+            }
+        }
+        if (this.inputQueue.notEmpty()){
+            this.handleKeys(this.inputQueue.removeFirst());
         }
     }
 
@@ -102,23 +104,21 @@ public class Client implements Endpoint {
     /**
      * Accept Invite To Server
      */
-    public void handleInvite(byte[] packet){
+    public void handleInvite(byte[] packet) {
         this.pid = (int) packet[1];
-        System.out.println("Server assigned a player ID: " + Integer.toString(this.pid));
     }
 
-    public void handleStartGame(){
+    public void handleStartGame() {
         System.out.println("Server started the game.");
         RRGame.globals.currentScreen.nextScreen();
     }
 
-    public void handleCreatePlayer(byte[] packet){
+    public void handleCreatePlayer(byte[] packet) {
         int new_pid = packet[1];
         int x = ((packet[2] >> 24) | (packet[3] >> 16) | (packet[4] >> 8) | (packet[5]));
         int y = ((packet[6] >> 24) | (packet[7] >> 16) | (packet[8] >> 8) | (packet[9]));
-        Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y, RRGame.PLAYER_SIZE);
-        RRGame.globals.players.put(new_pid,player);
-        System.out.println("Server Created player for pid: " + Integer.toString(new_pid));
+        Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG), x, y, RRGame.PLAYER_SIZE);
+        RRGame.globals.players.put(new_pid, player);
     }
 
     /**
@@ -126,10 +126,26 @@ public class Client implements Endpoint {
      * The connection is closed and we can dipose of our
      * input/output streams, as well as our socket.
      */
-    public void handleFarewell(){
+    public void handleFarewell() {
         System.out.println("Server connection closed.");
         this.dispose();
     }
+
+    public void handleUpdatePlayerPosition(byte[] packet) {
+        int pid = packet[1];
+        System.out.println("SERVER TOLD US TO UPDATE THE PLAYER WITH PID: " + Integer.toString(pid));
+        Player p = RRGame.globals.players.get(pid);
+        System.out.println("Player is: ");
+        System.out.println(p);
+        if (p == null){
+           return;
+        }
+        float x = ByteBuffer.wrap(new byte[]{packet[2], packet[3], packet[4], packet[5]}).getFloat();
+        float y = ByteBuffer.wrap(new byte[]{packet[6], packet[7], packet[8], packet[9]}).getFloat();
+
+        p.setPosition(x,y);
+    }
+
 
     public void handleKeys(byte[] packet){
         Player p = RRGame.globals.players.get((int) packet[1]);
@@ -161,14 +177,20 @@ public class Client implements Endpoint {
     /**
      * Tells server about our player.
      */
-    public void dispatchCreatePlayer(int x, int y){
-       byte[] stream = StreamMaker.createPlayer(this.pid, x, y);
+    public void dispatchCreatePlayer(Player player){
+       RRGame.globals.players.put(this.pid,player);
+       byte[] stream = StreamMaker.createPlayer(this.pid, (int) player.getX(),(int) player.getY());
         try {
             this.out.write(stream);
             this.out.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void dispatchPlayersPosition() {
+
     }
 
     /**

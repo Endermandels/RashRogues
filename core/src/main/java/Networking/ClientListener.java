@@ -20,8 +20,8 @@ public class ClientListener implements Endpoint {
     private OutputStream out;
     private Thread listeningThread;
     public ConcurrentLinkedQueue<byte[]> messages = new ConcurrentLinkedQueue<>();
-    private int pid = 0; //we are the server. PID 0
-    private int client_pid;
+    public int pid = 0; //we are the server. PID 0
+    public int client_pid;
     public volatile boolean listening = true;
     public Queue<byte[]> inputQueue = new Queue<byte[]>();
 
@@ -63,7 +63,6 @@ public class ClientListener implements Endpoint {
                                 //System.out.flush();
                         }
                     } catch (IOException ex) {
-                        System.out.println("Listening to client #" + Integer.toString(client_pid) + " stopped.");
                         System.out.flush();
                     }
                 }
@@ -90,11 +89,14 @@ public class ClientListener implements Endpoint {
             }else if (msgType == CREATE_PLAYER.getvalue()){
                 this.handleCreatePlayer(msg);
             }else if (msgType == KEYS.getvalue()){
-                inputQueue.addLast(msg);
-                if (inputQueue.notEmpty()){
-                    handleKeys(inputQueue.removeFirst());
-                }
+                this.inputQueue.addLast(msg);
             }
+        }
+        // we can only handle one input  per frame, otherwise shit gets messy.
+        // if we didn't queue these we'd be running multiple inputs in a single frame on the server,
+        // which is not reflective of how they were executed on the client.
+        if (this.inputQueue.notEmpty()){
+            this.handleKeys(this.inputQueue.removeFirst());
         }
     }
 
@@ -141,14 +143,21 @@ public class ClientListener implements Endpoint {
     /**
      * Tells server about our player.
      */
-    public void dispatchCreatePlayer(int x, int y){
-        byte[] stream = StreamMaker.createPlayer(0, x, y);
+    public void dispatchCreatePlayer(Player player){
+        RRGame.globals.players.put(this.pid,player);
+        System.out.println("SERVER PID: " + Integer.toString(this.pid));
+        byte[] stream = StreamMaker.createPlayer(0, (int) player.getX(), (int) player.getY());
         try {
             this.out.write(stream);
             this.out.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void dispatchPlayersPosition() {
+
     }
 
     public void dispatchReckonPlayerPosition(){
@@ -195,6 +204,21 @@ public class ClientListener implements Endpoint {
        if (packet[8] == 1){
             p.useConsumable();
        }
+    }
+
+    /**
+     * Assigns the position of Player 'p' to the Player with id 'pid'
+     * @param p
+     * @param pid
+     */
+    public void dispatchPlayerPosition(Player p, int pid){
+        byte[] stream = StreamMaker.playerPosition(p,pid);
+        try {
+            out.write(stream);
+            out.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void handleUpdatePlayer(byte [] packet){

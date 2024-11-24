@@ -106,11 +106,17 @@ public class Server implements Endpoint{
     }
 
     @Override
-    public void dispatchCreatePlayer(int x, int y) {
-        System.out.println("Creating a player on the client.");
+    public void dispatchCreatePlayer(Player player) {
         for (ClientListener c : clients){
-            System.out.println("told a handler to dispatch our player to the client");
-            c.dispatchCreatePlayer(x,y);
+            c.dispatchCreatePlayer(player);
+        }
+    }
+
+    @Override
+    public void dispatchPlayersPosition() {
+        for (ClientListener c : clients){
+            Player p = RRGame.globals.players.get(c.client_pid);
+            c.dispatchPlayerPosition(p,c.client_pid);
         }
     }
 
