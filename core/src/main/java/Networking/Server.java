@@ -30,6 +30,7 @@ public class Server implements Endpoint{
     private ServerSocket primarySocket;   // 2. primary connection where we listen for new clients.
     private Thread primarySocketThread;   // 3. thread on which we listen to primary connection for new clients
     private volatile boolean listening;
+
     /**
      * Begin hosting a server.
      * Accepted clients will break out into individual data connections on a separate thread.
@@ -38,7 +39,7 @@ public class Server implements Endpoint{
         primarySocket = Gdx.net.newServerSocket(Network.PROTOCOL,"localhost",Network.PORT,null);
         clients = Collections.synchronizedList(new ArrayList<ClientListener>());
         cleanupQueue = new Queue<>();
-        System.out.println("Server listening on 127.0.0.1:" + Integer.toString(Network.PORT));//TODO: listen on other interfaces other than loopback..
+        System.out.println(">>> Server listening on 127.0.0.1:" + Integer.toString(Network.PORT));
 
         primarySocketThread = new Thread(
             new Runnable() {
@@ -48,17 +49,17 @@ public class Server implements Endpoint{
                         try{
                             Socket client = primarySocket.accept(null);
                             clients.add(new ClientListener(client,clients.size()+1));
-                            System.out.println(client.getRemoteAddress().substring(1) + " Connected.");
+                            System.out.println(">>> " + client.getRemoteAddress().substring(1) + " Connected.");
                             System.out.flush();
 
                             if (clients.size() == Network.MAX_CLIENTS){
-                                System.out.println("Server full. Stopped listening for new connections.");
+                                System.out.println(">>> Game full. No longer accepting clients.");
                                 System.out.flush();
                                 listening = false;
                                 break;
                             }
                         }catch(GdxRuntimeException e){
-                            System.out.println("Server stopped.");
+                            System.out.println(">>! Server stopped.");
                         }
                     }
                 }
@@ -99,7 +100,7 @@ public class Server implements Endpoint{
 
     @Override
     public void dispatchStartGame() {
-        System.out.println("Starting game.");
+        System.out.println(">>> Starting game.");
         for (ClientListener c : clients){
             c.dispatchStartGame();
         }
@@ -109,14 +110,6 @@ public class Server implements Endpoint{
     public void dispatchCreatePlayer(Player player) {
         for (ClientListener c : clients){
             c.dispatchCreatePlayer(player);
-        }
-    }
-
-    @Override
-    public void dispatchPlayersPosition() {
-        for (ClientListener c : clients){
-            Player p = RRGame.globals.players.get(c.client_pid);
-            c.dispatchPlayerPosition(p,c.client_pid);
         }
     }
 

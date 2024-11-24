@@ -11,7 +11,6 @@ public interface Endpoint {
     public void processMessages();
     public void dispatchStartGame();
     public void dispatchCreatePlayer(Player player);
-    public void dispatchPlayersPosition();
     public void dispose();
     public void dispatchKeys(byte[] keyMask);
 }

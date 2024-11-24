@@ -33,17 +33,19 @@ public class Client implements Endpoint {
         try {
             this.socket = Gdx.net.newClientSocket(Network.PROTOCOL, "localhost", Network.PORT, null);
         } catch (GdxRuntimeException e) {
-            System.out.println("unable to connect to server !");
+            System.out.println(">>! Unable to connect to server.");
             return;
         }
-        System.out.println("Connected to server on localhost:" + Integer.toString(Network.PORT));
+        System.out.println(">>> Connected to server on localhost:" + this.socket.getRemoteAddress() + Integer.toString(Network.PORT));
         this.in = socket.getInputStream();
         this.out = socket.getOutputStream();
+
         try {
             listen(in);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
+
     }
 
     private void listen(InputStream in) throws IOException, InterruptedException {
@@ -184,13 +186,8 @@ public class Client implements Endpoint {
             this.out.write(stream);
             this.out.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(">>! Unable to communicate with client.");
         }
-    }
-
-    @Override
-    public void dispatchPlayersPosition() {
-
     }
 
     /**
@@ -211,7 +208,7 @@ public class Client implements Endpoint {
             out.write(stream);
             out.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(">>! Unable to communicate with client.");
         }
         this.listening = false;
         this.dispose();
@@ -228,7 +225,7 @@ public class Client implements Endpoint {
             out.write(stream);
             out.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(">>! Unable to communicate with client.");
         }
     }
 
@@ -244,13 +241,17 @@ public class Client implements Endpoint {
         try {
             this.in.close();
             this.out.close();
-        } catch (IOException e) {
+        } catch (IOException ignored) {
         }finally {
             socket.dispose();
             messages.clear();
         }
     }
 
+    /**
+     * What type of endpoint are we?
+     * @return Endpoint type.
+     */
     public Network.EndpointType getType() {
         return Network.EndpointType.CLIENT;
     }
