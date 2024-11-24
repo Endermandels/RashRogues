@@ -25,9 +25,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     private HashSet<Entity> newlyAddedEntities;
     private HashSet<Entity> entitiesToRemove;
     private PriorityQueue<Entity> renderQueue;
-    private ArrayList<Projectile> debugProjectileRenderList;
-    private ArrayList<Player> debugPlayerRenderList;
-    private ArrayList<Enemy> debugEnemyRenderList;
     private HashMap<Integer, Boolean> inputs;
     public static CollisionGrid collisionGrid = new CollisionGrid();
 
@@ -40,9 +37,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         this.newlyAddedEntities = new HashSet<>();
         this.entitiesToRemove = new HashSet<>();
         this.renderQueue    = new PriorityQueue<>(new EntityComparator());
-        this.debugProjectileRenderList = new ArrayList<>();
-        this.debugPlayerRenderList = new ArrayList<>();
-        this.debugEnemyRenderList = new ArrayList<>();
         initInputs();
         loadRooms();
         setNextRoom();
@@ -89,14 +83,17 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             keyMask[3] = 1;
         }
         if (inputs.get(Input.Keys.SPACE)) {
+            this.player.dash();
             inputs.put(Input.Keys.SPACE, false);
             keyMask[4] = 1;
         }
         if (inputs.get(Input.Keys.E)) {
+            this.player.useConsumable();
             inputs.put(Input.Keys.E, false);
             keyMask[5] = 1;
         }
         if (inputs.get(Input.Keys.Q)){
+            this.player.useAbility();
             inputs.put(Input.Keys.Q, false);
             keyMask[6] = 1;
         }

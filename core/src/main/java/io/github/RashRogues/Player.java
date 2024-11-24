@@ -18,10 +18,6 @@ public class Player extends Entity {
     private final float PLAYER_HIT_BOX_PERCENT_SCALAR = 0.01f;
     private final float PLAYER_HURT_BOX_WIDTH_PERCENT_SCALAR = 0.2f;
     private final float PLAYER_HURT_BOX_HEIGHT_PERCENT_SCALAR = 0.4f;
-    private boolean leftMove;
-    private boolean rightMove;
-    private boolean downMove;
-    private boolean upMove;
     private float dashTimer;
     private final float DASH_DEXTERITY_CONVERTER = 10f;
     private final float DASH_DISTANCE = 6f;
@@ -83,11 +79,6 @@ public class Player extends Entity {
         if (attackTimer >= (1 / stats.getAttackSpeed())) { attack(); attackTimer = 0f; }
     }
 
-//    public void moveLeft(boolean t) { leftMove = t; }
-//    public void moveRight(boolean t) { rightMove = t; }
-//    public void moveDown(boolean t) { downMove = t; }
-//    public void moveUp(boolean t) { upMove = t; }
-
     public void moveLeft(){
         xVelocity -= ACCELERATION;
         this.flipped = true;
@@ -126,16 +117,16 @@ public class Player extends Entity {
         float y = getY();
         float xOffset = 0f;
         float yOffset = 0f;
-        if  (leftMove) {
+        if  (xVelocity < 0) {
             xOffset -= DASH_DISTANCE;
         }
-        if (rightMove) {
+        if (xVelocity > 0) {
             xOffset += DASH_DISTANCE;
         }
-        if (downMove) {
+        if (yVelocity < 0) {
             yOffset -= DASH_DISTANCE;
         }
-        if (upMove) {
+        if (yVelocity > 0) {
             yOffset += DASH_DISTANCE;
         }
         // this is to ensure dash is constant even when going diagonal
