@@ -36,6 +36,7 @@ public class Server implements Endpoint{
      * Accepted clients will break out into individual data connections on a separate thread.
      */
     public void host(){
+        Server server = this; //add server to this block scope, so we can use it inside the thread.
         primarySocket = Gdx.net.newServerSocket(Network.PROTOCOL,"localhost",Network.PORT,null);
         clients = Collections.synchronizedList(new ArrayList<ClientListener>());
         cleanupQueue = new Queue<>();
@@ -48,7 +49,7 @@ public class Server implements Endpoint{
                     while (listening){
                         try{
                             Socket client = primarySocket.accept(null);
-                            clients.add(new ClientListener(client,clients.size()+1));
+                            clients.add(new ClientListener(server, client,clients.size()+1));
                             System.out.println(">>> " + client.getRemoteAddress().substring(1) + " Connected.");
                             System.out.flush();
 
@@ -110,6 +111,20 @@ public class Server implements Endpoint{
     public void dispatchCreatePlayer(Player player) {
         for (ClientListener c : clients){
             c.dispatchCreatePlayer(player);
+        }
+    }
+
+    /**
+     * Relay to all clients except client with PID notMe,
+     * to create a player.
+     * @param player Player to create.
+     * @param notMe Client to omit from sending list.
+     */
+    public void relayCreatePlayer(Player player, int notMe){
+        for (ClientListener c : clients){
+            if (c.client_pid != notMe){
+                c.dispatchCreatePlayer(player);
+            }
         }
     }
 

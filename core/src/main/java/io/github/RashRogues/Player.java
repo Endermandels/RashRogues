@@ -260,5 +260,4 @@ public class Player extends Entity {
         }
         super.draw(batch);
     }
-
 }

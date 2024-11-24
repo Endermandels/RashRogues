@@ -18,6 +18,7 @@ public class ClientListener implements Endpoint {
     private Socket socket;
     private InputStream in;
     private OutputStream out;
+    private Server server;
     private Thread listeningThread;
     public ConcurrentLinkedQueue<byte[]> messages = new ConcurrentLinkedQueue<>();
     public int pid = 0; //we are the server. PID 0
@@ -30,7 +31,8 @@ public class ClientListener implements Endpoint {
      * @param socket Active socket to communicate on.
      * @param pid Player ID to associate with this ClientListener
      */
-    public ClientListener(Socket socket, int pid) {
+    public ClientListener(Server server, Socket socket, int pid) {
+        this.server = server;
         this.socket     = socket;
         this.in         = socket.getInputStream();
         this.out        = socket.getOutputStream();
@@ -58,11 +60,6 @@ public class ClientListener implements Endpoint {
                                 if (read > 0) {
                                     messages.add(msg);
                                 }
-                                // DEBUG
-                                //for (int i = 0; i < 128; i++){
-                                //  System.out.print(msg[i] + "-");
-                                //}
-                                //System.out.flush();
                         }
                     } catch (IOException ex) {
                         System.out.println(">>! Listener Thread Exited.");
@@ -200,6 +197,7 @@ public class ClientListener implements Endpoint {
 
     /**
      * Client Requests to create a player.
+     * We need to relay this to the other clients, too.
      * @param packet Player Data
      */
     public void handleCreatePlayer(byte[] packet){
@@ -208,6 +206,8 @@ public class ClientListener implements Endpoint {
         int y = ((packet[6] >> 24) | (packet[7] >> 16) | (packet[8] >> 8) | (packet[9]));
         Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y, RRGame.PLAYER_SIZE);
         RRGame.globals.players.put(new_pid,player);
+        this.server.relayCreatePlayer(player, this.client_pid);
+
     }
 
     /**
