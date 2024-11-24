@@ -61,9 +61,12 @@ public class Player extends Entity {
         this(texture, x, y, size, size);
     }
 
+    public Player(int x, int y, int size){
+        this(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y,size,size);
+    }
     /**
      * Ran every frame.
-     * @param delta
+     * @param delta Time since last frame
      */
     public void update(float delta) {
         attackTimer += delta;
@@ -155,6 +158,19 @@ public class Player extends Entity {
             else bombXDir = 1;
         }
         new SmokeBomb(getX(), getY(), bombXDir, bombYDir, SMOKE_BOMB_THROW_DISTANCE, RRGame.STANDARD_PROJECTILE_SPEED);
+    }
+
+    public void dropKey(){
+        holdingKey = false;
+        new Key(getX(),getY());
+    }
+
+    public void grabKey(){
+        holdingKey = true;
+    }
+
+    public boolean isHoldingKey(){
+        return holdingKey;
     }
 
     public void useConsumable() {
