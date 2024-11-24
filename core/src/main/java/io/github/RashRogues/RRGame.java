@@ -3,8 +3,6 @@ package io.github.RashRogues;
 import Networking.Network;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Net;
-import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.FileHandleResolver;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
@@ -37,18 +35,38 @@ public class RRGame extends Game {
     public static final int PLAYER_SPAWN_Y = 30;
     public static final float CAMERA_SIZE = 30;
     public static final float PLAYER_SIZE = 2;
+    public static final float STANDARD_ENEMY_SIZE = 5;
+    public static final float DOOR_SIZE = 10;
+    public static final float KEY_SIZE = 4;
+    public static final float ARROW_SIZE = 2;
+    public static final float THROWING_KNIFE_SIZE = 2;
+    public static final float SMOKE_BOMB_SIZE = 4;
+    public static final float SMOKE_BOMB_EXPLOSION_SIZE = 10;
+    public static final float SMOKE_BOMB_EXPLOSION_DURATION = 8;
+    public static final float STANDARD_PROJECTILE_SPEED = 20;
+    public static final float STANDARD_PROJECTILE_DISTANCE = 40;
+    public static final int HEALTH_POTION_HEAL_AMOUNT = 50;
 
     public static final String RSC_MONO_FONT_FILE = "Fonts/JetBrainsMono-Regular.ttf";
     public static final String RSC_MONO_FONT = "JBM.ttf";
 
     // entity sprites (players, enemies, projectiles)
     public static final String RSC_ROGUE_IMG = "DefaultImages/rogue.png";
+    public static final String RSC_ARCHER_IMG = "DefaultImages/archer.png";
+    public static final String RSC_BOMBER_IMG = "DefaultImages/bomber.png";
     public static final String RSC_SWORDSMAN_IMG = "DefaultImages/swordsman.png";
+    public static final String RSC_ARROW_IMG = "DefaultImages/arrow.png";
+    public static final String RSC_THROWING_KNIFE_IMG = "DefaultImages/throwing_knife.png";
+    public static final String RSC_SMOKE_BOMB_IMG = "DefaultImages/bomb.png";
+    public static final String RSC_SMOKE_BOMB_EXPLOSION_IMG = "DefaultImages/explosion.png";
 
     // entity animations
 
     // item/background sprites
     public static final String RSC_ROOM1_IMG = "DefaultImages/room1.png";
+    public static final String RSC_ROOM2_IMG = "DefaultImages/room2.png";
+    public static final String RSC_KEY_IMG = "DefaultImages/key.png";
+    public static final String RSC_DOOR_IMG = "DefaultImages/door.png";
 
     // item animations
 
@@ -73,9 +91,18 @@ public class RRGame extends Game {
         am.load(RSC_MONO_FONT, BitmapFont.class, myFont);
 
         am.load(RSC_ROGUE_IMG, Texture.class);
+        am.load(RSC_ARCHER_IMG, Texture.class);
+        am.load(RSC_BOMBER_IMG, Texture.class);
         am.load(RSC_SWORDSMAN_IMG, Texture.class);
+        am.load(RSC_ARROW_IMG, Texture.class);
+        am.load(RSC_THROWING_KNIFE_IMG, Texture.class);
+        am.load(RSC_SMOKE_BOMB_IMG, Texture.class);
+        am.load(RSC_SMOKE_BOMB_EXPLOSION_IMG, Texture.class);
 
         am.load(RSC_ROOM1_IMG, Texture.class);
+        am.load(RSC_ROOM2_IMG, Texture.class);
+        am.load(RSC_KEY_IMG, Texture.class);
+        am.load(RSC_DOOR_IMG, Texture.class);
 
         am.load(RSC_BTN_HOST, Texture.class);
         am.load(RSC_BTN_JOIN, Texture.class);

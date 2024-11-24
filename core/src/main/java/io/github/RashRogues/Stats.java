@@ -2,14 +2,16 @@ package io.github.RashRogues;
 
 public class Stats {
 
-    protected int health;
-    protected int damage;
-    protected float attackSpeed;
-    protected float moveSpeed;
-    protected Entity parent;
-    protected boolean dead;
+    private int maxHealth;
+    private int health;
+    private int damage;
+    private float attackSpeed;
+    private float moveSpeed;
+    private Entity parent;
+    private boolean dead;
 
     Stats(int health, int damage, float attackSpeed, float moveSpeed, Entity parent) {
+        this.maxHealth = health;
         this.health = health;
         this.damage = damage;
         this.attackSpeed = attackSpeed;
@@ -19,7 +21,7 @@ public class Stats {
     }
 
     public int getHealth() { return health; }
-    public void increaseHealth(int amount) { health += amount; }
+    public void increaseHealth(int amount) { health += amount; maxHealth += amount; }
     public int getDamage() { return damage; }
     public void increaseDamage(int amount) { damage += amount; }
     public float getAttackSpeed() { return attackSpeed; }
@@ -34,6 +36,10 @@ public class Stats {
             this.dead = true;
             System.out.println("I'm dead...");
         }
+    }
+
+    public void heal(int amount) {
+        this.health = Math.min(maxHealth, this.health + amount);
     }
 
     public boolean isDead() { return this.dead; }

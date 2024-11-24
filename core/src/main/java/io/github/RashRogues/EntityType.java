@@ -6,5 +6,7 @@ public enum EntityType {
     PROJECTILE,
     ARCHER,
     BOMBER,
-    UI
+    UI,
+    BACKGROUND,
+    BOMB
 }

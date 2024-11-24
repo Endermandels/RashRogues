@@ -6,14 +6,15 @@ public abstract class Enemy extends Entity {
 
     protected EnemyStats stats;
     protected HurtBox hurtBox;
+    // early thinking is that there can be a variable named "hasKey" and would drop the key, idk. determined in Room.
 
-    Enemy(EntityType type, Texture texture, int x, int y, float width, float height) {
+    Enemy(EntityType type, Texture texture, float x, float y, float width, float height) {
         super(type, EntityAlignment.ENEMY, texture, x, y, width, height, Layer.ENEMY);
         hurtBox = new HurtBox(hitBox, this);
         // this will obviously change based on a number of factors later
     }
 
-    Enemy(EntityType type, Texture texture, int x, int y, float size) {
+    Enemy(EntityType type, Texture texture, float x, float y, float size) {
         this(type, texture, x, y, size, size);
     }
 
@@ -27,11 +28,14 @@ public abstract class Enemy extends Entity {
         hurtBox.update(delta);
     }
 
-    protected void levelUpEnemy() {
-        stats.health += 3;
-        stats.damage += 3;
-        stats.attackSpeed += 0.2f;
-        stats.moveSpeed += 0.5f;
+    /**
+     * Make this enemy stronger
+     */
+    public void levelUpEnemy() {
+        stats.increaseHealth(3);
+        stats.increaseDamage(3);
+        stats.increaseAttackSpeed(0.2f);
+        stats.increaseMoveSpeed(0.2f);
     }
 
     @Override
