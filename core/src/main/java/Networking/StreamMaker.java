@@ -58,7 +58,7 @@ public class StreamMaker {
 
    public static byte[] reckonPlayerPosition(float x, float y){
       byte[] stream = new byte[128];
-      stream[0] = (byte) PacketType.UPDATE_PLAYER_POSITION.getValue();
+      return stream;
    }
 
 }

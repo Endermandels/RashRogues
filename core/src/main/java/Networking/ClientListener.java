@@ -76,10 +76,6 @@ public class ClientListener implements Endpoint {
      * Process all queued messages that are available.
      */
     public void processMessages(){
-        if (inputQueue.notEmpty()){
-            this.handleKeys(inputQueue.removeFirst());
-        }
-
         while (!this.messages.isEmpty()){
             byte[] msg = this.messages.poll();
             int msgType = (int) msg[0];
@@ -95,6 +91,9 @@ public class ClientListener implements Endpoint {
                 this.handleCreatePlayer(msg);
             }else if (msgType == KEYS.getvalue()){
                 inputQueue.addLast(msg);
+                if (inputQueue.notEmpty()){
+                    handleKeys(inputQueue.removeFirst());
+                }
             }
         }
     }
@@ -198,22 +197,6 @@ public class ClientListener implements Endpoint {
        }
     }
 
-//    public void handleKeysUp(byte[] packet){
-//        Player p = RRGame.globals.players.get((int) packet[1]);
-//        if (packet[2] == 1){
-//            p.moveLeft(false);
-//        }
-//        if (packet[3] == 1){
-//            p.moveRight(false);
-//        }
-//        if (packet[4] == 1){
-//            p.moveDown(false);
-//        }
-//        if (packet[5] == 1){
-//            p.moveUp(false);
-//        }
-//    }
-
     public void handleUpdatePlayer(byte [] packet){
         return;
     }
@@ -242,9 +225,18 @@ public class ClientListener implements Endpoint {
         }
     }
 
-    @Override
-    public void dispatchKeys(byte[] keymask) {
-        return;
+    /**
+     * Communicate to server which keys are pressed down.
+     * @param keymask Keys pressed.
+     */
+    public void dispatchKeys(byte[] keymask){
+        byte[] stream = StreamMaker.keys(pid, keymask);
+        try {
+            out.write(stream);
+            out.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public Network.EndpointType getType() {

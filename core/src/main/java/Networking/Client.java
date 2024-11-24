@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.FileTextureData;
 import com.badlogic.gdx.net.Socket;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.Queue;
 import io.github.RashRogues.Entity;
 import io.github.RashRogues.EntityType;
 import io.github.RashRogues.Player;
@@ -25,6 +26,7 @@ public class Client implements Endpoint {
     public HashMap<String,Entity> syncedEntities = new HashMap<>();
     private int pid;
     public volatile boolean listening = true;
+    public Queue<byte[]> inputQueue = new Queue<byte[]>();
 
     public Client() {
         try {
@@ -86,6 +88,11 @@ public class Client implements Endpoint {
                this.handleFarewell();
            }else if (msgType == CREATE_PLAYER.getvalue()){
                this.handleCreatePlayer(msg);
+           }else if (msgType == KEYS.getvalue()){
+               inputQueue.addLast(msg);
+               if (inputQueue.notEmpty()){
+                   handleKeys(inputQueue.removeFirst());
+               }
            }
         }
     }
@@ -122,6 +129,31 @@ public class Client implements Endpoint {
     public void handleFarewell(){
         System.out.println("Server connection closed.");
         this.dispose();
+    }
+
+    public void handleKeys(byte[] packet){
+        Player p = RRGame.globals.players.get((int) packet[1]);
+        if (packet[2] == 1){
+            p.moveUp();
+        }
+        if (packet[3] == 1){
+            p.moveDown();
+        }
+        if (packet[4] == 1){
+            p.moveRight();
+        }
+        if (packet[5] == 1){
+            p.moveLeft();
+        }
+        if (packet[6] == 1){
+            p.dash();
+        }
+        if (packet[7] == 1){
+            p.useAbility();
+        }
+        if (packet[8] == 1){
+            p.useConsumable();
+        }
     }
 
    /* Dispatchers */

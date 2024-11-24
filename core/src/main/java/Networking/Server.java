@@ -123,6 +123,8 @@ public class Server implements Endpoint{
 
     @Override
     public void dispatchKeys(byte[] keymask) {
-
+        for (ClientListener c : clients){
+            c.dispatchKeys(keymask);
+        }
     }
 }
