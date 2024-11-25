@@ -6,6 +6,7 @@ import io.github.RashRogues.Player;
 import io.github.RashRogues.RRGame;
 
 import java.io.*;
+import java.util.LinkedHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static Networking.PacketType.*;
@@ -24,7 +25,7 @@ public class ClientListener implements Endpoint {
     public int pid = 0; //we are the server. PID 0
     public int client_pid;
     public volatile boolean listening = true;
-    public Queue<byte[]> inputQueue = new Queue<byte[]>();
+    public LinkedHashMap<Integer, Queue<byte[]>> inputQueues;
 
     /**
      * Dedicated
@@ -37,6 +38,8 @@ public class ClientListener implements Endpoint {
         this.in         = socket.getInputStream();
         this.out        = socket.getOutputStream();
         this.client_pid = pid;
+        this.inputQueues = new LinkedHashMap<>();
+
         try {
             this.dispatchWelcome(this.client_pid);
             this.listen(in);
@@ -97,7 +100,7 @@ public class ClientListener implements Endpoint {
 
                 //KEYSTROKES
                 else if ( msgType == KEYS.getvalue() ) {
-                    this.inputQueue.addLast(msg);
+                    this.inputQueues.get((int) msg[1]).addLast(msg);
                 }
             }
 
@@ -105,10 +108,14 @@ public class ClientListener implements Endpoint {
             We can only handle one input  per frame, otherwise shit gets messy.
             if we didn't queue these we'd be running multiple inputs in a single frame on the server,
             which is not reflective of how they were executed on the client.
+
+            We also need a seperate queue for each player, hence the linked hash map of queues.
             */
-            if (this.inputQueue.notEmpty()){
-                this.handleKeys(this.inputQueue.removeFirst());
-            }
+            inputQueues.forEach((id,q) -> {
+                if (q.notEmpty()){
+                    this.handleKeys(q.removeFirst());
+                }
+            });
 
         } catch(Exception e) {
             System.out.println(">>! Malformed Network Traffic Detected!");
@@ -139,6 +146,16 @@ public class ClientListener implements Endpoint {
             out.write(stream);
             out.flush();
         } catch (IOException e) {
+            System.out.println(">>! Unable to communicate with client.");
+        }
+    }
+
+    @Override
+    public void forward(byte[] packet) {
+        try {
+            out.write(packet);
+            out.flush();
+        } catch (IOException e){
             System.out.println(">>! Unable to communicate with client.");
         }
     }
@@ -201,13 +218,13 @@ public class ClientListener implements Endpoint {
      * @param packet Player Data
      */
     public void handleCreatePlayer(byte[] packet){
+        this.server.relay(packet,(int) packet[1]);
+        this.inputQueues.put((int) packet[1],new Queue<byte[]>());
         int new_pid = packet[1];
         int x = ((packet[2] >> 24) | (packet[3] >> 16) | (packet[4] >> 8) | (packet[5]));
         int y = ((packet[6] >> 24) | (packet[7] >> 16) | (packet[8] >> 8) | (packet[9]));
         Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y, RRGame.PLAYER_SIZE);
         RRGame.globals.players.put(new_pid,player);
-        this.server.relayCreatePlayer(player, this.client_pid);
-
     }
 
     /**
@@ -215,6 +232,7 @@ public class ClientListener implements Endpoint {
      * @param packet Input Data
      */
     public void handleKeys(byte[] packet){
+        this.server.relay(packet,this.client_pid);
         Player p = RRGame.globals.players.get((int) packet[1]);
         if (packet[2] == 1) {
             p.moveUp();

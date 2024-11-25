@@ -13,4 +13,6 @@ public interface Endpoint {
     public void dispatchCreatePlayer(Player player);
     public void dispose();
     public void dispatchKeys(byte[] keyMask);
+    public void forward(byte[] packet);
+
 }

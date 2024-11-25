@@ -114,18 +114,16 @@ public class Server implements Endpoint{
         }
     }
 
-    /**
-     * Relay to all clients except client with PID notMe,
-     * to create a player.
-     * @param player Player to create.
-     * @param notMe Client to omit from sending list.
-     */
-    public void relayCreatePlayer(Player player, int notMe){
+    public void relay(byte[] packet, int notMe){
         for (ClientListener c : clients){
             if (c.client_pid != notMe){
-                c.dispatchCreatePlayer(player);
+                c.forward(packet);
             }
         }
+    }
+
+    public void forward(byte[] packet, int notMe){
+        return;
     }
 
     @Override
@@ -140,5 +138,10 @@ public class Server implements Endpoint{
         for (ClientListener c : clients){
             c.dispatchKeys(keymask);
         }
+    }
+
+    @Override
+    public void forward(byte[] packet) {
+        return;
     }
 }

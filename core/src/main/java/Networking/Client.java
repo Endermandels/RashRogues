@@ -14,6 +14,7 @@ import io.github.RashRogues.RRGame;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static Networking.PacketType.*;
@@ -27,9 +28,10 @@ public class Client implements Endpoint {
     public HashMap<String, Entity> syncedEntities = new HashMap<>();
     private int pid;
     public volatile boolean listening = true;
-    public Queue<byte[]> inputQueue = new Queue<byte[]>();
+    public LinkedHashMap<Integer, Queue<byte[]>> inputQueues;
 
     public Client() {
+        this.inputQueues = new LinkedHashMap<>();
         try {
             this.socket = Gdx.net.newClientSocket(Network.PROTOCOL, "localhost", Network.PORT, null);
         } catch (GdxRuntimeException e) {
@@ -59,12 +61,6 @@ public class Client implements Endpoint {
                                 if (read > 0) {
                                     messages.add(msg);
                                 }
-                                //DEBUG
-                                //for (int i = 0; i < 128; i++){
-                                //    System.out.print(msg[i] + "-");
-                                //}
-                                //System.out.println("|");
-                                //System.out.flush();
                             }
                         } catch (IOException e) {
                             System.out.flush();
@@ -91,14 +87,18 @@ public class Client implements Endpoint {
             } else if (msgType == CREATE_PLAYER.getvalue()) {
                 this.handleCreatePlayer(msg);
             } else if (msgType == KEYS.getvalue()) {
-                this.inputQueue.addLast(msg);
+                this.inputQueues.get((int) msg[1]).addLast(msg);
             } else if (msgType == UPDATE_PLAYER_POSITION.getvalue()) {
                 this.handleUpdatePlayerPosition(msg);
             }
         }
-        if (this.inputQueue.notEmpty()){
-            this.handleKeys(this.inputQueue.removeFirst());
-        }
+
+        inputQueues.forEach((id,q) -> {
+            if (q.notEmpty()){
+                this.handleKeys(q.removeFirst());
+            }
+        });
+
     }
 
     /* Handlers */
@@ -120,6 +120,7 @@ public class Client implements Endpoint {
         int x = ((packet[2] >> 24) | (packet[3] >> 16) | (packet[4] >> 8) | (packet[5]));
         int y = ((packet[6] >> 24) | (packet[7] >> 16) | (packet[8] >> 8) | (packet[9]));
         Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG), x, y, RRGame.PLAYER_SIZE);
+        this.inputQueues.put((int) packet[1],new Queue<byte[]>());
         RRGame.globals.players.put(new_pid, player);
     }
 
@@ -227,6 +228,11 @@ public class Client implements Endpoint {
         } catch (IOException e) {
             System.out.println(">>! Unable to communicate with client.");
         }
+    }
+
+    @Override
+    public void forward(byte[] packet) {
+        return;
     }
 
     /**
