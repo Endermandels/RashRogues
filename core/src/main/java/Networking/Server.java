@@ -5,15 +5,12 @@ import com.badlogic.gdx.net.ServerSocket;
 import com.badlogic.gdx.net.Socket;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.Queue;
-import io.github.RashRogues.Entity;
 import io.github.RashRogues.Player;
-import io.github.RashRogues.RRGame;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * The server class is the central control hub for multiplayer games.
@@ -25,11 +22,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * For network settings, such as port & protocol configuration, see the Network class.
  */
 public class Server implements Endpoint{
-    private List<ClientListener> clients;       // 1. data connections to connected clients.
-    private Queue<Integer> cleanupQueue; // 1.1 data connections to stop.
-    private ServerSocket primarySocket;   // 2. primary connection where we listen for new clients.
-    private Thread primarySocketThread;   // 3. thread on which we listen to primary connection for new clients
-    private volatile boolean listening;
+    private List<ClientListener> clients;       // data connections to connected clients.
+    private Queue<Integer> cleanupQueue;        // data connections to stop.
+    private ServerSocket primarySocket;         // primary connection where we listen for new clients.
+    private Thread primarySocketThread;         // thread on which we listen to primary connection for new clients
+    private volatile boolean listening;         // Are we listening for new connections?
+
+    private LinkedHashMap<Integer,Integer> heartbeatStatus; //track how many frames have passed since last heartbeat
 
     /**
      * Begin hosting a server.
@@ -40,6 +39,7 @@ public class Server implements Endpoint{
         primarySocket = Gdx.net.newServerSocket(Network.PROTOCOL,"localhost",Network.PORT,null);
         clients = Collections.synchronizedList(new ArrayList<ClientListener>());
         cleanupQueue = new Queue<>();
+        heartbeatStatus = new LinkedHashMap();
         System.out.println(">>> Server listening on 127.0.0.1:" + Integer.toString(Network.PORT));
 
         primarySocketThread = new Thread(
@@ -97,6 +97,14 @@ public class Server implements Endpoint{
             int toRemove = cleanupQueue.removeFirst();
             clients.remove(toRemove);
         }
+
+        //Read Heartbeats
+        this.heartbeatStatus.forEach((client, frames) -> {
+            if (frames > Network.HEARTBEAT_THRESHOLD){
+                System.out.println(">>! Client #" + Integer.toString(client) + " has gone silent!");
+            }
+            this.heartbeatStatus.put(client,frames+1);
+        });
     }
 
     @Override
@@ -105,6 +113,10 @@ public class Server implements Endpoint{
         for (ClientListener c : clients){
             c.dispatchStartGame();
         }
+    }
+
+    public void heartbeat(int clientPID){
+        this.heartbeatStatus.put(clientPID,0);
     }
 
     @Override
@@ -138,6 +150,11 @@ public class Server implements Endpoint{
         for (ClientListener c : clients){
             c.dispatchKeys(keymask);
         }
+    }
+
+    @Override
+    public void dispatchHeartbeat() {
+        return;
     }
 
     @Override

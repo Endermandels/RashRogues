@@ -2,6 +2,7 @@ package io.github.RashRogues;
 
 import Networking.Network;
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;

@@ -19,6 +19,7 @@ public class Network {
    public static final int PORT = 5999;
    public static final int IO_BUFFER_SIZE = 256;
    public static final int MAX_CLIENTS = 4;
+   public static final int HEARTBEAT_THRESHOLD = 60;
    public static final Net.Protocol PROTOCOL = Net.Protocol.TCP;
    public Endpoint connection;
    public EndpointType type = EndpointType.UNSET;

@@ -92,4 +92,11 @@ public class StreamMaker {
       return stream;
    }
 
+   public static byte[] heartbeat(int pid){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.HEARTBEAT.getvalue();
+      stream[1] = (byte) pid;
+      return stream;
+   }
+
 }

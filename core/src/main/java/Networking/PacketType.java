@@ -10,7 +10,8 @@ public enum PacketType {
     CREATE_PLAYER(27),
     UPDATE_PLAYER(28),
     KEYS(29),
-    UPDATE_PLAYER_POSITION(30);
+    UPDATE_PLAYER_POSITION(30),
+    HEARTBEAT(31);
 
     private final int value;
     PacketType(int value){
