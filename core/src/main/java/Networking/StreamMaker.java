@@ -60,11 +60,6 @@ public class StreamMaker {
       return stream;
    }
 
-   public static byte[] reckonPlayerPosition(float x, float y){
-      byte[] stream = new byte[128];
-      return stream;
-   }
-
    public static byte[] playerPosition(Player player, int pid){
       byte[] stream = new byte[128];
       stream[0] = (byte) PacketType.UPDATE_PLAYER_POSITION.getvalue();
