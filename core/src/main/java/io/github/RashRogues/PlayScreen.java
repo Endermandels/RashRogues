@@ -110,9 +110,8 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             e.update(delta);
             renderQueue.add(e);
         }
-
-        /* Update Player's Camera Position */
         game.playerCam.update(delta);
+
 
         /* check/handle collisions */
         collisionGrid.populateCollisionGrid(localEntities);
@@ -136,6 +135,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     @Override
     public void render(float delta) {
         update(delta);
+        game.playerCam.update(delta);
         game.batch.setProjectionMatrix(game.playerCam.combined);
         ScreenUtils.clear(0.9f, 0.9f, 0.9f, 1f);
         game.batch.begin();
