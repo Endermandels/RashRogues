@@ -31,7 +31,7 @@ public class Player extends Entity {
     private Sprite keySprite;
     private int healthPotionsHeld;
 
-    public Player(Texture texture, int x, int y, float width, float height) {
+    public Player(Texture texture, float x, float y, float width, float height) {
         super(EntityType.PLAYER, EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER);
         RRGame.globals.currentNumPlayers++;
         this.maxXVelocity = BASE_PLAYER_MOVE_SPEED;
@@ -53,11 +53,11 @@ public class Player extends Entity {
         // this will obviously change based on a number of factors later
     }
 
-    public Player(Texture texture, int x, int y, float size) {
+    public Player(Texture texture, float x, float y, float size) {
         this(texture, x, y, size, size);
     }
 
-    public Player(int x, int y, int size){
+    public Player(float x, float y, int size){
         this(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y,size,size);
     }
     /**
