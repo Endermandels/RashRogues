@@ -10,7 +10,7 @@ public class Player extends Entity {
     private final int BASE_PLAYER_DAMAGE = 10;
     private final float BASE_PLAYER_ATTACK_SPEED = 0.5f;
     private final float ACCELERATION = 50.0f;
-    private final float FRICTION = 100.0f;
+    private final float FRICTION = 25.0f;
     private final float BASE_PLAYER_MOVE_SPEED = 15.0f;
     private final float BASE_PLAYER_DEXTERITY = 10f;
     public PlayerStats stats;
@@ -18,10 +18,6 @@ public class Player extends Entity {
     private final float PLAYER_HIT_BOX_PERCENT_SCALAR = 0.01f;
     private final float PLAYER_HURT_BOX_WIDTH_PERCENT_SCALAR = 0.2f;
     private final float PLAYER_HURT_BOX_HEIGHT_PERCENT_SCALAR = 0.4f;
-    private boolean leftMove;
-    private boolean rightMove;
-    private boolean downMove;
-    private boolean upMove;
     private float dashTimer;
     private final float DASH_DEXTERITY_CONVERTER = 10f;
     private final float DASH_DISTANCE = 6f;
@@ -57,13 +53,16 @@ public class Player extends Entity {
         // this will obviously change based on a number of factors later
     }
 
-    Player(float x, float y, float size) {
-        this(RRGame.am.get(RRGame.RSC_ROGUE_IMG), x, y, size, size);
+    public Player(Texture texture, float x, float y, float size) {
+        this(texture, x, y, size, size);
     }
 
+    public Player(float x, float y, int size){
+        this(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y,size,size);
+    }
     /**
      * Ran every frame.
-     * @param delta
+     * @param delta Time since last frame
      */
     public void update(float delta) {
         attackTimer += delta;
@@ -80,10 +79,23 @@ public class Player extends Entity {
         if (attackTimer >= (1 / stats.getAttackSpeed())) { attack(); attackTimer = 0f; }
     }
 
-    public void moveLeft(boolean t) { leftMove = t; }
-    public void moveRight(boolean t) { rightMove = t; }
-    public void moveDown(boolean t) { downMove = t; }
-    public void moveUp(boolean t) { upMove = t; }
+    public void moveLeft(){
+        xVelocity -= ACCELERATION;
+        this.flipped = true;
+    }
+
+    public void moveRight(){
+        xVelocity += ACCELERATION;
+        this.flipped = false;
+    }
+
+    public void moveUp(){
+        yVelocity += ACCELERATION;
+    }
+
+    public void moveDown(){
+        yVelocity -= ACCELERATION;
+    }
 
     public void attack() {
         // good spot for a sound effect
@@ -105,16 +117,16 @@ public class Player extends Entity {
         float y = getY();
         float xOffset = 0f;
         float yOffset = 0f;
-        if  (leftMove) {
+        if  (xVelocity < 0) {
             xOffset -= DASH_DISTANCE;
         }
-        if (rightMove) {
+        if (xVelocity > 0) {
             xOffset += DASH_DISTANCE;
         }
-        if (downMove) {
+        if (yVelocity < 0) {
             yOffset -= DASH_DISTANCE;
         }
-        if (upMove) {
+        if (yVelocity > 0) {
             yOffset += DASH_DISTANCE;
         }
         // this is to ensure dash is constant even when going diagonal
@@ -137,6 +149,19 @@ public class Player extends Entity {
             else bombXDir = 1;
         }
         new SmokeBomb(getX(), getY(), bombXDir, bombYDir, SMOKE_BOMB_THROW_DISTANCE, RRGame.STANDARD_PROJECTILE_SPEED);
+    }
+
+    public void dropKey(){
+        holdingKey = false;
+        new Key(getX(),getY());
+    }
+
+    public void grabKey(){
+        holdingKey = true;
+    }
+
+    public boolean isHoldingKey(){
+        return holdingKey;
     }
 
     public void useConsumable() {
@@ -163,55 +188,32 @@ public class Player extends Entity {
     }
 
     public void adjustVelocity() {
-        float xVel = 0;
-        float yVel = 0;
-        if  (leftMove) {
-            xVel -= ACCELERATION;
-            this.flipped = true;
-        }
-        if (rightMove) {
-            xVel += ACCELERATION;
-            this.flipped = false;
-        }
-        if (downMove) {
-            yVel -= ACCELERATION;
-        }
-        if (upMove) {
-            yVel += ACCELERATION;
+        // normalize diagonal movement
+        if (xVelocity != 0 && yVelocity != 0) {
+            xVelocity = (float) (xVelocity / Math.sqrt(2));
+            yVelocity = (float) (yVelocity / Math.sqrt(2));
         }
 
-        // this is to ensure speed is constant even when going diagonal
-        if (xVel != 0 && yVel != 0) {
-            xVel = (float) (xVel / Math.sqrt(2));
-            yVel = (float) (yVel / Math.sqrt(2));
-        }
-        if (xVel == 0 && xVelocity != 0) {
-            float sign = Math.signum(xVelocity);
-            xVelocity -= sign*FRICTION;
-            if (sign != Math.signum(xVelocity)) {
+        //apply horizontal friction
+        if (xVelocity != 0){
+            float xDir = Math.signum(xVelocity);
+            xVelocity -= (xDir * FRICTION);
+            if (Math.signum(xVelocity) != xDir){
                 xVelocity = 0;
             }
         }
-        if (yVel == 0 && yVelocity != 0) {
-            float sign = Math.signum(yVelocity);
-            yVelocity -= sign*FRICTION;
-            if (sign != Math.signum(yVelocity)) {
+
+        //apply vertical friction
+        if (yVelocity != 0){
+            float yDir = Math.signum(yVelocity);
+            yVelocity -= (yDir * FRICTION);
+            if (Math.signum(yVelocity) != yDir){
                 yVelocity = 0;
             }
         }
 
-        xVelocity += xVel;
-        yVelocity += yVel;
-
-        xVelocity = Math.max(-stats.getMoveSpeed(), Math.min(xVelocity, stats.getMoveSpeed()));
-        yVelocity = Math.max(-stats.getMoveSpeed(), Math.min(yVelocity, stats.getMoveSpeed()));
-    }
-
-    public boolean isHoldingKey() { return holdingKey; }
-    public void grabKey() { holdingKey = true; }
-    public void dropKey() {
-        holdingKey = false;
-        new Key(getX(), getY());
+        xVelocity = Math.max(-maxXVelocity, Math.min(xVelocity, maxXVelocity));
+        yVelocity = Math.max(-maxYVelocity, Math.min(yVelocity, maxYVelocity));
     }
 
     @Override

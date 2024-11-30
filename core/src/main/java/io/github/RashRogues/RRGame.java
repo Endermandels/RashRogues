@@ -137,5 +137,6 @@ public class RRGame extends Game {
         batch.dispose();
         hudBatch.dispose();
         am.dispose();
+        this.network.dispose();
     }
 }

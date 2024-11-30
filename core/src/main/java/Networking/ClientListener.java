@@ -1,52 +1,46 @@
 package Networking;
 
-import com.badlogic.gdx.graphics.TextureData;
-import com.badlogic.gdx.graphics.glutils.FileTextureData;
 import com.badlogic.gdx.net.Socket;
-import io.github.RashRogues.Entity;
-import io.github.RashRogues.EntityType;
+import com.badlogic.gdx.utils.Queue;
 import io.github.RashRogues.Player;
 import io.github.RashRogues.RRGame;
 
 import java.io.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import static Networking.PacketType.*;
+
+/**
+ * Each ClientListener is dedicated to speaking/listening to a remote client.
+ * Most methods within the ClientListener are meant to be called directly by the Server class.
+ */
 public class ClientListener implements Endpoint {
     private Socket socket;
     private InputStream in;
     private OutputStream out;
-    private ObjectInputStream objectInputStream;
-    private ObjectOutputStream objectOutputStream;
     private Thread listeningThread;
-    public ConcurrentLinkedQueue<Packet> messages = new ConcurrentLinkedQueue<>();
-    private int pid = 0; //we are the server. PID 0
-
-    public ClientListener(Socket socket, int pid) {
-        try {
-            this.socket = socket;
-
-            this.in = socket.getInputStream();
-            this.out = socket.getOutputStream();
-
-            objectInputStream = null;
-            objectOutputStream = new ObjectOutputStream(out);
-
-            dispatchWelcome(pid);
-            listen(in);
-        } catch (IOException | InterruptedException e) {
-            System.out.println("Catastrophic communication error! Exiting!");
-            e.printStackTrace();
-            System.exit(1);
-        }
-    }
+    public ConcurrentLinkedQueue<byte[]> messages = new ConcurrentLinkedQueue<>();
+    public int pid = 0; //we are the server. PID 0
+    public int client_pid;
+    public volatile boolean listening = true;
+    public Queue<byte[]> inputQueue = new Queue<byte[]>();
 
     /**
-     * Endpoint type of current endpoint.
-     *
-     * @return Endpoint Type
+     * Dedicated
+     * @param socket Active socket to communicate on.
+     * @param pid Player ID to associate with this ClientListener
      */
-    public Network.EndpointType getType() {
-        return Network.EndpointType.SERVER;
+    public ClientListener(Socket socket, int pid) {
+        this.socket     = socket;
+        this.in         = socket.getInputStream();
+        this.out        = socket.getOutputStream();
+        this.client_pid = pid;
+        try {
+            this.dispatchWelcome(this.client_pid);
+            this.listen(in);
+        } catch (IOException | InterruptedException e) {
+            System.out.println(">>! Connection with client #" + Integer.toString(this.client_pid) + " closed.");
+        }
     }
 
     /**
@@ -55,132 +49,227 @@ public class ClientListener implements Endpoint {
      */
     private void listen(InputStream in) throws IOException, InterruptedException {
         this.listeningThread = new Thread(
-                new Runnable() {
-                    public void run() {
-                        try {
-                            objectInputStream = new ObjectInputStream(in);
-                            while (true) {
-                                messages.add((Packet) objectInputStream.readObject());
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        } catch (ClassNotFoundException e) {
-                            e.printStackTrace();
+            new Runnable() {
+                public void run() {
+                    try {
+                        while (listening) {
+                                byte[] msg = new byte[128];
+                                int read = in.read(msg,0,128);
+                                if (read > 0) {
+                                    messages.add(msg);
+                                }
+                                // DEBUG
+                                //for (int i = 0; i < 128; i++){
+                                //  System.out.print(msg[i] + "-");
+                                //}
+                                //System.out.flush();
                         }
+                    } catch (IOException ex) {
+                        System.out.println(">>! Listener Thread Exited.");
+                        System.out.flush();
                     }
                 }
+            }
         );
         this.listeningThread.start();
     }
 
     /**
-     * Process all queued messages that are available.
+     * Process Messages from the client.
+
+     * Each message type has a specific handler method.
+     * Most Messages will be executed as soon as they are encountered.
+     * Input is an exception to this, as it needs to be buffered to
+     * run only once a frame.
      */
     public void processMessages() {
-        while (!this.messages.isEmpty()){
-            Packet p = this.messages.poll();
-            switch (p.getPacketType()){
-                case UPDATE:
-                    handleUpdate(p);
-                    break;
-                case CREATE:
-                    handleCreate(p);
-                    break;
-                case DESTROY:
-                    handleDestroy(p);
-                    break;
-                case WELCOME:
-                    break;
+        try {
+            while ( !this.messages.isEmpty() ) {
+                byte[] msg = this.messages.poll();
+                int msgType = (int) msg[0];
+
+                //FAREWELL
+                if ( msgType == FAREWELL.getvalue() ) {
+                    this.handleFarewell();
+                }
+
+                //CREATE PLAYER
+                else if ( msgType == CREATE_PLAYER.getvalue() ) {
+                    this.handleCreatePlayer(msg);
+                }
+
+                //KEYSTROKES
+                else if ( msgType == KEYS.getvalue() ) {
+                    this.inputQueue.addLast(msg);
+                }
             }
+
+            /*
+            We can only handle one input  per frame, otherwise shit gets messy.
+            if we didn't queue these we'd be running multiple inputs in a single frame on the server,
+            which is not reflective of how they were executed on the client.
+            */
+            if (this.inputQueue.notEmpty()){
+                this.handleKeys(this.inputQueue.removeFirst());
+            }
+
+        } catch(Exception e) {
+            System.out.println(">>! Malformed Network Traffic Detected!");
         }
+
     }
 
-
-    /* Dispatchers */
-
     /**
-     * 1. Initialize a new client with their playerID.
-     *
-     * @param pid Player ID to assign to new player.
+     * Officially welcome the client to the game, supplying them with a player ID.
      */
     public void dispatchWelcome(int pid) {
         try {
-            objectOutputStream.writeObject(new PacketWelcome(pid));
+            byte[] stream = StreamMaker.welcome(pid);
+            out.write(stream);
+            out.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(">>! Unable to communicate with client.");
         }
     }
 
     /**
-     * 2. Create a new entity on the client
-     *
+     * Communicate keystrokes to client.
+     * @param keymask Keystroke Bytemap
      */
-    public void dispatchCreate(Entity entity){
-        try{
-            EntityType type = entity.getType();
-            String uid = Integer.toString(this.pid) + '_' + entity.toString();
-            String texture = ((FileTextureData) entity.getTexture().getTextureData()).getFileHandle().path();
-            float x = entity.getX();
-            float y = entity.getY();
-            objectOutputStream.writeObject(new PacketCreate(type,uid,texture,(int) x, (int) y));
-        } catch (IOException e){
-            e.printStackTrace();
+    public void dispatchKeys(byte[] keymask){
+        byte[] stream = StreamMaker.keys(pid, keymask);
+        try {
+            out.write(stream);
+            out.flush();
+        } catch (IOException e) {
+            System.out.println(">>! Unable to communicate with client.");
         }
     }
 
-    public void dispatchCreate(Player player){
-        dispatchCreate((Entity) player);
-    }
-
     /**
-     * 3. Start the game
+     * Communicate to client that the game has started.
      */
     public void dispatchStartGame() {
         try{
-            objectOutputStream.writeObject(new PacketStartGame());
+            byte[] stream = StreamMaker.startGame();
+            out.write(stream);
+            out.flush();
         } catch (IOException e){
-            e.printStackTrace();
+            System.out.println(">>! Unable to communicate with client.");
         }
     }
 
-    public void dispatchUpdate(Entity entity){
-        try{
-            EntityType type = entity.getType();
-            String uid = Integer.toString(this.pid) + '_' + entity.toString();
-            float x = entity.getX();
-            float y = entity.getY();
-            objectOutputStream.writeObject(new PacketUpdate(type,uid,x, y));
-        } catch (IOException e){
-            e.printStackTrace();
+    /**
+     * Communicate to the client that the server is shutting down.
+     */
+    public void dispatchFarewell(){
+        byte[] stream = StreamMaker.farewell();
+        try {
+            out.write(stream);
+            out.flush();
+        } catch (IOException e) {
+            System.out.println(">>! Unable to communicate with client.");
+        }
+        this.listening = false;
+        this.dispose();
+    }
+
+    /**
+     * Communicate to the client to create the server's player
+     */
+    public void dispatchCreatePlayer(Player player){
+        RRGame.globals.players.put(this.pid,player);
+        System.out.println("SERVER PID: " + Integer.toString(this.pid));
+        byte[] stream = StreamMaker.createPlayer(0, (int) player.getX(), (int) player.getY());
+        try {
+            this.out.write(stream);
+            this.out.flush();
+        } catch (IOException e) {
+            System.out.println(">>! Unable to communicate with client.");
         }
     }
 
-    public void dispatchUpdate(Player player){
-        dispatchUpdate((Entity) player);
+    /**
+     * Communicate to the client to create a player.
+     * Used to relay information between clients.
+     */
+    public void dispatchCreatePlayer(byte[] createPlayerPacket, int pid){
     }
-
-
 
     /* Handlers */
+
     /**
-     * Create an object on our client
+     * Client Requests to create a player.
+     * @param packet Player Data
      */
-    public void handleCreate(Packet p){
-        PacketCreate create = (PacketCreate) p;
-        //register up!
+    public void handleCreatePlayer(byte[] packet){
+        int new_pid = packet[1];
+        int x = ((packet[2] >> 24) | (packet[3] >> 16) | (packet[4] >> 8) | (packet[5]));
+        int y = ((packet[6] >> 24) | (packet[7] >> 16) | (packet[8] >> 8) | (packet[9]));
+        Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y, RRGame.PLAYER_SIZE);
+        RRGame.globals.players.put(new_pid,player);
     }
 
     /**
-     * Update an object on our client
+     * Client Requests to execute keystrokes on a player.
+     * @param packet Input Data
      */
-    public void handleUpdate(Packet p){
-
+    public void handleKeys(byte[] packet){
+        Player p = RRGame.globals.players.get((int) packet[1]);
+        if (packet[2] == 1) {
+            p.moveUp();
+        }
+        if (packet[3] == 1) {
+            p.moveDown();
+        }
+        if (packet[4] == 1) {
+            p.moveRight();
+        }
+        if (packet[5] == 1) {
+            p.moveLeft();
+        }
+        if (packet[6] == 1) {
+            p.dash();
+        }
+        if (packet[7] == 1) {
+            p.useAbility();
+        }
+        if (packet[8] == 1) {
+            p.useConsumable();
+        }
     }
 
     /**
-     * Destroy an object on our client
+     * Client Requests to leave the game
      */
-    public void handleDestroy(Packet p){
+    public void handleFarewell(){
+        this.dispose();
+        System.out.println(">>> Client #" + Integer.toString(this.client_pid) + " left the game.");
+    }
 
+    /**
+     * Safely destroy streams and sockets.
+     */
+    public void dispose(){
+        if (this.listening){
+            this.dispatchFarewell();
+        }
+        this.listening = false;
+        try {
+            out.close();
+            in.close();
+        } catch (IOException e) {
+        }finally {
+            socket.dispose();
+            messages.clear();
+        }
+    }
+
+    /**
+     * Are we a server or a client?
+     * @return Network type.
+     */
+    public Network.EndpointType getType() {
+        return Network.EndpointType.SERVER;
     }
 }

@@ -8,13 +8,13 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.PriorityQueue;
 
 public class PlayScreen extends ScreenAdapter implements RRScreen {
 
     private boolean debug = false;
-
     private RRGame game;
     private HUD hud;
     private Room currentRoom;
@@ -25,9 +25,11 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     private HashSet<Entity> newlyAddedEntities;
     private HashSet<Entity> entitiesToRemove;
     private PriorityQueue<Entity> renderQueue;
+    private HashMap<Integer, Boolean> inputs;
     public static CollisionGrid collisionGrid = new CollisionGrid();
 
     public PlayScreen(RRGame game) {
+
         /* Initialization */
         RRGame.globals.currentScreen = this;
         this.game = game;
@@ -35,22 +37,22 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         this.newlyAddedEntities = new HashSet<>();
         this.entitiesToRemove = new HashSet<>();
         this.renderQueue    = new PriorityQueue<>(new EntityComparator());
+        initInputs();
         loadRooms();
         setNextRoom();
         createHUDAndInputs();
 
+        /* Player Creation */
+        player = new Player(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, (int) RRGame.PLAYER_SIZE);
+        this.game.network.connection.dispatchCreatePlayer(player);
+
         /* Instance Creation */
         new Swordsman(50, 30, 10);
-        player = new Player(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, RRGame.PLAYER_SIZE);
         new Key(30, 280);
 
         /* Camera Setup */
         game.playerCam.bind(player);
         game.playerCam.center();
-
-        if (game.network.type == Network.EndpointType.SERVER){
-            game.network.connection.dispatchCreate(player);
-        }
     }
 
     @Override
@@ -58,47 +60,83 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         Gdx.app.log("PlayScreen", "show");
     }
 
-    public void update(float delta) {
-        game.network.connection.processMessages();
-        if (game.network.type == Network.EndpointType.SERVER){
-            game.network.connection.dispatchUpdate(this.player);
+    /**
+     * Poll inputs
+     * This method executes inputs locally, then sends them over the network.
+     */
+    public void getInputs() {
+        byte[] keyMask = new byte[8];
+        if (inputs.get(Input.Keys.UP)) {
+            this.player.moveUp();
+            keyMask[0] = 1;
         }
+        if (inputs.get(Input.Keys.DOWN)) {
+            this.player.moveDown();
+            keyMask[1] = 1;
+        }
+        if (inputs.get(Input.Keys.RIGHT)) {
+            this.player.moveRight();
+            keyMask[2] = 1;
+        }
+        if (inputs.get(Input.Keys.LEFT)) {
+            this.player.moveLeft();
+            keyMask[3] = 1;
+        }
+        if (inputs.get(Input.Keys.SPACE)) {
+            this.player.dash();
+            inputs.put(Input.Keys.SPACE, false);
+            keyMask[4] = 1;
+        }
+        if (inputs.get(Input.Keys.E)) {
+            this.player.useConsumable();
+            inputs.put(Input.Keys.E, false);
+            keyMask[5] = 1;
+        }
+        if (inputs.get(Input.Keys.Q)){
+            this.player.useAbility();
+            inputs.put(Input.Keys.Q, false);
+            keyMask[6] = 1;
+        }
+        game.network.connection.dispatchKeys(keyMask);
+    }
 
+    public void update(float delta) {
+        /* Process Updates from the Network */
+        game.network.connection.processMessages();
+        getInputs();
+
+        /* Execute Update Event For All Entities In the Room */
         for ( Entity e : localEntities ){
             e.update(delta);
             renderQueue.add(e);
         }
+
         game.playerCam.update(delta);
 
-
-        // check/handle collisions
+        /* check/handle collisions */
         collisionGrid.populateCollisionGrid(localEntities);
         collisionGrid.calculateCollisions();
 
-        // add newlyAddedEntities to the localEntities list
+        /* add entites that were created last frame to the render/update list */
         localEntities.addAll(newlyAddedEntities);
         newlyAddedEntities.clear();
 
-        // delete entitiesToRemove from the localEntities list
+        /* remove entities that 'died' last frame from the render/update list */
         localEntities.removeAll(entitiesToRemove);
         entitiesToRemove.clear();
 
-        // determine if all the players are at the door to progress to the next room
-        // the door kill itself when it's ready to move on, so we just need to check:
+        /*
+         Determine if all the players are at the door to progress to the next room
+         the door kill itself when it's ready to move on, so we just need to check:
+        */
         if (!localEntities.contains(currentDoor)) { setNextRoom(); }
     }
 
     @Override
     public void render(float delta) {
-
-        /* Update Instances and Enqueue for rendering */
         update(delta);
-
-        /* Update Camera Position */
         game.playerCam.update();
         game.batch.setProjectionMatrix(game.playerCam.combined);
-
-        /* Render Background and Instances */
         ScreenUtils.clear(0.9f, 0.9f, 0.9f, 1f);
         game.batch.begin();
         currentRoom.draw(game.batch);
@@ -106,13 +144,13 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             renderQueue.poll().draw(game.batch);
         }
         game.batch.end();
-
-
         game.hudBatch.begin();
         hud.draw(game.hudBatch);
         game.hudBatch.end();
+        debugRender();
+    }
 
-
+    public void debugRender(){
         // only debugging needs the ShapeRenderer, so we can have nice formatting by having an early return condition
         if (!debug) { return; }
         Gdx.gl.glEnable(GL20.GL_BLEND);
@@ -146,6 +184,17 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     @Override
     public void resize(int width, int height) {
         hud.resize(width, height, game);
+    }
+
+    private void initInputs(){
+        this.inputs = new HashMap<>();
+        this.inputs.put(Input.Keys.RIGHT, false);
+        this.inputs.put(Input.Keys.LEFT, false);
+        this.inputs.put(Input.Keys.UP, false);
+        this.inputs.put(Input.Keys.DOWN, false);
+        this.inputs.put(Input.Keys.SPACE, false);
+        this.inputs.put(Input.Keys.E, false);
+        this.inputs.put(Input.Keys.Q, false);
     }
 
     private void loadRooms() {
@@ -351,6 +400,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         });
 
         // HUD Data
+
         hud.registerView("Number of Players:", new HUDViewCommand(HUDViewCommand.Visibility.WHEN_OPEN) {
             @Override
             public String execute(boolean consoleIsOpen) {
@@ -361,10 +411,21 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         // we're adding an input processor AFTER the HUD has been created,
         // so we need to be a bit careful here and make sure not to clobber
         // the HUD's input controls. Do that by using an InputMultiplexer
+        /*
+        proposition 11/22 CT - Executing player actions on both keyup and keydown has presented a huge challenge in the
+        networking.
+
+        We can still using the multiplexor, but instead of acting on both key-up/key-down, we are instead setting
+        the state of those keys to an input hashmap that we can poll during the update event.
+
+        This way we only have to worry about whether the key is being pressed or not during a given frame.
+        Otherwise we have to worry about which key-down pertains to which key-up etc, and which frames those happened on.
+        */
         InputMultiplexer multiplexer = new InputMultiplexer();
         // let the HUD's input processor handle things first....
         multiplexer.addProcessor(Gdx.input.getInputProcessor());
         multiplexer.addProcessor(new InputAdapter() {
+
             @Override
             public boolean keyDown(int keycode) {
                 if (hud.isOpen()) { return false; }
@@ -372,25 +433,31 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                     // cancel any selections
                 }
                 if (keycode == Input.Keys.A || keycode == Input.Keys.LEFT) {
-                    player.moveLeft(true);
+                    inputs.put(Input.Keys.LEFT, true);
                 }
+
                 if (keycode == Input.Keys.D || keycode == Input.Keys.RIGHT) {
-                    player.moveRight(true);
+                    inputs.put(Input.Keys.RIGHT, true);
                 }
+
                 if (keycode == Input.Keys.S || keycode == Input.Keys.DOWN) {
-                    player.moveDown(true);
+                    inputs.put(Input.Keys.DOWN, true);
                 }
+
                 if (keycode == Input.Keys.W || keycode == Input.Keys.UP) {
-                    player.moveUp(true);
+                    inputs.put(Input.Keys.UP, true);
                 }
+
                 if (keycode == Input.Keys.SPACE) {
-                    player.dash();
+                    inputs.put(Input.Keys.SPACE, true);
                 }
+
                 if (keycode == Input.Keys.E) {
-                    player.useConsumable();
+                    inputs.put(Input.Keys.E, true);
                 }
+
                 if (keycode == Input.Keys.Q) {
-                    player.useAbility();
+                    inputs.put(Input.Keys.Q, true);
                 }
                 return true;
             }
@@ -398,16 +465,16 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             @Override
             public boolean keyUp(int keycode) {
                 if (keycode == Input.Keys.A || keycode == Input.Keys.LEFT) {
-                    player.moveLeft(false);
+                    inputs.put(Input.Keys.LEFT,false);
                 }
                 if (keycode == Input.Keys.D || keycode == Input.Keys.RIGHT) {
-                    player.moveRight(false);
+                    inputs.put(Input.Keys.RIGHT,false);
                 }
                 if (keycode == Input.Keys.S || keycode == Input.Keys.DOWN) {
-                    player.moveDown(false);
+                    inputs.put(Input.Keys.DOWN,false);
                 }
                 if (keycode == Input.Keys.W || keycode == Input.Keys.UP) {
-                    player.moveUp(false);
+                    inputs.put(Input.Keys.UP,false);
                 }
                 return true;
             }

@@ -10,8 +10,7 @@ public interface Endpoint {
      */
     public void processMessages();
     public void dispatchStartGame();
-    public void dispatchCreate(Entity entity);
-    public void dispatchCreate(Player player);
-    public void dispatchUpdate(Entity entity);
-    public void dispatchUpdate(Player entity);
+    public void dispatchCreatePlayer(Player player);
+    public void dispose();
+    public void dispatchKeys(byte[] keyMask);
 }
