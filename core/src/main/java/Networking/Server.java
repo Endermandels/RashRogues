@@ -6,6 +6,7 @@ import com.badlogic.gdx.net.Socket;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.Queue;
 import io.github.RashRogues.Player;
+import io.github.RashRogues.RRGame;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,6 +42,8 @@ public class Server implements Endpoint{
         cleanupQueue = new Queue<>();
         heartbeatStatus = new LinkedHashMap();
         System.out.println(">>> Server listening on 127.0.0.1:" + Integer.toString(Network.PORT));
+        RRGame.globals.addClient(0);
+        RRGame.globals.pid = 0;
 
         primarySocketThread = new Thread(
             new Runnable() {

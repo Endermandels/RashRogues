@@ -21,7 +21,7 @@ public class FindGameScreen extends ScreenAdapter implements RRScreen {
     public FindGameScreen(RRGame game) {
         RRGame.globals.currentScreen = this;
         this.solicitee = new Solicitee();
-        this.list = new GameList(50,50,400,400, this.solicitee);
+        this.list = new GameList(game, 50,50,400,400, this.solicitee);
         this.game = game;
     }
 
@@ -65,7 +65,10 @@ public class FindGameScreen extends ScreenAdapter implements RRScreen {
 
     @Override
     public void nextScreen(Screen screen) {
-
+        if (this.solicitee != null){
+            this.solicitee.dispose();
+        }
+        this.game.setScreen(screen);
     }
 
     @Override

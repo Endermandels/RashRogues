@@ -24,9 +24,11 @@ public class GameList extends Entity {
     private int startIndex  = 0;
     private static Texture itemTex = RRGame.am.get(RRGame.RSC_GAME_LIST_ITEM);
     private BitmapFont font = new BitmapFont();
+    private RRGame game;
 
-    public GameList(float x, float y, int width, int height, Solicitee solicitee){
+    public GameList(RRGame game, float x, float y, int width, int height, Solicitee solicitee){
         super(EntityType.UI, EntityAlignment.BACKGROUND, RRGame.am.get(RRGame.RSC_GAME_LIST),x,y,width,height, Layer.BACKGROUND);
+        this.game = game;
         this.games          = new HashSet<>();
         this.gamesAge       = new HashMap<>();
         this.solicitee      = solicitee;
@@ -112,7 +114,16 @@ public class GameList extends Entity {
                 int itemHeight = (int) (this.getHeight() / this.GAMES_SHOWN);
                 int X = (int) this.getX();
                 int Y = (int) this.getY() + (int) this.getHeight() - (itemHeight*(i+1));
+                int mouseX = Gdx.input.getX();
+                int mouseY = Gdx.graphics.getHeight()-Gdx.input.getY();
+                if (mouseX > X && mouseX < this.getX() + this.getWidth() && mouseY > Y && mouseY < Y+itemHeight){
+                    batch.setColor(0.9f,0.9f,0.9f,1.0f);
+                    if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
+                        RRGame.globals.currentScreen.nextScreen(new LobbyScreen(this.game, gameList.get(startIndex+i)));
+                    }
+                }
                 batch.draw(itemTex,X,Y,this.getWidth(), itemHeight);
+                batch.setColor(1f,1f,1f,1f);
                 font.setColor(1,0,0,1);
                 font.draw(batch,gameList.get(startIndex+i),X+8,Y+(itemHeight)-16);
             }

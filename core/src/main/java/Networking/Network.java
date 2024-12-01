@@ -26,6 +26,7 @@ public class Network {
    public static final Net.Protocol PROTOCOL = Net.Protocol.TCP;
    public Endpoint connection;
    public EndpointType type = EndpointType.UNSET;
+   public static String ip = "";
 
    public void start(EndpointType type){
       if (this.type != EndpointType.UNSET){

@@ -43,6 +43,7 @@ public class ClientListener implements Endpoint {
 
         try {
             this.dispatchWelcome(this.client_pid);
+            this.dispatchNewClientNotifications(this.client_pid);
             this.listen(in);
             this.speak(out);
         } catch (IOException | InterruptedException e) {
@@ -156,8 +157,13 @@ public class ClientListener implements Endpoint {
     /**
      * Officially welcome the client to the game, supplying them with a player ID.
      */
-    public void dispatchWelcome(int pid) {
-        this.outgoingMessages.add(StreamMaker.welcome(pid));
+    public void dispatchWelcome(int client_pid) {
+        this.outgoingMessages.add(StreamMaker.welcome(client_pid));
+        RRGame.globals.addClient(client_pid);
+    }
+
+    public void dispatchNewClientNotifications(int pid){
+        this.server.forward(StreamMaker.newClientNotification(pid));
     }
 
     /**
@@ -201,7 +207,7 @@ public class ClientListener implements Endpoint {
      * Communicate to the client to create the server's player
      */
     public void dispatchCreatePlayer(Player player){
-        RRGame.globals.players.put(this.pid,player);
+        RRGame.globals.addPlayer(this.pid,player);
         System.out.println("SERVER PID: " + Integer.toString(this.pid));
         this.outgoingMessages.add(StreamMaker.createPlayer(0, (int) player.getX(), (int) player.getY()));
     }
@@ -228,7 +234,7 @@ public class ClientListener implements Endpoint {
         int x = ((packet[2] >> 24) | (packet[3] >> 16) | (packet[4] >> 8) | (packet[5]));
         int y = ((packet[6] >> 24) | (packet[7] >> 16) | (packet[8] >> 8) | (packet[9]));
         Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y, RRGame.PLAYER_SIZE);
-        RRGame.globals.players.put(new_pid,player);
+        RRGame.globals.addPlayer(new_pid,player);
     }
 
     /**

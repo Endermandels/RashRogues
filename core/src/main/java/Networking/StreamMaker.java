@@ -94,4 +94,11 @@ public class StreamMaker {
       return stream;
    }
 
+   public static byte[] newClientNotification(int pid){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.NEW_CLIENT.getvalue();
+      stream[1] = (byte) pid;
+      return stream;
+   }
+
 }
