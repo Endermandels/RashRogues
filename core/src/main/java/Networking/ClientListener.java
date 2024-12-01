@@ -268,6 +268,11 @@ public class ClientListener implements Endpoint {
      * Client Requests to leave the game
      */
     public void handleFarewell(){
+        this.server.relay(StreamMaker.destroyPlayer(this.client_pid), this.client_pid);
+        Player p = RRGame.globals.players.get(client_pid);
+        RRGame.globals.removePlayer(client_pid);
+        RRGame.globals.removeClient(client_pid);
+        RRGame.globals.currentScreen.removeEntity(p);
         this.dispose();
         System.out.println(">>> Client #" + Integer.toString(this.client_pid) + " left the game.");
     }

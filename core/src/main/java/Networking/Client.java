@@ -149,6 +149,8 @@ public class Client implements Endpoint {
                 this.handleClientShare(msg);
             } else if (msgType == CLIENT_UPDATE.getvalue()){
                 this.handleClientUpdate(msg);
+            } else if (msgType == DESTROY_PLAYER.getvalue()){
+                this.handleDestroyPlayer(msg);
             }
         }
 
@@ -271,6 +273,14 @@ public class Client implements Endpoint {
         Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG), x, y, RRGame.PLAYER_SIZE);
         this.inputQueues.put((int) packet[1],new Queue<byte[]>());
         RRGame.globals.addPlayer(new_pid,player);
+    }
+
+    public void handleDestroyPlayer(byte[] packet){
+        int pid = packet[1];
+        Player p = RRGame.globals.players.get(pid);
+        RRGame.globals.removePlayer(pid);
+        RRGame.globals.removeClient(pid);
+        RRGame.globals.currentScreen.removeEntity(p);
     }
 
     /**

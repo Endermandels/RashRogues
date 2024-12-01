@@ -103,6 +103,7 @@ public class Button extends Entity {
                 break;
 
             case DISABLED:
+                this.setColor(Color.GRAY);
                 break;
         }
     }

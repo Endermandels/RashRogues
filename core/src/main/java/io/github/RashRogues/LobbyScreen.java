@@ -104,6 +104,8 @@ public class LobbyScreen extends ScreenAdapter implements RRScreen {
     }
 
     public void dispose(){
-        this.solicitor.dispose();
+        if (this.solicitor != null){
+            this.solicitor.dispose();
+        }
     }
 }

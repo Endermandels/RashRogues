@@ -17,6 +17,16 @@ public class Globals {
     }
 
     public void addClient(int pid){
-        clientSet.add(pid);
+        RRGame.globals.clientSet.add(pid);
+    }
+
+    public void removePlayer(int pid){
+        Player p = RRGame.globals.players.get(pid);
+        RRGame.globals.players.remove(pid);
+        RRGame.globals.playersSet.remove(p);
+    }
+
+    public void removeClient(int pid){
+        RRGame.globals.clientSet.remove(pid);
     }
 }
