@@ -18,6 +18,7 @@ public class Network {
 
    public static final int PORT = 5999;
    public static final int SOLICITATION_PORT = 5998;
+   public static final int SOLICITATION_FREQUENCY = 30;
    public static final byte[] SOLICITATION_KEY = {51,25,64,12};
    public static final int IO_BUFFER_SIZE = 256;
    public static final int MAX_CLIENTS = 4;

@@ -55,4 +55,8 @@ public class HostGameScreen extends ScreenAdapter implements RRScreen {
         this.localEntities.remove(entity);
         return;
     }
+
+    public void dispose(){
+        this.solicitor.dispose();
+    }
 }
