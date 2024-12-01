@@ -12,7 +12,8 @@ public enum PacketType {
     KEYS(29),
     UPDATE_PLAYER_POSITION(30),
     HEARTBEAT(31),
-    NEW_CLIENT(32);
+    CLIENT_SHARE(32),
+    CLIENT_UPDATE(33);
 
     private final int value;
     PacketType(int value){

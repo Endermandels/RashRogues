@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class GameList extends Entity {
-    private static int STALE_GAME_FRAMES = 60;
+    private static int STALE_GAME_FRAMES = 240;
     private final int GAMES_SHOWN  = 4;
     private Solicitee solicitee;
     private HashSet<String> games;
@@ -33,12 +33,6 @@ public class GameList extends Entity {
         this.gamesAge       = new HashMap<>();
         this.solicitee      = solicitee;
         this.solicitee.listen();
-
-//        this.games.add("192.168.50.3");
-//        this.games.add("192.168.1.3");
-//        this.games.add("172.33.0.66");
-//        this.games.add("192.168.50.99");
-//        this.games.add("192.168.50.100");
     }
 
     public void decrement(){

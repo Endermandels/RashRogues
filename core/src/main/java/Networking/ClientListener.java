@@ -43,7 +43,6 @@ public class ClientListener implements Endpoint {
 
         try {
             this.dispatchWelcome(this.client_pid);
-            this.dispatchNewClientNotifications(this.client_pid);
             this.listen(in);
             this.speak(out);
         } catch (IOException | InterruptedException e) {
@@ -159,11 +158,9 @@ public class ClientListener implements Endpoint {
      */
     public void dispatchWelcome(int client_pid) {
         this.outgoingMessages.add(StreamMaker.welcome(client_pid));
+        this.outgoingMessages.add(StreamMaker.getClients());
+        this.server.relay(StreamMaker.notifyClientUpdate(client_pid), client_pid);
         RRGame.globals.addClient(client_pid);
-    }
-
-    public void dispatchNewClientNotifications(int pid){
-        this.server.forward(StreamMaker.newClientNotification(pid));
     }
 
     /**

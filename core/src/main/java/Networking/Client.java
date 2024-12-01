@@ -40,7 +40,6 @@ public class Client implements Endpoint {
         this.inputQueues = new LinkedHashMap<>();
         this.socket = Gdx.net.newClientSocket(Network.PROTOCOL, Network.ip, Network.PORT, null);
         System.out.println(">>> Connected to server on:" + this.socket.getRemoteAddress());
-        RRGame.globals.addClient(0);
 
         this.in = socket.getInputStream();
         this.out = socket.getOutputStream();
@@ -146,8 +145,10 @@ public class Client implements Endpoint {
                 this.inputQueues.get((int) msg[1]).addLast(msg);
             } else if (msgType == UPDATE_PLAYER_POSITION.getvalue()) {
                 this.handleUpdatePlayerPosition(msg);
-            } else if (msgType == NEW_CLIENT.getvalue()){
-                this.handleClientJoinNotification(msg);
+            } else if (msgType == CLIENT_SHARE.getvalue()){
+                this.handleClientShare(msg);
+            } else if (msgType == CLIENT_UPDATE.getvalue()){
+                this.handleClientUpdate(msg);
             }
         }
 
@@ -222,27 +223,26 @@ public class Client implements Endpoint {
      */
     public void handleInvite(byte[] packet) {
         this.pid = (int) packet[1];
-        System.out.println("invite from " + Integer.toString(this.pid));
         RRGame.globals.addClient(this.pid);
         RRGame.globals.pid = this.pid;
     }
 
     /**
-     * We received info that a new client joined the game.
+     * The server shared a list of all clients with us.
      */
-    public void handleClientJoinNotification(byte[] packet) {
-        int client_pid = packet[1];
-        RRGame.globals.addClient(client_pid);
+    public void handleClientShare(byte[] packet) {
+        int clients = packet[1];
+        for (int i = 0; i < clients; i++){
+            RRGame.globals.addClient(packet[2+i]);
+        }
     }
 
     /**
-     * We received info that a client left the game.
+     * We received info that a new client joined the game.
      */
-    public void handleClientLeftNotification(byte[] packet) {
-        int client_pid = packet[1];
-
-
-
+    public void handleClientUpdate(byte[] packet){
+        int client = packet[1];
+        RRGame.globals.addClient(client);
     }
 
     /**
