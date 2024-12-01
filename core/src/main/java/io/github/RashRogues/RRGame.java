@@ -78,6 +78,8 @@ public class RRGame extends Game {
     public static final String RSC_BTN_HOST = "Buttons/host.png";
     public static final String RSC_BTN_JOIN = "Buttons/join.png";
     public static final String RSC_BTN_START_GAME = "Buttons/play.png";
+    public static final String RSC_GAME_LIST = "Menu/game_list_background.png";
+    public static final String RSC_GAME_LIST_ITEM = "Menu/game_list_item.png";
 
     @Override
     public void create() {
@@ -107,6 +109,8 @@ public class RRGame extends Game {
         am.load(RSC_BTN_HOST, Texture.class);
         am.load(RSC_BTN_JOIN, Texture.class);
         am.load(RSC_BTN_START_GAME, Texture.class);
+        am.load(RSC_GAME_LIST, Texture.class);
+        am.load(RSC_GAME_LIST_ITEM, Texture.class);
 
         batch = new SpriteBatch();
         hudBatch = new SpriteBatch();

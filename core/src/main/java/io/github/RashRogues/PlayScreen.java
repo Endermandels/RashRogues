@@ -493,6 +493,11 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
     public void nextScreen() {return;}
 
+    @Override
+    public void nextScreen(Screen screen) {
+        return;
+    }
+
     /**
      * This is called every time a class inheriting Entity is instantiated on this Screen.
      * See the Entity class constructor for more information.

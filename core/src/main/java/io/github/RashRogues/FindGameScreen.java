@@ -1,8 +1,10 @@
 package io.github.RashRogues;
 
 import Networking.Network;
-import UI.Button;
+import UI.GameList;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import java.util.HashSet;
@@ -15,6 +17,7 @@ public class FindGameScreen extends ScreenAdapter implements RRScreen {
 
     public FindGameScreen(RRGame game) {
         RRGame.globals.currentScreen = this;
+        GameList list = new GameList(50,50,400,400);
         this.game = game;
     }
 
@@ -39,8 +42,25 @@ public class FindGameScreen extends ScreenAdapter implements RRScreen {
         this.game.batch.end();
     }
 
+    /**
+     * Join a solicited game.
+     */
+    public void join(){
+        try {
+            game.network.start(Network.EndpointType.CLIENT);
+        } catch (GdxRuntimeException e){
+            System.out.println("Unable to connect.");
+            game.network.reset();
+        }
+    }
+
     @Override
     public void nextScreen() {return;}
+
+    @Override
+    public void nextScreen(Screen screen) {
+
+    }
 
     @Override
     public void registerEntity(Entity entity) {

@@ -35,14 +35,9 @@ public class Client implements Endpoint {
     /**
      * Client-Server connection, over which gameplay data can be communicated.
      */
-    public Client() {
+    public Client() throws GdxRuntimeException{
         this.inputQueues = new LinkedHashMap<>();
-        try {
-            this.socket = Gdx.net.newClientSocket(Network.PROTOCOL, "localhost", Network.PORT, null);
-        } catch (GdxRuntimeException e) {
-            System.out.println(">>! Unable to connect to server.");
-            return;
-        }
+        this.socket = Gdx.net.newClientSocket(Network.PROTOCOL, "localhost", Network.PORT, null);
         System.out.println(">>> Connected to server on localhost:" + this.socket.getRemoteAddress() + Integer.toString(Network.PORT));
 
         this.in = socket.getInputStream();

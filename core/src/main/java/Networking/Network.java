@@ -17,6 +17,8 @@ public class Network {
    }
 
    public static final int PORT = 5999;
+   public static final int SOLICITATION_PORT = 5998;
+   public static final byte[] SOLICITATION_KEY = {51,25,64,12};
    public static final int IO_BUFFER_SIZE = 256;
    public static final int MAX_CLIENTS = 4;
    public static final int HEARTBEAT_THRESHOLD = 60;
@@ -37,6 +39,13 @@ public class Network {
             this.connection = new Server();
             ((Server) this.connection).host();
             break;
+      }
+   }
+
+   public void reset(){
+      this.type = EndpointType.UNSET;
+      if (this.connection != null){
+         this.connection.dispose();
       }
    }
 
