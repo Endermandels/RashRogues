@@ -21,9 +21,14 @@ public class Client implements Endpoint {
     private Socket socket;
     private InputStream in;
     private OutputStream out;
-    private Thread listeningThread;
     private Thread speakingThread;
+    private Thread listeningThread;
+    private Socket socket;
+    public ConcurrentLinkedQueue<byte[]> messages = new ConcurrentLinkedQueue<>();
+    public HashMap<String, Entity> syncedEntities = new HashMap<>();
     private int pid;
+    public volatile boolean listening = true;
+    public Queue<byte[]> inputQueue = new Queue<byte[]>();
 
     public ConcurrentLinkedQueue<byte[]> incomingMessages = new ConcurrentLinkedQueue<>();
     public ConcurrentLinkedQueue<byte[]> outgoingMessages = new ConcurrentLinkedQueue<>();
@@ -125,7 +130,6 @@ public class Client implements Endpoint {
      * sure we don't cluster multiple player inputs on one frame.
      */
     public void processMessages() {
-
         //READ MESSAGES FROM LISTENER THREAD
         while (!this.incomingMessages.isEmpty()) {
             byte[] msg = this.incomingMessages.poll();
@@ -337,6 +341,7 @@ public class Client implements Endpoint {
     public void forward(byte[] packet) {
         return;
     }
+
 
     /**
      * Safely informs the server that we are disconnecting,

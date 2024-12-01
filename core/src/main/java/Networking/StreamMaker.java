@@ -50,7 +50,7 @@ public class StreamMaker {
       stream[1] = (byte) pid;
       return stream;
    }
-
+  
    public static byte[] updatePlayer(int pid){
       byte[] stream = new byte[128];
       stream[0] = (byte) PacketType.UPDATE_PLAYER.getvalue();
@@ -125,7 +125,4 @@ public class StreamMaker {
       }
       return stream;
    }
-
-
-
 }

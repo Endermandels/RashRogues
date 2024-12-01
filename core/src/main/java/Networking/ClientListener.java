@@ -105,8 +105,12 @@ public class ClientListener implements Endpoint {
                                 }
                             }
                         }
+                    } catch (IOException ex) {
+                        System.out.println(">>! Listener Thread Exited.");
+                        System.out.flush();
                     }
                 }
+            }
         );
         this.speakingThread.start();
     }
@@ -183,7 +187,7 @@ public class ClientListener implements Endpoint {
     public void forward(byte[] packet) {
         this.outgoingMessages.add(packet);
     }
-
+  
     /**
      * Communicate to client that the game has started.
      */
@@ -195,6 +199,7 @@ public class ClientListener implements Endpoint {
      * Communicate to the client that the server is shutting down.
      */
     public void dispatchFarewell(){
+
         this.outgoingMessages.add(StreamMaker.farewell());
         this.listening = false;
         this.dispose();

@@ -8,10 +8,12 @@ import com.badlogic.gdx.utils.Queue;
 import io.github.RashRogues.Player;
 import io.github.RashRogues.RRGame;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * The server class is the central control hub for multiplayer games.
@@ -116,7 +118,6 @@ public class Server implements Endpoint{
         for (ClientListener c : clients){
             c.dispatchStartGame();
         }
-    }
 
     public void heartbeat(int clientPID){
         this.heartbeatStatus.put(clientPID,0);
