@@ -8,12 +8,14 @@ public class HitBox extends Rectangle {
     public Entity parent;
     public float disableTimer;
     protected float disableLength;
+    private Effect effect;
 
     public HitBox(float x, float y, float width, float height, Entity parent) {
         super(x, y, width, height);
         this.parent = parent;
-        this.disableTimer = 0f;
+        this.effect = Effect.NONE;
         this.disableLength = 1f;
+        this.disableTimer = disableLength;
     }
 
     public HitBox(Rectangle rectangle, Entity parent) {
@@ -25,8 +27,13 @@ public class HitBox extends Rectangle {
         disableTimer += delta;
     }
 
+    public void setEffect(Effect effect) { this.effect = effect; }
+
+    public Effect getEffect() { return effect; }
+
     public void hitHurtBox(HurtBox hurtBox) {
-        if ((hurtBox.parent.equals(this.parent)) || (disableTimer < disableLength)) { return; }
+        if ((hurtBox.parent.equals(this.parent)) || (hurtBox.parent.alignment.equals(this.parent.alignment))
+                || (disableTimer < disableLength) || (this.parent instanceof Bomb)) { return; }
         disableTimer = 0f;
         // keep in mind that an entity should only deal with itself; hit/hurt boxes will notify the entities, but
         // the entities should only be reading from each other, NOT writing each other's variables!

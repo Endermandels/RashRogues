@@ -7,5 +7,6 @@ public enum EntityType {
     ARCHER,
     BOMBER,
     UI,
-    BACKGROUND
+    BACKGROUND,
+    BOMB
 }

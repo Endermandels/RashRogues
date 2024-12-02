@@ -28,11 +28,14 @@ public abstract class Enemy extends Entity {
         hurtBox.update(delta);
     }
 
-    protected void levelUpEnemy() {
-        stats.health += 3;
-        stats.damage += 3;
-        stats.attackSpeed += 0.2f;
-        stats.moveSpeed += 0.5f;
+    /**
+     * Make this enemy stronger
+     */
+    public void levelUpEnemy() {
+        stats.increaseHealth(3);
+        stats.increaseDamage(3);
+        stats.increaseAttackSpeed(0.2f);
+        stats.increaseMoveSpeed(0.2f);
     }
 
     @Override
