@@ -4,23 +4,20 @@ import java.io.IOException;
 import java.net.*;
 
 public class Solicitor {
-    private static int BROADCAST_FREQUENCY = 5;
     private int lastBroadcast = 0;
     private DatagramSocket socket;
 
-    public Solicitor(){
-        try{
+    public Solicitor() {
+        try {
             this.socket = new DatagramSocket();
             this.socket.setBroadcast(true);
-        } catch (java.net.SocketException e){
+        } catch (java.net.SocketException e) {
             System.out.println("An error occurred while hosting the game.");
         }
     }
 
-    public void solicit(){
-        if (this.lastBroadcast > BROADCAST_FREQUENCY){
-            byte[] msg = new byte[]{100};
-
+    public void solicit() {
+        if (this.lastBroadcast > Network.SOLICITATION_FREQUENCY) {
             InetAddress ip = null;
             try {
                 ip = InetAddress.getByName("127.0.0.1"); //TODO: dynamically figure out what the broadcast IP for the current subnet is.
@@ -28,15 +25,20 @@ public class Solicitor {
                 e.printStackTrace();
             }
 
-            DatagramPacket p = new DatagramPacket(msg, 1, ip, Network.SOLICITATION_PORT);
+            DatagramPacket p = new DatagramPacket(Network.SOLICITATION_KEY.clone(), Network.SOLICITATION_KEY.length, ip, Network.SOLICITATION_PORT);
+
             try {
                 this.socket.send(p);
             } catch (IOException e) {
                 e.printStackTrace();
             }
             this.lastBroadcast = 0;
-        }else{
-            this.lastBroadcast+=1;
+        } else {
+            this.lastBroadcast += 1;
         }
+    }
+
+    public void dispose() {
+        this.socket.close();
     }
 }

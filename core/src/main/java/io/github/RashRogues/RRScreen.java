@@ -23,4 +23,6 @@ public interface RRScreen {
      * Removes an entity from this screen.
      */
     public void removeEntity(Entity entity);
+
+    void dispose();
 }

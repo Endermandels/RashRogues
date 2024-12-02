@@ -15,5 +15,4 @@ public interface Endpoint {
     public void dispatchHeartbeat();
     public void forward(byte[] packet);
     public void dispose();
-
 }

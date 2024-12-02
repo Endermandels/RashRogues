@@ -5,6 +5,7 @@ import com.badlogic.gdx.net.Socket;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.Queue;
 import io.github.RashRogues.Entity;
+import io.github.RashRogues.PlayScreen;
 import io.github.RashRogues.Player;
 import io.github.RashRogues.RRGame;
 
@@ -20,14 +21,19 @@ public class Client implements Endpoint {
     private Socket socket;
     private InputStream in;
     private OutputStream out;
-    private Thread listeningThread;
     private Thread speakingThread;
+    private Thread listeningThread;
+    private Socket socket;
+    public ConcurrentLinkedQueue<byte[]> messages = new ConcurrentLinkedQueue<>();
+    public HashMap<String, Entity> syncedEntities = new HashMap<>();
     private int pid;
+    public volatile boolean listening = true;
+    public Queue<byte[]> inputQueue = new Queue<byte[]>();
 
     public ConcurrentLinkedQueue<byte[]> incomingMessages = new ConcurrentLinkedQueue<>();
     public ConcurrentLinkedQueue<byte[]> outgoingMessages = new ConcurrentLinkedQueue<>();
     public volatile boolean listening = true;
-    public volatile boolean speaking  = true;
+    public volatile boolean speaking = true;
     public LinkedHashMap<Integer, Queue<byte[]>> inputQueues;
     public HashMap<String, Entity> syncedEntities = new HashMap<>();
     public int lastHeartbeat = 0;
@@ -35,10 +41,10 @@ public class Client implements Endpoint {
     /**
      * Client-Server connection, over which gameplay data can be communicated.
      */
-    public Client() throws GdxRuntimeException{
+    public Client() throws GdxRuntimeException {
         this.inputQueues = new LinkedHashMap<>();
-        this.socket = Gdx.net.newClientSocket(Network.PROTOCOL, "localhost", Network.PORT, null);
-        System.out.println(">>> Connected to server on localhost:" + this.socket.getRemoteAddress() + Integer.toString(Network.PORT));
+        this.socket = Gdx.net.newClientSocket(Network.PROTOCOL, Network.ip, Network.PORT, null);
+        System.out.println(">>> Connected to server on:" + this.socket.getRemoteAddress());
 
         this.in = socket.getInputStream();
         this.out = socket.getOutputStream();
@@ -55,6 +61,7 @@ public class Client implements Endpoint {
      * Listen for and handle incomingmessages from the server.
      * Creates a listening thread seperate from the game thread.
      * Interacts with gamestate via incomingMessages queue.
+     *
      * @param in
      * @throws IOException
      * @throws InterruptedException
@@ -86,43 +93,43 @@ public class Client implements Endpoint {
      * Write messages to the server as fast as possible.
      * Creates a speaking thread seperate from the main game thread.
      * Communicates with game state via outgoingMessages queue.
+     *
      * @param out
      * @throws IOException
      * @throws InterruptedException
      */
     private void speak(OutputStream out) throws IOException, InterruptedException {
         this.speakingThread = new Thread(
-            new Runnable() {
-                public void run() {
-                   while (speaking) {
-                       while (!outgoingMessages.isEmpty()){
-                           byte[] msg = outgoingMessages.poll();
-                           try {
-                               out.write(msg);
-                               out.flush();
-                           } catch (IOException e) {
-                               System.out.println("Speaking thread stopped.");
-                               System.out.flush();
-                               speaking = false;
-                           }
-                       }
-                   }
+                new Runnable() {
+                    public void run() {
+                        while (speaking) {
+                            while (!outgoingMessages.isEmpty()) {
+                                byte[] msg = outgoingMessages.poll();
+                                try {
+                                    out.write(msg);
+                                    out.flush();
+                                } catch (IOException e) {
+                                    System.out.println("Speaking thread stopped.");
+                                    System.out.flush();
+                                    speaking = false;
+                                }
+                            }
+                        }
+                    }
                 }
-            }
         );
         this.speakingThread.start();
     }
 
     /**
      * Process Messages from the client.
-     *
+     * <p>
      * Each message type has a specific handler method.
      * Most Messages will be executed as soon as they are encountered.
      * Input is an exception to this, as it needs to be buffered make
      * sure we don't cluster multiple player inputs on one frame.
      */
     public void processMessages() {
-
         //READ MESSAGES FROM LISTENER THREAD
         while (!this.incomingMessages.isEmpty()) {
             byte[] msg = this.incomingMessages.poll();
@@ -130,7 +137,7 @@ public class Client implements Endpoint {
 
             if (msgType == HEARTBEAT.getvalue()) {
                 this.handleHeartbeat();
-            }else if (msgType == START_GAME.getvalue()) {
+            } else if (msgType == START_GAME.getvalue()) {
                 handleStartGame();
             } else if (msgType == WELCOME.getvalue()) {
                 handleInvite(msg);
@@ -142,12 +149,18 @@ public class Client implements Endpoint {
                 this.inputQueues.get((int) msg[1]).addLast(msg);
             } else if (msgType == UPDATE_PLAYER_POSITION.getvalue()) {
                 this.handleUpdatePlayerPosition(msg);
+            } else if (msgType == CLIENT_SHARE.getvalue()){
+                this.handleClientShare(msg);
+            } else if (msgType == CLIENT_UPDATE.getvalue()){
+                this.handleClientUpdate(msg);
+            } else if (msgType == DESTROY_PLAYER.getvalue()){
+                this.handleDestroyPlayer(msg);
             }
         }
 
         //HANDLE 0 or 1 INPUT FRAMES FROM EACH PLAYER
-        inputQueues.forEach((id,q) -> {
-            if (q.notEmpty()){
+        inputQueues.forEach((id, q) -> {
+            if (q.notEmpty()) {
                 this.handleKeys(q.removeFirst());
             }
         });
@@ -155,7 +168,7 @@ public class Client implements Endpoint {
         //SEND OUR HEARTBEAT TO THE SERVER
         this.dispatchHeartbeat();
 
-        if (this.lastHeartbeat > Network.HEARTBEAT_THRESHOLD){
+        if (this.lastHeartbeat > Network.HEARTBEAT_THRESHOLD) {
             System.out.println(">>! Warning! Server went dark!");
         }
 
@@ -163,14 +176,14 @@ public class Client implements Endpoint {
     }
 
 
-   /* Dispatchers */
+    /* Dispatchers */
 
     /**
      * Tells server about our player.
      */
-    public void dispatchCreatePlayer(Player player){
-       RRGame.globals.players.put(this.pid,player);
-       this.outgoingMessages.add(StreamMaker.createPlayer(this.pid, (int) player.getX(),(int) player.getY()));
+    public void dispatchCreatePlayer(Player player) {
+        RRGame.globals.addPlayer(this.pid, player);
+        this.outgoingMessages.add(StreamMaker.createPlayer(this.pid, (int) player.getX(), (int) player.getY()));
     }
 
     /**
@@ -185,7 +198,7 @@ public class Client implements Endpoint {
      * Sends a farewell packet to the server, informing the server
      * that we are leaving. Closes the input stream.
      */
-    public void dispatchFarewell(){
+    public void dispatchFarewell() {
         this.outgoingMessages.add(StreamMaker.farewell());
         this.listening = false;
         this.dispose();
@@ -194,10 +207,11 @@ public class Client implements Endpoint {
 
     /**
      * Communicate to server which keys are pressed down.
+     *
      * @param keymask Keys pressed.
      */
-    public void dispatchKeys(byte[] keymask){
-        this.outgoingMessages.add( StreamMaker.keys(pid, keymask));
+    public void dispatchKeys(byte[] keymask) {
+        this.outgoingMessages.add(StreamMaker.keys(pid, keymask));
     }
 
     /**
@@ -215,6 +229,26 @@ public class Client implements Endpoint {
      */
     public void handleInvite(byte[] packet) {
         this.pid = (int) packet[1];
+        RRGame.globals.addClient(this.pid);
+        RRGame.globals.pid = this.pid;
+    }
+
+    /**
+     * The server shared a list of all clients with us.
+     */
+    public void handleClientShare(byte[] packet) {
+        int clients = packet[1];
+        for (int i = 0; i < clients; i++){
+            RRGame.globals.addClient(packet[2+i]);
+        }
+    }
+
+    /**
+     * We received info that a new client joined the game.
+     */
+    public void handleClientUpdate(byte[] packet){
+        int client = packet[1];
+        RRGame.globals.addClient(client);
     }
 
     /**
@@ -242,7 +276,15 @@ public class Client implements Endpoint {
         int y = ((packet[6] >> 24) | (packet[7] >> 16) | (packet[8] >> 8) | (packet[9]));
         Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG), x, y, RRGame.PLAYER_SIZE);
         this.inputQueues.put((int) packet[1],new Queue<byte[]>());
-        RRGame.globals.players.put(new_pid, player);
+        RRGame.globals.addPlayer(new_pid,player);
+    }
+
+    public void handleDestroyPlayer(byte[] packet){
+        int pid = packet[1];
+        Player p = RRGame.globals.players.get(pid);
+        RRGame.globals.removePlayer(pid);
+        RRGame.globals.removeClient(pid);
+        RRGame.globals.currentScreen.removeEntity(p);
     }
 
     /**
@@ -299,6 +341,7 @@ public class Client implements Endpoint {
     public void forward(byte[] packet) {
         return;
     }
+
 
     /**
      * Safely informs the server that we are disconnecting,

@@ -142,5 +142,6 @@ public class RRGame extends Game {
         hudBatch.dispose();
         am.dispose();
         this.network.dispose();
+        RRGame.globals.currentScreen.dispose();
     }
 }

@@ -103,6 +103,7 @@ public class Button extends Entity {
                 break;
 
             case DISABLED:
+                this.setColor(Color.GRAY);
                 break;
         }
     }
@@ -160,7 +161,7 @@ public class Button extends Entity {
     private void activate(){
        switch(action){
            case HOST_MULTIPLAYER:
-               RRGame.globals.currentScreen.nextScreen(new HostGameScreen(game));
+               RRGame.globals.currentScreen.nextScreen(new LobbyScreen(game));
                break;
 
            case JOIN_MULTIPLAYER:
@@ -176,7 +177,7 @@ public class Button extends Entity {
                     System.out.println("Only servers can start games silly");
                 }else{
                     game.network.connection.dispatchStartGame();
-                    game.globals.currentScreen.nextScreen();
+                    RRGame.globals.currentScreen.nextScreen(new PlayScreen(game));
                 }
                break;
 

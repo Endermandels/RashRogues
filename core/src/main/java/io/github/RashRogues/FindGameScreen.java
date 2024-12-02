@@ -1,6 +1,7 @@
 package io.github.RashRogues;
 
 import Networking.Network;
+import Networking.Solicitee;
 import UI.GameList;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.ScreenAdapter;
@@ -14,10 +15,13 @@ public class FindGameScreen extends ScreenAdapter implements RRScreen {
     RRGame game;
     PriorityQueue<Entity> renderQueue = new PriorityQueue<>(new EntityComparator());
     HashSet<Entity> localEntities = new HashSet<>();
+    private Solicitee solicitee;
+    private GameList list;
 
     public FindGameScreen(RRGame game) {
         RRGame.globals.currentScreen = this;
-        GameList list = new GameList(50,50,400,400);
+        this.solicitee = new Solicitee();
+        this.list = new GameList(game, 50,50,400,400, this.solicitee);
         this.game = game;
     }
 
@@ -39,6 +43,8 @@ public class FindGameScreen extends ScreenAdapter implements RRScreen {
             renderQueue.poll().draw(game.batch);
         }
 
+        this.list.draw(this.game.batch);
+
         this.game.batch.end();
     }
 
@@ -59,7 +65,10 @@ public class FindGameScreen extends ScreenAdapter implements RRScreen {
 
     @Override
     public void nextScreen(Screen screen) {
-
+        if (this.solicitee != null){
+            this.solicitee.dispose();
+        }
+        this.game.setScreen(screen);
     }
 
     @Override
@@ -73,4 +82,9 @@ public class FindGameScreen extends ScreenAdapter implements RRScreen {
         this.localEntities.remove(entity);
         return;
     }
+
+    public void dispose(){
+        this.solicitee.dispose();
+    }
+
 }

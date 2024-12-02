@@ -105,8 +105,12 @@ public class ClientListener implements Endpoint {
                                 }
                             }
                         }
+                    } catch (IOException ex) {
+                        System.out.println(">>! Listener Thread Exited.");
+                        System.out.flush();
                     }
                 }
+            }
         );
         this.speakingThread.start();
     }
@@ -156,8 +160,11 @@ public class ClientListener implements Endpoint {
     /**
      * Officially welcome the client to the game, supplying them with a player ID.
      */
-    public void dispatchWelcome(int pid) {
-        this.outgoingMessages.add(StreamMaker.welcome(pid));
+    public void dispatchWelcome(int client_pid) {
+        this.outgoingMessages.add(StreamMaker.welcome(client_pid));
+        this.outgoingMessages.add(StreamMaker.getClients());
+        this.server.relay(StreamMaker.notifyClientUpdate(client_pid), client_pid);
+        RRGame.globals.addClient(client_pid);
     }
 
     /**
@@ -180,7 +187,7 @@ public class ClientListener implements Endpoint {
     public void forward(byte[] packet) {
         this.outgoingMessages.add(packet);
     }
-
+  
     /**
      * Communicate to client that the game has started.
      */
@@ -192,6 +199,7 @@ public class ClientListener implements Endpoint {
      * Communicate to the client that the server is shutting down.
      */
     public void dispatchFarewell(){
+
         this.outgoingMessages.add(StreamMaker.farewell());
         this.listening = false;
         this.dispose();
@@ -201,7 +209,7 @@ public class ClientListener implements Endpoint {
      * Communicate to the client to create the server's player
      */
     public void dispatchCreatePlayer(Player player){
-        RRGame.globals.players.put(this.pid,player);
+        RRGame.globals.addPlayer(this.pid,player);
         System.out.println("SERVER PID: " + Integer.toString(this.pid));
         this.outgoingMessages.add(StreamMaker.createPlayer(0, (int) player.getX(), (int) player.getY()));
     }
@@ -228,7 +236,7 @@ public class ClientListener implements Endpoint {
         int x = ((packet[2] >> 24) | (packet[3] >> 16) | (packet[4] >> 8) | (packet[5]));
         int y = ((packet[6] >> 24) | (packet[7] >> 16) | (packet[8] >> 8) | (packet[9]));
         Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y, RRGame.PLAYER_SIZE);
-        RRGame.globals.players.put(new_pid,player);
+        RRGame.globals.addPlayer(new_pid,player);
     }
 
     /**
@@ -265,6 +273,11 @@ public class ClientListener implements Endpoint {
      * Client Requests to leave the game
      */
     public void handleFarewell(){
+        this.server.relay(StreamMaker.destroyPlayer(this.client_pid), this.client_pid);
+        Player p = RRGame.globals.players.get(client_pid);
+        RRGame.globals.removePlayer(client_pid);
+        RRGame.globals.removeClient(client_pid);
+        RRGame.globals.currentScreen.removeEntity(p);
         this.dispose();
         System.out.println(">>> Client #" + Integer.toString(this.client_pid) + " left the game.");
     }
