@@ -1,6 +1,7 @@
 package Networking;
 
 import io.github.RashRogues.Player;
+import io.github.RashRogues.RRGame;
 
 import java.nio.ByteBuffer;
 
@@ -43,6 +44,13 @@ public class StreamMaker {
       return stream;
    }
 
+   public static byte[] destroyPlayer(int pid){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.DESTROY_PLAYER.getvalue();
+      stream[1] = (byte) pid;
+      return stream;
+   }
+  
    public static byte[] updatePlayer(int pid){
       byte[] stream = new byte[128];
       stream[0] = (byte) PacketType.UPDATE_PLAYER.getvalue();
@@ -57,11 +65,6 @@ public class StreamMaker {
       for (int i = 0; i < keymask.length; i++){
          stream[i+2] = keymask[i];
       }
-      return stream;
-   }
-
-   public static byte[] reckonPlayerPosition(float x, float y){
-      byte[] stream = new byte[128];
       return stream;
    }
 
@@ -92,4 +95,34 @@ public class StreamMaker {
       return stream;
    }
 
+   public static byte[] heartbeat(int pid){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.HEARTBEAT.getvalue();
+      stream[1] = (byte) pid;
+      return stream;
+   }
+
+   public static byte[] notifyClientUpdate(int pid){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.CLIENT_UPDATE.getvalue();
+      stream[1] = (byte) pid;
+      return stream;
+   }
+
+   /**
+    * The current list of clients.
+    * byte 1: how many clients we are sharing
+    * byte 2-N: client PIDs
+    */
+   public static byte[] getClients(){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.CLIENT_SHARE.getvalue();
+      stream[1] = (byte) RRGame.globals.clientSet.size();
+      int i = 2;
+      for (int c : RRGame.globals.clientSet){
+         stream[i] = (byte) c;
+         i++;
+      }
+      return stream;
+   }
 }

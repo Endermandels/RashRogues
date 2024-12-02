@@ -5,11 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import io.github.RashRogues.Entity;
-import io.github.RashRogues.EntityType;
-import io.github.RashRogues.EntityAlignment;
-import io.github.RashRogues.Layer;
-import io.github.RashRogues.RRGame;
+import io.github.RashRogues.*;
 
 import java.util.ArrayList;
 
@@ -107,6 +103,7 @@ public class Button extends Entity {
                 break;
 
             case DISABLED:
+                this.setColor(Color.GRAY);
                 break;
         }
     }
@@ -164,15 +161,11 @@ public class Button extends Entity {
     private void activate(){
        switch(action){
            case HOST_MULTIPLAYER:
-               game.network.start(Network.EndpointType.SERVER);
-               this.setColor(Color.DARK_GRAY);
-               this.state = ButtonStates.DISABLED;
+               RRGame.globals.currentScreen.nextScreen(new LobbyScreen(game));
                break;
 
            case JOIN_MULTIPLAYER:
-               game.network.start(Network.EndpointType.CLIENT);
-               this.setColor(Color.DARK_GRAY);
-               this.state = ButtonStates.DISABLED;
+               RRGame.globals.currentScreen.nextScreen(new FindGameScreen(game));
                break;
 
            case END_GAME:
@@ -184,7 +177,7 @@ public class Button extends Entity {
                     System.out.println("Only servers can start games silly");
                 }else{
                     game.network.connection.dispatchStartGame();
-                    game.globals.currentScreen.nextScreen();
+                    RRGame.globals.currentScreen.nextScreen(new PlayScreen(game));
                 }
                break;
 

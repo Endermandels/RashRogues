@@ -1,10 +1,8 @@
 package io.github.RashRogues;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.ScreenAdapter;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class LoadScreen extends ScreenAdapter implements RRScreen {
@@ -24,12 +22,17 @@ public class LoadScreen extends ScreenAdapter implements RRScreen {
         ScreenUtils.clear(0, 0, 0, 1);
         RRGame.am.update(10);
         if (RRGame.am.isFinished()) {
-            game.setScreen(new LobbyScreen(game));
+            game.setScreen(new MainMenuScreen(game));
         }
     }
 
     @Override
     public void nextScreen() {
+
+    }
+
+    @Override
+    public void nextScreen(Screen screen) {
 
     }
 

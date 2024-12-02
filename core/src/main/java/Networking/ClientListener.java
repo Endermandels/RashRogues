@@ -6,46 +6,57 @@ import io.github.RashRogues.Player;
 import io.github.RashRogues.RRGame;
 
 import java.io.*;
+import java.util.LinkedHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static Networking.PacketType.*;
 
-/**
- * Each ClientListener is dedicated to speaking/listening to a remote client.
- * Most methods within the ClientListener are meant to be called directly by the Server class.
- */
 public class ClientListener implements Endpoint {
     private Socket socket;
     private InputStream in;
     private OutputStream out;
+    private Server server;
     private Thread listeningThread;
-    public ConcurrentLinkedQueue<byte[]> messages = new ConcurrentLinkedQueue<>();
-    public int pid = 0; //we are the server. PID 0
-    public int client_pid;
+    private Thread speakingThread;
+    private int pid = 0;
+
+    public ConcurrentLinkedQueue<byte[]> incomingMessages = new ConcurrentLinkedQueue<>();
+    public ConcurrentLinkedQueue<byte[]> outgoingMessages = new ConcurrentLinkedQueue<>();
     public volatile boolean listening = true;
-    public Queue<byte[]> inputQueue = new Queue<byte[]>();
+    public volatile boolean speaking  = true;
+    public LinkedHashMap<Integer, Queue<byte[]>> inputQueues;
+    public int client_pid;
 
     /**
-     * Dedicated
+     * Server-Client connection, over which gameplay data can be communicated.
+     * @param server The master server object.
      * @param socket Active socket to communicate on.
-     * @param pid Player ID to associate with this ClientListener
+     * @param pid Player ID to associate with this ClientListener.
      */
-    public ClientListener(Socket socket, int pid) {
+    public ClientListener(Server server, Socket socket, int pid) {
+        this.server = server;
         this.socket     = socket;
         this.in         = socket.getInputStream();
         this.out        = socket.getOutputStream();
         this.client_pid = pid;
+        this.inputQueues = new LinkedHashMap<>();
+
         try {
             this.dispatchWelcome(this.client_pid);
             this.listen(in);
+            this.speak(out);
         } catch (IOException | InterruptedException e) {
             System.out.println(">>! Connection with client #" + Integer.toString(this.client_pid) + " closed.");
         }
     }
 
     /**
-     * Listen for and handle messages from client.
-     * listen() determines the lifetime of the connection; when this function concludes the socket/streams will close.
+     * Listen for and handle incomingmessages from the client.
+     * Creates a listening thread seperate from the game thread.
+     * Interacts with gamestate via incomingMessages queue.
+     * @param in
+     * @throws IOException
+     * @throws InterruptedException
      */
     private void listen(InputStream in) throws IOException, InterruptedException {
         this.listeningThread = new Thread(
@@ -56,13 +67,8 @@ public class ClientListener implements Endpoint {
                                 byte[] msg = new byte[128];
                                 int read = in.read(msg,0,128);
                                 if (read > 0) {
-                                    messages.add(msg);
+                                    incomingMessages.add(msg);
                                 }
-                                // DEBUG
-                                //for (int i = 0; i < 128; i++){
-                                //  System.out.print(msg[i] + "-");
-                                //}
-                                //System.out.flush();
                         }
                     } catch (IOException ex) {
                         System.out.println(">>! Listener Thread Exited.");
@@ -75,43 +81,71 @@ public class ClientListener implements Endpoint {
     }
 
     /**
+     * Write messages to the server as fast as possible.
+     * Creates a speaking thread seperate from the main game thread.
+     * Communicates with game state via outgoingMessages queue.
+     * @param out
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    private void speak(OutputStream out) throws IOException, InterruptedException {
+        this.speakingThread = new Thread(
+            new Runnable() {
+                public void run() {
+                    while (speaking) {
+                        while (!outgoingMessages.isEmpty()) {
+                            byte[] msg = outgoingMessages.poll();
+                            try {
+                                out.write(msg);
+                                out.flush();
+                            } catch (IOException e) {
+                                System.out.println("Speaking thread stopped.");
+                                System.out.flush();
+                                speaking = false;
+                            }
+                        }
+                    }
+                }
+            }
+        );
+        this.speakingThread.start();
+    }
+
+    /**
      * Process Messages from the client.
 
      * Each message type has a specific handler method.
      * Most Messages will be executed as soon as they are encountered.
-     * Input is an exception to this, as it needs to be buffered to
-     * run only once a frame.
+     * Input is an exception to this, as it needs to be buffered to make
+     * sure we don't cluster multiple player inputs on one frame.
      */
     public void processMessages() {
         try {
-            while ( !this.messages.isEmpty() ) {
-                byte[] msg = this.messages.poll();
+            //READ MESSAGES FROM THE LISTENER THREAD
+            while ( !this.incomingMessages.isEmpty() ) {
+                byte[] msg = this.incomingMessages.poll();
                 int msgType = (int) msg[0];
 
-                //FAREWELL
-                if ( msgType == FAREWELL.getvalue() ) {
+                if (msgType == HEARTBEAT.getvalue()){
+                    this.handleHeartBeat();
+                } else if ( msgType == FAREWELL.getvalue() ) {
                     this.handleFarewell();
-                }
-
-                //CREATE PLAYER
-                else if ( msgType == CREATE_PLAYER.getvalue() ) {
+                } else if ( msgType == CREATE_PLAYER.getvalue() ) {
                     this.handleCreatePlayer(msg);
-                }
-
-                //KEYSTROKES
-                else if ( msgType == KEYS.getvalue() ) {
-                    this.inputQueue.addLast(msg);
+                } else if ( msgType == KEYS.getvalue() ) {
+                    this.inputQueues.get((int) msg[1]).addLast(msg);
                 }
             }
 
-            /*
-            We can only handle one input  per frame, otherwise shit gets messy.
-            if we didn't queue these we'd be running multiple inputs in a single frame on the server,
-            which is not reflective of how they were executed on the client.
-            */
-            if (this.inputQueue.notEmpty()){
-                this.handleKeys(this.inputQueue.removeFirst());
-            }
+            //HANDLE 0 or 1 INPUT FRAMES FROM EACH PLAYER
+            inputQueues.forEach((id,q) -> {
+                if (q.notEmpty()){
+                    this.handleKeys(q.removeFirst());
+                }
+            });
+
+            //SEND OUR HEARTBEAT TO THE CLIENT
+            this.dispatchHeartbeat();
 
         } catch(Exception e) {
             System.out.println(">>! Malformed Network Traffic Detected!");
@@ -122,14 +156,11 @@ public class ClientListener implements Endpoint {
     /**
      * Officially welcome the client to the game, supplying them with a player ID.
      */
-    public void dispatchWelcome(int pid) {
-        try {
-            byte[] stream = StreamMaker.welcome(pid);
-            out.write(stream);
-            out.flush();
-        } catch (IOException e) {
-            System.out.println(">>! Unable to communicate with client.");
-        }
+    public void dispatchWelcome(int client_pid) {
+        this.outgoingMessages.add(StreamMaker.welcome(client_pid));
+        this.outgoingMessages.add(StreamMaker.getClients());
+        this.server.relay(StreamMaker.notifyClientUpdate(client_pid), client_pid);
+        RRGame.globals.addClient(client_pid);
     }
 
     /**
@@ -137,39 +168,35 @@ public class ClientListener implements Endpoint {
      * @param keymask Keystroke Bytemap
      */
     public void dispatchKeys(byte[] keymask){
-        byte[] stream = StreamMaker.keys(pid, keymask);
-        try {
-            out.write(stream);
-            out.flush();
-        } catch (IOException e) {
-            System.out.println(">>! Unable to communicate with client.");
-        }
+        this.outgoingMessages.add(StreamMaker.keys(pid, keymask));
     }
 
+    /**
+     * Communicate to the client that we are still alive!
+     */
+    @Override
+    public void dispatchHeartbeat() {
+        this.outgoingMessages.add(StreamMaker.heartbeat(pid));
+    }
+
+    @Override
+    public void forward(byte[] packet) {
+        this.outgoingMessages.add(packet);
+    }
+  
     /**
      * Communicate to client that the game has started.
      */
     public void dispatchStartGame() {
-        try{
-            byte[] stream = StreamMaker.startGame();
-            out.write(stream);
-            out.flush();
-        } catch (IOException e){
-            System.out.println(">>! Unable to communicate with client.");
-        }
+        this.outgoingMessages.add(StreamMaker.startGame());
     }
 
     /**
      * Communicate to the client that the server is shutting down.
      */
     public void dispatchFarewell(){
-        byte[] stream = StreamMaker.farewell();
-        try {
-            out.write(stream);
-            out.flush();
-        } catch (IOException e) {
-            System.out.println(">>! Unable to communicate with client.");
-        }
+
+        this.outgoingMessages.add(StreamMaker.farewell());
         this.listening = false;
         this.dispose();
     }
@@ -178,15 +205,9 @@ public class ClientListener implements Endpoint {
      * Communicate to the client to create the server's player
      */
     public void dispatchCreatePlayer(Player player){
-        RRGame.globals.players.put(this.pid,player);
+        RRGame.globals.addPlayer(this.pid,player);
         System.out.println("SERVER PID: " + Integer.toString(this.pid));
-        byte[] stream = StreamMaker.createPlayer(0, (int) player.getX(), (int) player.getY());
-        try {
-            this.out.write(stream);
-            this.out.flush();
-        } catch (IOException e) {
-            System.out.println(">>! Unable to communicate with client.");
-        }
+        this.outgoingMessages.add(StreamMaker.createPlayer(0, (int) player.getX(), (int) player.getY()));
     }
 
     /**
@@ -194,20 +215,24 @@ public class ClientListener implements Endpoint {
      * Used to relay information between clients.
      */
     public void dispatchCreatePlayer(byte[] createPlayerPacket, int pid){
+        return;
     }
 
     /* Handlers */
 
     /**
      * Client Requests to create a player.
+     * We need to relay this to the other clients, too.
      * @param packet Player Data
      */
     public void handleCreatePlayer(byte[] packet){
+        this.server.relay(packet,(int) packet[1]);
+        this.inputQueues.put((int) packet[1],new Queue<byte[]>());
         int new_pid = packet[1];
         int x = ((packet[2] >> 24) | (packet[3] >> 16) | (packet[4] >> 8) | (packet[5]));
         int y = ((packet[6] >> 24) | (packet[7] >> 16) | (packet[8] >> 8) | (packet[9]));
         Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y, RRGame.PLAYER_SIZE);
-        RRGame.globals.players.put(new_pid,player);
+        RRGame.globals.addPlayer(new_pid,player);
     }
 
     /**
@@ -215,6 +240,7 @@ public class ClientListener implements Endpoint {
      * @param packet Input Data
      */
     public void handleKeys(byte[] packet){
+        this.server.relay(packet,this.client_pid);
         Player p = RRGame.globals.players.get((int) packet[1]);
         if (packet[2] == 1) {
             p.moveUp();
@@ -243,8 +269,20 @@ public class ClientListener implements Endpoint {
      * Client Requests to leave the game
      */
     public void handleFarewell(){
+        this.server.relay(StreamMaker.destroyPlayer(this.client_pid), this.client_pid);
+        Player p = RRGame.globals.players.get(client_pid);
+        RRGame.globals.removePlayer(client_pid);
+        RRGame.globals.removeClient(client_pid);
+        RRGame.globals.currentScreen.removeEntity(p);
         this.dispose();
         System.out.println(">>> Client #" + Integer.toString(this.client_pid) + " left the game.");
+    }
+
+    /**
+     * Client sent a message indicating that they are still alive.
+     */
+    public void handleHeartBeat(){
+        this.server.heartbeat(this.client_pid);
     }
 
     /**
@@ -261,7 +299,7 @@ public class ClientListener implements Endpoint {
         } catch (IOException e) {
         }finally {
             socket.dispose();
-            messages.clear();
+            incomingMessages.clear();
         }
     }
 

@@ -2,6 +2,7 @@ package io.github.RashRogues;
 
 import Networking.Network;
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -491,6 +492,11 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     }
 
     public void nextScreen() {return;}
+
+    @Override
+    public void nextScreen(Screen screen) {
+        return;
+    }
 
     /**
      * This is called every time a class inheriting Entity is instantiated on this Screen.
