@@ -51,6 +51,16 @@ public class StreamMaker {
       return stream;
    }
 
+   public  static byte[] destroyEntity(int eid){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.DESTROY.getvalue();
+      stream[1] = (byte) (eid >> 24);
+      stream[2] = (byte) (eid >> 16);
+      stream[3] = (byte) (eid >> 8);
+      stream[4] = (byte) (eid);
+      return stream;
+   }
+
    public static byte[] updatePlayer(int pid){
       byte[] stream = new byte[128];
       stream[0] = (byte) PacketType.UPDATE_PLAYER.getvalue();

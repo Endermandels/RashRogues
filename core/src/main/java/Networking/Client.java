@@ -151,6 +151,8 @@ public class Client implements Endpoint {
                 this.handleClientUpdate(msg);
             } else if (msgType == DESTROY_PLAYER.getvalue()){
                 this.handleDestroyPlayer(msg);
+            } else if (msgType == DESTROY.getvalue()){
+                this.handleDestroyEntity(msg);
             }
         }
 
@@ -280,7 +282,12 @@ public class Client implements Endpoint {
         Player p = RRGame.globals.players.get(pid);
         RRGame.globals.removePlayer(pid);
         RRGame.globals.removeClient(pid);
-        RRGame.globals.currentScreen.removeEntity(p);
+        RRGame.globals.deregisterEntity(p);
+    }
+
+    public void handleDestroyEntity(byte[] packet){
+        int eid = ((packet[1] >> 24) | (packet[2] >> 16) | (packet[3] >> 8) | (packet[4]));
+        RRGame.globals.deregisterEntity(RRGame.globals.getRegisteredEntity(eid));
     }
 
     /**
@@ -356,6 +363,11 @@ public class Client implements Endpoint {
             socket.dispose();
             this.incomingMessages.clear();
         }
+    }
+
+    @Override
+    public void dispatchDestroyEntity(int eid) {
+        return;
     }
 
     /**

@@ -2,6 +2,7 @@ package Networking;
 
 import com.badlogic.gdx.net.Socket;
 import com.badlogic.gdx.utils.Queue;
+import io.github.RashRogues.Entity;
 import io.github.RashRogues.Player;
 import io.github.RashRogues.RRGame;
 
@@ -210,6 +211,13 @@ public class ClientListener implements Endpoint {
     }
 
     /**
+     * Communicate to the client to destroy an entity.
+     */
+    public void dispatchDestroyEntity(int eid) {
+        this.outgoingMessages.add(StreamMaker.destroyEntity(eid));
+    }
+
+    /**
      * Communicate to the client to create a player.
      * Used to relay information between clients.
      */
@@ -272,7 +280,7 @@ public class ClientListener implements Endpoint {
         Player p = RRGame.globals.players.get(client_pid);
         RRGame.globals.removePlayer(client_pid);
         RRGame.globals.removeClient(client_pid);
-        RRGame.globals.currentScreen.removeEntity(p);
+        RRGame.globals.deregisterEntity(p);
         this.dispose();
         System.out.println(">>> Client #" + Integer.toString(this.client_pid) + " left the game.");
     }
@@ -301,6 +309,8 @@ public class ClientListener implements Endpoint {
             incomingMessages.clear();
         }
     }
+
+
 
     /**
      * Are we a server or a client?

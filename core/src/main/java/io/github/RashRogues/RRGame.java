@@ -116,7 +116,8 @@ public class RRGame extends Game {
         hudBatch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
 
-        network = new Network();
+        Globals.network = new Network();
+        network = Globals.network;
 
         globalEntities = new HashSet<>();
 

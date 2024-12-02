@@ -11,7 +11,7 @@ public class Door extends Entity {
 
     Door(float x, float y) {
         super(EntityType.BACKGROUND, EntityAlignment.BACKGROUND, RRGame.am.get(RRGame.RSC_DOOR_IMG, Texture.class),
-                x, y, RRGame.DOOR_SIZE, RRGame.DOOR_SIZE, Layer.BACKGROUND);
+                x, y, RRGame.DOOR_SIZE, RRGame.DOOR_SIZE, Layer.BACKGROUND, false);
         this.setBoxPercentSize(0.6f, 0.98f, hitBox);
         this.locked = true;
         this.playersAtDoor = new HashSet<>();

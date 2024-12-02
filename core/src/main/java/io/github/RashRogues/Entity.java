@@ -23,9 +23,10 @@ public abstract class Entity extends Sprite {
     protected EntityAlignment alignment;
     protected Layer layer;
     private HashMap<Effect, Float> activeEffects;
+    public int id = -1;
 
     protected Entity(EntityType type, EntityAlignment alignment, Texture texture, float x, float y,
-                     float width, float height, Layer layer) {
+                     float width, float height, Layer layer, boolean networked) {
         super(texture);
         setSize(width, height);
         setOrigin(width/2, height/2);
@@ -46,7 +47,7 @@ public abstract class Entity extends Sprite {
         this.activeEffects = new HashMap<Effect, Float>();
 
         //add our entity to the current screen.
-        RRGame.globals.currentScreen.registerEntity(this);
+        RRGame.globals.registerEntity(this, networked);
     }
 
     /**
@@ -138,7 +139,7 @@ public abstract class Entity extends Sprite {
     }
 
     protected void removeSelf() {
-        RRGame.globals.currentScreen.removeEntity(this);
+        RRGame.globals.deregisterEntity(this);
     }
 
 }
