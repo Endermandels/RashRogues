@@ -90,24 +90,20 @@ public class ClientListener implements Endpoint {
      */
     private void speak(OutputStream out) throws IOException, InterruptedException {
         this.speakingThread = new Thread(
-                new Runnable() {
-                    public void run() {
-                        while (speaking) {
-                            while (!outgoingMessages.isEmpty()){
-                                byte[] msg = outgoingMessages.poll();
-                                try {
-                                    out.write(msg);
-                                    out.flush();
-                                } catch (IOException e) {
-                                    System.out.println("Speaking thread stopped.");
-                                    System.out.flush();
-                                    speaking = false;
-                                }
+            new Runnable() {
+                public void run() {
+                    while (speaking) {
+                        while (!outgoingMessages.isEmpty()) {
+                            byte[] msg = outgoingMessages.poll();
+                            try {
+                                out.write(msg);
+                                out.flush();
+                            } catch (IOException e) {
+                                System.out.println("Speaking thread stopped.");
+                                System.out.flush();
+                                speaking = false;
                             }
                         }
-                    } catch (IOException ex) {
-                        System.out.println(">>! Listener Thread Exited.");
-                        System.out.flush();
                     }
                 }
             }

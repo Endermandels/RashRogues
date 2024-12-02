@@ -23,7 +23,6 @@ public class Client implements Endpoint {
     private OutputStream out;
     private Thread speakingThread;
     private Thread listeningThread;
-    private Socket socket;
     public ConcurrentLinkedQueue<byte[]> messages = new ConcurrentLinkedQueue<>();
     public HashMap<String, Entity> syncedEntities = new HashMap<>();
     private int pid;
@@ -32,10 +31,8 @@ public class Client implements Endpoint {
 
     public ConcurrentLinkedQueue<byte[]> incomingMessages = new ConcurrentLinkedQueue<>();
     public ConcurrentLinkedQueue<byte[]> outgoingMessages = new ConcurrentLinkedQueue<>();
-    public volatile boolean listening = true;
     public volatile boolean speaking = true;
     public LinkedHashMap<Integer, Queue<byte[]>> inputQueues;
-    public HashMap<String, Entity> syncedEntities = new HashMap<>();
     public int lastHeartbeat = 0;
 
     /**

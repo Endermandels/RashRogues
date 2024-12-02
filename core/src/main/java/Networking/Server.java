@@ -115,9 +115,10 @@ public class Server implements Endpoint{
     @Override
     public void dispatchStartGame() {
         System.out.println(">>> Starting game.");
-        for (ClientListener c : clients){
+        for (ClientListener c : clients) {
             c.dispatchStartGame();
         }
+    }
 
     public void heartbeat(int clientPID){
         this.heartbeatStatus.put(clientPID,0);
