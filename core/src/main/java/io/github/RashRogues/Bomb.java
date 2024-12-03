@@ -15,7 +15,7 @@ public class Bomb extends Entity {
 
     Bomb(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
          float xDirection, float yDirection, float distance, float fuseDuration, Projectile explosion, float speed) {
-        super(EntityType.BOMB, alignment, texture, x, y, width, height, Layer.PROJECTILE);
+        super(alignment, texture, x, y, width, height, Layer.PROJECTILE);
         this.explosion = explosion;
         this.explosion.setPosition(-100, -100); // out of sight out of mind
         Vector2 direction = new Vector2(xDirection, yDirection).nor();
