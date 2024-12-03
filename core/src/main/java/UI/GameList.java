@@ -27,7 +27,7 @@ public class GameList extends Entity {
     private RRGame game;
 
     public GameList(RRGame game, float x, float y, int width, int height, Solicitee solicitee){
-        super(EntityType.UI, EntityAlignment.BACKGROUND, RRGame.am.get(RRGame.RSC_GAME_LIST),x,y,width,height, Layer.BACKGROUND);
+        super(EntityAlignment.BACKGROUND, RRGame.am.get(RRGame.RSC_GAME_LIST),x,y,width,height, Layer.BACKGROUND);
         this.game = game;
         this.games          = new HashSet<>();
         this.gamesAge       = new HashMap<>();
