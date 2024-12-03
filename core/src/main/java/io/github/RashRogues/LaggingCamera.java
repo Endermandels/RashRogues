@@ -56,10 +56,10 @@ public class LaggingCamera extends OrthographicCamera{
     }
 
     public void update(float delta){
-        super.update();
         if (this.following != null){
             this.moveToPlayer(following.getX()+following.getWidth()/2f, following.getY()+following.getHeight()/2f,delta);
         }
+        super.update();
     }
 
     public void center(){
