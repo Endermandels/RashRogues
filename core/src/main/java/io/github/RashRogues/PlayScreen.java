@@ -112,6 +112,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             renderQueue.add(e);
         }
 
+        /* Update Camera's Location and Set its Projection Matrix */
         game.playerCam.update(delta);
 
         /* check/handle collisions */
@@ -136,7 +137,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     @Override
     public void render(float delta) {
         update(delta);
-        game.playerCam.update();
         game.batch.setProjectionMatrix(game.playerCam.combined);
         ScreenUtils.clear(0.9f, 0.9f, 0.9f, 1f);
         game.batch.begin();
