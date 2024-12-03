@@ -131,6 +131,11 @@ public abstract class Entity extends Sprite {
         return activeEffects.containsKey(effect);
     }
 
+    public void setMaxMoveSpeeds(float xMaxMoveSpeed, float yMaxMoveSpeed) {
+        this.maxXVelocity = xMaxMoveSpeed;
+        this.maxYVelocity = yMaxMoveSpeed;
+    }
+
     protected void removeSelf() {
         RRGame.globals.currentScreen.removeEntity(this);
     }
