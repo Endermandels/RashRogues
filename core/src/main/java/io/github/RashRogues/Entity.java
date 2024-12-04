@@ -36,8 +36,6 @@ public abstract class Entity extends Sprite {
         this.hitBoxHeightScalar = 1.0f;
         this.hurtBoxWidthScalar = 1.0f;
         this.hurtBoxHeightScalar = 1.0f;
-        // this can be whatever, I imagine each enemy might have its own speed but for now this works,
-        // just override the maxVelocities on the subclasses.
         this.flipped = false;
         this.layer = layer;
         this.alignment = alignment;
