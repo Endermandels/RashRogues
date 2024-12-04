@@ -3,6 +3,9 @@ package io.github.RashRogues;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.math.Vector2;
+
+import static java.lang.Math.abs;
 
 public class Player extends Entity {
 
@@ -189,10 +192,9 @@ public class Player extends Entity {
 
     public void adjustVelocity() {
         // normalize diagonal movement
-        if (xVelocity != 0 && yVelocity != 0) {
-            xVelocity = (float) (xVelocity / Math.sqrt(2));
-            yVelocity = (float) (yVelocity / Math.sqrt(2));
-        }
+        Vector2 direction = new Vector2(xVelocity, yVelocity).nor();
+        float adjustedMaxXVelocity = abs(direction.x) * maxXVelocity;
+        float adjustedMaxYVelocity = abs(direction.y) * maxYVelocity;
 
         //apply horizontal friction
         if (xVelocity != 0){
@@ -212,8 +214,8 @@ public class Player extends Entity {
             }
         }
 
-        xVelocity = Math.max(-maxXVelocity, Math.min(xVelocity, maxXVelocity));
-        yVelocity = Math.max(-maxYVelocity, Math.min(yVelocity, maxYVelocity));
+        xVelocity = Math.max(-adjustedMaxXVelocity, Math.min(xVelocity, adjustedMaxXVelocity));
+        yVelocity = Math.max(-adjustedMaxYVelocity, Math.min(yVelocity, adjustedMaxYVelocity));
     }
 
     @Override
