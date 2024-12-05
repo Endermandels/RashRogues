@@ -15,7 +15,7 @@ public class Swordsman extends Enemy {
     private final int ATTACK_DAMAGE = 50;
     private final float ATTACK_DURATION = 0.5f;
     private final float BASE_SWORDSMAN_ATTACK_SPEED = 0.5f;
-    private final float BASE_SWORDSMAN_MOVE_SPEED = 0f;
+    private final float BASE_SWORDSMAN_MOVE_SPEED = 1.5f;
     private final float SWORDSMAN_HIT_BOX_PERCENT_SCALAR = 0.4f;
     private final float SWORDSMAN_HURT_BOX_PERCENT_SCALAR = 0.58f;
 
