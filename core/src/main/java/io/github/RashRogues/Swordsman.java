@@ -22,9 +22,19 @@ public class Swordsman extends Enemy {
     }
 
     private void move(float delta) {
-        // Move towards player
-        xVelocity = maxXVelocity * Math.signum(player.getX()+player.getWidth()/2-getX()-getWidth()/2);
-        yVelocity = maxYVelocity * Math.signum(player.getY()+player.getHeight()/2-getY()-getHeight()/2);
+        // Get distance from player
+        float xDist = player.getX()+player.getWidth()/2-getX()-getWidth()/2;
+        float yDist = player.getY()+player.getHeight()/2-getY()-getHeight()/2;
+        // Detect if the swordsman is within striking distance
+        if (Math.abs(xDist) < 5f && Math.abs(yDist) < 5f) {
+            // Strike
+            xVelocity = 0f;
+            yVelocity = 0f;
+        } else {
+            // Move towards player
+            xVelocity = maxXVelocity * Math.signum(xDist);
+            yVelocity = maxYVelocity * Math.signum(yDist);
+        }
     }
 
     /**
