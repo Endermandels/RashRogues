@@ -12,7 +12,7 @@ public class Swordsman extends Enemy {
     private final float SWORDSMAN_HURT_BOX_PERCENT_SCALAR = 0.58f;
 
     Swordsman(float x, float y, float size) {
-        super(EntityType.SWORDSMAN, RRGame.am.get(RRGame.RSC_SWORDSMAN_IMG), x, y, size);
+        super(RRGame.am.get(RRGame.RSC_SWORDSMAN_IMG), x, y, size);
         this.stats = new EnemyStats(BASE_SWORDSMAN_HEALTH, BASE_SWORDSMAN_DAMAGE, BASE_SWORDSMAN_ATTACK_SPEED, BASE_SWORDSMAN_MOVE_SPEED, this);
         setBoxPercentSize(SWORDSMAN_HIT_BOX_PERCENT_SCALAR, SWORDSMAN_HIT_BOX_PERCENT_SCALAR, hitBox);
         setBoxPercentSize(SWORDSMAN_HURT_BOX_PERCENT_SCALAR, SWORDSMAN_HURT_BOX_PERCENT_SCALAR, hurtBox);
