@@ -24,6 +24,7 @@ public class Swordsman extends Enemy {
 
     private final float attackTimerMax = 1f;
     private float attackTimer;
+    private float attackX, attackY;
 
     Swordsman(float x, float y, float size, Player player) {
         super(RRGame.am.get(RRGame.RSC_SWORDSMAN_IMG), x, y, size);
@@ -44,6 +45,8 @@ public class Swordsman extends Enemy {
             // Strike
             xVelocity = 0f;
             yVelocity = 0f;
+            attackX = player.getX();
+            attackY = player.getY();
             state = State.ATTACK;
         } else {
             // Move towards player
@@ -64,12 +67,9 @@ public class Swordsman extends Enemy {
         attackTimer += delta;
         if (attackTimer > attackTimerMax) {
             // Create melee attack
-            float xOff;
-            if (flipped) xOff = -5f;
-            else xOff = 5f;
             new MeleeAttack(EntityAlignment.ENEMY,
                     RRGame.am.get(RRGame.RSC_SMOKE_BOMB_EXPLOSION_IMG),
-                    getX() + xOff, getY(),
+                    attackX-5, attackY-3,
                     RRGame.SMOKE_BOMB_EXPLOSION_SIZE, RRGame.SMOKE_BOMB_EXPLOSION_SIZE,
                     ATTACK_DAMAGE, ATTACK_DURATION);
             attackTimer = 0f;
