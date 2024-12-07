@@ -35,7 +35,7 @@ public class Player extends Entity {
     private int healthPotionsHeld;
 
     public Player(Texture texture, float x, float y, float width, float height) {
-        super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER);
+        super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER,false);
         RRGame.globals.currentNumPlayers++;
         this.maxXVelocity = BASE_PLAYER_MOVE_SPEED;
         this.maxYVelocity = BASE_PLAYER_MOVE_SPEED;

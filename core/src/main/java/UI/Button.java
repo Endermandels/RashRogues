@@ -43,7 +43,7 @@ public class Button extends Entity {
      * @param action  Action to perform on-click
      */
     public Button(RRGame game, Texture texture, float x, float y, ButtonActions action) {
-        super(EntityType.UI, EntityAlignment.UI, texture, x, y, 128, 64, Layer.FOREGROUND, false);
+        super(EntityAlignment.UI, texture, x, y, 128, 64, Layer.FOREGROUND, false);
         this.dependents = new ArrayList<>();
         this.exclusives = new ArrayList<>();
         this.setPosition(x, y);
@@ -194,7 +194,4 @@ public class Button extends Entity {
            b.disable();
        }
     }
-
-    //public void updateEntity(float delta) {Update(delta);}
-
 }

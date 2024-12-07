@@ -11,7 +11,7 @@ public class Globals {
     public static Network network;
     public RRScreen currentScreen;
     public HashMap<Integer, Player> players = new HashMap<>();
-    public HashMap<Integer,Entity> entities = new HashMap<>();
+    public HashMap<Integer,Entity> replicatedEntities = new HashMap<>();
     public HashSet<Player> playersSet = new HashSet<>();
     public HashSet<Integer> clientSet = new HashSet<>();
     public int currentNumPlayers = 0;
@@ -20,10 +20,9 @@ public class Globals {
 
     public void registerEntity(Entity e, boolean networked){
         if (networked){
-            entities.put(entityIncrementor, e);
+            replicatedEntities.put(entityIncrementor, e);
             e.id = entityIncrementor;
             entityIncrementor+=1;
-
         }
         RRGame.globals.currentScreen.registerEntity(e);
     }
@@ -36,8 +35,8 @@ public class Globals {
     }
 
     public Entity getRegisteredEntity(int id){
-        if (this.entities.containsKey(id)){
-            return this.entities.get(id);
+        if (this.replicatedEntities.containsKey(id)){
+            return this.replicatedEntities.get(id);
         }
         return null;
     }
