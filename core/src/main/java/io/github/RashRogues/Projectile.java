@@ -35,7 +35,7 @@ public class Projectile extends Entity {
     Projectile(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
                float xDirection, float yDirection, int damage, float degreesOffsetFromFacingRight,
                boolean onlyHitOneTarget, float distance, float speed) {
-        super(EntityType.PROJECTILE, alignment, texture, x, y, width, height, Layer.PROJECTILE, false);
+        super(alignment, texture, x, y, width, height, Layer.PROJECTILE);
         Vector2 direction = new Vector2(xDirection, yDirection).nor();
         this.damage = damage;
         this.distance = distance;
@@ -63,7 +63,7 @@ public class Projectile extends Entity {
      */
     Projectile(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
                int damage, float degreesOffsetFromFacingRight, boolean onlyHitOneTarget, float duration) {
-        super(EntityType.PROJECTILE, alignment, texture, x, y, width, height, Layer.PROJECTILE, false);
+        super(alignment, texture, x, y, width, height, Layer.PROJECTILE);
         this.damage = damage;
         this.speed = 0;
         this.duration = duration;

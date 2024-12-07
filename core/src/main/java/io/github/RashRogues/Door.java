@@ -10,8 +10,8 @@ public class Door extends Entity {
     private HashSet<Player> playersAtDoor;
 
     Door(float x, float y) {
-        super(EntityType.BACKGROUND, EntityAlignment.BACKGROUND, RRGame.am.get(RRGame.RSC_DOOR_IMG, Texture.class),
-                x, y, RRGame.DOOR_SIZE, RRGame.DOOR_SIZE, Layer.BACKGROUND, false);
+        super(EntityAlignment.BACKGROUND, RRGame.am.get(RRGame.RSC_DOOR_IMG, Texture.class),
+                x, y, RRGame.DOOR_SIZE, RRGame.DOOR_SIZE, Layer.BACKGROUND);
         this.setBoxPercentSize(0.6f, 0.98f, hitBox);
         this.locked = true;
         this.playersAtDoor = new HashSet<>();

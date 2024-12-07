@@ -19,14 +19,12 @@ public abstract class Entity extends Sprite {
     protected float hurtBoxWidthScalar;
     protected float hurtBoxHeightScalar;
     protected boolean flipped;
-    protected EntityType type;
     protected EntityAlignment alignment;
     protected Layer layer;
     private HashMap<Effect, Float> activeEffects;
-    public int id = -1;
 
-    protected Entity(EntityType type, EntityAlignment alignment, Texture texture, float x, float y,
-                     float width, float height, Layer layer, boolean networked) {
+    protected Entity(EntityAlignment alignment, Texture texture, float x, float y,
+                     float width, float height, Layer layer) {
         super(texture);
         setSize(width, height);
         setOrigin(width/2, height/2);
@@ -38,16 +36,13 @@ public abstract class Entity extends Sprite {
         this.hitBoxHeightScalar = 1.0f;
         this.hurtBoxWidthScalar = 1.0f;
         this.hurtBoxHeightScalar = 1.0f;
-        // this can be whatever, I imagine each enemy might have its own speed but for now this works,
-        // just override the maxVelocities on the subclasses.
         this.flipped = false;
-        this.type = type;
         this.layer = layer;
         this.alignment = alignment;
         this.activeEffects = new HashMap<Effect, Float>();
 
         //add our entity to the current screen.
-        RRGame.globals.registerEntity(this, networked);
+        RRGame.globals.currentScreen.registerEntity(this);
     }
 
     /**
@@ -134,12 +129,13 @@ public abstract class Entity extends Sprite {
         return activeEffects.containsKey(effect);
     }
 
-    public EntityType getType(){
-        return this.type;
+    public void setMaxMoveSpeeds(float xMaxMoveSpeed, float yMaxMoveSpeed) {
+        this.maxXVelocity = xMaxMoveSpeed;
+        this.maxYVelocity = yMaxMoveSpeed;
     }
 
     protected void removeSelf() {
-        RRGame.globals.deregisterEntity(this);
+        RRGame.globals.currentScreen.removeEntity(this);
     }
 
 }

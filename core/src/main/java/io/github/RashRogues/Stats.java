@@ -27,7 +27,7 @@ public class Stats {
     public float getAttackSpeed() { return attackSpeed; }
     public void increaseAttackSpeed(float amount) { attackSpeed+=amount; }
     public float getMoveSpeed() { return moveSpeed; }
-    public void increaseMoveSpeed(float amount) { moveSpeed+=amount; }
+    public void increaseMoveSpeed(float amount) { moveSpeed+=amount; parent.setMaxMoveSpeeds(moveSpeed, moveSpeed); }
 
     public void takeDamage(int damage) {
         this.health -= damage;

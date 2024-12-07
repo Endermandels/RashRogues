@@ -112,6 +112,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             renderQueue.add(e);
         }
 
+        /* Update Camera's Location and Set its Projection Matrix */
         game.playerCam.update(delta);
 
         /* check/handle collisions */
@@ -136,7 +137,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     @Override
     public void render(float delta) {
         update(delta);
-        game.playerCam.update();
         game.batch.setProjectionMatrix(game.playerCam.combined);
         ScreenUtils.clear(0.9f, 0.9f, 0.9f, 1f);
         game.batch.begin();
@@ -145,6 +145,8 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             renderQueue.poll().draw(game.batch);
         }
         game.batch.end();
+
+
         game.hudBatch.begin();
         hud.draw(game.hudBatch);
         game.hudBatch.end();
@@ -401,7 +403,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         });
 
         // HUD Data
-
         hud.registerView("Number of Players:", new HUDViewCommand(HUDViewCommand.Visibility.WHEN_OPEN) {
             @Override
             public String execute(boolean consoleIsOpen) {
@@ -412,16 +413,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         // we're adding an input processor AFTER the HUD has been created,
         // so we need to be a bit careful here and make sure not to clobber
         // the HUD's input controls. Do that by using an InputMultiplexer
-        /*
-        proposition 11/22 CT - Executing player actions on both keyup and keydown has presented a huge challenge in the
-        networking.
-
-        We can still using the multiplexor, but instead of acting on both key-up/key-down, we are instead setting
-        the state of those keys to an input hashmap that we can poll during the update event.
-
-        This way we only have to worry about whether the key is being pressed or not during a given frame.
-        Otherwise we have to worry about which key-down pertains to which key-up etc, and which frames those happened on.
-        */
         InputMultiplexer multiplexer = new InputMultiplexer();
         // let the HUD's input processor handle things first....
         multiplexer.addProcessor(Gdx.input.getInputProcessor());
