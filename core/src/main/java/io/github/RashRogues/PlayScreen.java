@@ -51,7 +51,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         this.game.network.connection.dispatchCreatePlayer(player);
 
         /* Instance Creation */
-        new Swordsman(50, 30, 10);
+        new Swordsman(50, 30, 10, player);
         new Key(30, 280);
 
         /* Camera Setup */
@@ -398,7 +398,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                         case "s":
                         case "swordsman":
                         case "Swordsman":
-                            new Swordsman(x, y, RRGame.STANDARD_ENEMY_SIZE);
+                            new Swordsman(x, y, RRGame.STANDARD_ENEMY_SIZE, player);
                             break;
                         default:
                             return "Valid EnemyTypes: Archer, Bomber, Swordsman";

@@ -35,6 +35,9 @@ Images/chest sprite sheet.png
 Images/door sprite sheet.png
 Images/explosion sprite sheet.png
 Images/grenadier sprite sheet.png
+Images/rogue sprite sheet 2.png
+Images/rogue sprite sheet 3.png
+Images/rogue sprite sheet 4.png
 Images/rogue sprite sheet.png
 Images/swordsman sprite sheet.png
 Menu/game_list_background.png
