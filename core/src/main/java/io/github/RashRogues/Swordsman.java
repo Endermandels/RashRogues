@@ -47,9 +47,15 @@ public class Swordsman extends Enemy {
             state = State.ATTACK;
         } else {
             // Move towards player
-            xVelocity = stats.getMoveSpeed() * Math.signum(xDist);
-            yVelocity = stats.getMoveSpeed() * Math.signum(yDist);
-            flipped = xVelocity < 0;
+            if (Math.abs(xDist) > 0.1f)
+                xVelocity = stats.getMoveSpeed() * Math.signum(xDist);
+            else
+                xVelocity = 0f;
+            if (Math.abs(yDist) > 0.1f)
+                yVelocity = stats.getMoveSpeed() * Math.signum(yDist);
+            else
+                yVelocity = 0f;
+            flipped = xVelocity < 0f;
         }
     }
 
