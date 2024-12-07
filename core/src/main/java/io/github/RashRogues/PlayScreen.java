@@ -1,5 +1,6 @@
 package io.github.RashRogues;
 
+import Networking.NetViewer;
 import Networking.Network;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.FPSLogger;
@@ -27,6 +28,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     private HashSet<Entity> entitiesToRemove;
     private PriorityQueue<Entity> renderQueue;
     private HashMap<Integer, Boolean> inputs;
+    private NetViewer netViewer;
     public static CollisionGrid collisionGrid = new CollisionGrid();
 
     public PlayScreen(RRGame game) {
@@ -42,6 +44,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         loadRooms();
         setNextRoom();
         createHUDAndInputs();
+        this.netViewer = new NetViewer();
 
         /* Player Creation */
         player = new Player(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, (int) RRGame.PLAYER_SIZE);
@@ -54,6 +57,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         /* Camera Setup */
         game.playerCam.bind(player);
         game.playerCam.center();
+
     }
 
     @Override
@@ -278,6 +282,14 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
             public String help(String[] cmd) {
                 return help;
+            }
+        });
+
+        hud.registerAction("netviewer", new HUDActionCommand() {
+            @Override
+            public String execute(String[] cmd) {
+                netViewer.outputToConsole();
+                return "see console.";
             }
         });
 

@@ -287,7 +287,8 @@ public class Client implements Endpoint {
 
     public void handleDestroyEntity(byte[] packet){
         int eid = ((packet[1] >> 24) | (packet[2] >> 16) | (packet[3] >> 8) | (packet[4]));
-        RRGame.globals.deregisterEntity(RRGame.globals.getRegisteredEntity(eid));
+        System.out.println("Destroying: " + Integer.toString(eid));
+        RRGame.globals.deregisterEntity(RRGame.globals.getReplicatedEntity(eid));
     }
 
     /**

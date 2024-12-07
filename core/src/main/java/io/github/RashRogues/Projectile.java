@@ -3,6 +3,8 @@ package io.github.RashRogues;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 
+import java.security.Timestamp;
+
 public class Projectile extends Entity {
     // Melee Projectiles are just projectiles that don't move and only last a small amount of time (animation time)
 
@@ -35,7 +37,7 @@ public class Projectile extends Entity {
     Projectile(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
                float xDirection, float yDirection, int damage, float degreesOffsetFromFacingRight,
                boolean onlyHitOneTarget, float distance, float speed) {
-        super(alignment, texture, x, y, width, height, Layer.PROJECTILE,false);
+        super(alignment, texture, x, y, width, height, Layer.PROJECTILE,true);
         Vector2 direction = new Vector2(xDirection, yDirection).nor();
         this.damage = damage;
         this.distance = distance;

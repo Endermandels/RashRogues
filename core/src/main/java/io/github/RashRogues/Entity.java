@@ -22,10 +22,51 @@ public abstract class Entity extends Sprite {
     protected EntityAlignment alignment;
     protected Layer layer;
     private HashMap<Effect, Float> activeEffects;
-    public int id;
 
+    // Used For Networking
+    public int id = -1;
+    public int pid = -1;
+    public long timestamp = 0;
+
+    /**
+     * Create an Entity on the current screen.
+     * Entities will be updated and drawn every frame.
+     *
+     */
     protected Entity(EntityAlignment alignment, Texture texture, float x, float y,
-                     float width, float height, Layer layer, boolean replicated) {
+                     float width, float height, Layer layer) {
+        super(texture);
+        setSize(width, height);
+        setOrigin(width/2, height/2);
+        setPosition(x, y);
+        hitBox = new HitBox(this.getBoundingRectangle(), this);
+        this.maxXVelocity = 15.0f;
+        this.maxYVelocity = 15.0f;
+        this.hitBoxWidthScalar = 1.0f;
+        this.hitBoxHeightScalar = 1.0f;
+        this.hurtBoxWidthScalar = 1.0f;
+        this.hurtBoxHeightScalar = 1.0f;
+        this.flipped = false;
+        this.layer = layer;
+        this.alignment = alignment;
+        this.activeEffects = new HashMap<Effect, Float>();
+
+        //add our entity to the current screen.
+        RRGame.globals.registerEntity(this, false);
+    }
+   /**
+    * Create an Entity on the current screen.
+    * Entities will be updated and drawn every frame.
+    *
+    * If the 'replicated' parameter is true, this Entity will
+    * be associated with its equivalent entity on all endpoints. Consequently, major game events
+    * such as deaths will be reflected across these intertwined entities.
+    * The replicated option MUST ONLY BE USED FOR DETERMINISTIC ENTITIES.
+    * See Network documentation is more info is desired.
+    * When in doubt, set replicated to false.
+    */
+   protected Entity(EntityAlignment alignment, Texture texture, float x, float y,
+                    float width, float height, Layer layer, boolean replicated) {
         super(texture);
         setSize(width, height);
         setOrigin(width/2, height/2);
@@ -44,6 +85,18 @@ public abstract class Entity extends Sprite {
 
         //add our entity to the current screen.
         RRGame.globals.registerEntity(this, replicated);
+    }
+
+    /**
+     * Create an entity with an associated timestamp and player id.
+     * This allows us to associate non-deterministic entities across the wire :)
+     */
+    Entity(EntityAlignment alignment, Texture texture, float x, float y,
+           float width, float height, Layer layer, boolean replicated, long timestamp, int pid){
+        this(alignment, texture, x, y, width, height, layer, replicated);
+        this.timestamp = timestamp;
+        this.pid = pid;
+        RRGame.globals.timeStampEntity(this,pid,timestamp);
     }
 
     /**
@@ -136,7 +189,11 @@ public abstract class Entity extends Sprite {
     }
 
     protected void removeSelf() {
-        RRGame.globals.currentScreen.removeEntity(this);
+        // Only the host has the authority to remove an Entity directly.
+        // Clients will be instructed to do so via the network.
+        if (RRGame.globals.pid == 0) {
+            RRGame.globals.deregisterEntity(this);
+        }
     }
 
 }

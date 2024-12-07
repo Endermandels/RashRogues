@@ -9,7 +9,7 @@ public abstract class Enemy extends Entity {
     // early thinking is that there can be a variable named "hasKey" and would drop the key, idk. determined in Room.
 
     Enemy(Texture texture, float x, float y, float width, float height) {
-        super(EntityAlignment.ENEMY, texture, x, y, width, height, Layer.ENEMY,false);
+        super(EntityAlignment.ENEMY, texture, x, y, width, height, Layer.ENEMY,true);
         hurtBox = new HurtBox(hitBox, this);
         // this will obviously change based on a number of factors later
     }
@@ -54,5 +54,4 @@ public abstract class Enemy extends Entity {
             return;
         }
     }
-
 }

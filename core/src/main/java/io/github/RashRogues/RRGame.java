@@ -68,6 +68,9 @@ public class RRGame extends Game {
     public static final String RSC_KEY_IMG = "DefaultImages/key.png";
     public static final String RSC_DOOR_IMG = "DefaultImages/door.png";
 
+    //debug tools
+    public static final String RSC_NET_VIEWER = "Menu/net_viewer.png";
+
     // item animations
 
     // sounds
@@ -105,6 +108,8 @@ public class RRGame extends Game {
         am.load(RSC_ROOM2_IMG, Texture.class);
         am.load(RSC_KEY_IMG, Texture.class);
         am.load(RSC_DOOR_IMG, Texture.class);
+
+        am.load(RSC_NET_VIEWER, Texture.class);
 
         am.load(RSC_BTN_HOST, Texture.class);
         am.load(RSC_BTN_JOIN, Texture.class);
