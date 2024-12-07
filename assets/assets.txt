@@ -23,6 +23,7 @@ DefaultImages/particle_small.png
 DefaultImages/rogue.png
 DefaultImages/room1.png
 DefaultImages/room2.png
+DefaultImages/room3.png
 DefaultImages/swordsman.png
 DefaultImages/throne.png
 DefaultImages/throwing_knife.png
@@ -33,6 +34,9 @@ Images/chest sprite sheet.png
 Images/door sprite sheet.png
 Images/explosion sprite sheet.png
 Images/grenadier sprite sheet.png
+Images/rogue sprite sheet 2.png
+Images/rogue sprite sheet 3.png
+Images/rogue sprite sheet 4.png
 Images/rogue sprite sheet.png
 Images/swordsman sprite sheet.png
 Menu/game_list_background.png
