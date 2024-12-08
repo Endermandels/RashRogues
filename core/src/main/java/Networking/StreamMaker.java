@@ -61,6 +61,29 @@ public class StreamMaker {
       return stream;
    }
 
+   /**
+    * Destroys entity belonging to player 'pid', created on frame 'frame'
+    * @param pid Player whom this entity belongs to.
+    * @param frame Frame on which this entity was created (frame is relative to endpoint pid originated from).
+    * @return
+    */
+   public static byte[] destroyEntity2(int pid, long frame){
+      byte[] stream = new byte[128];
+
+      stream[0] = (byte) PacketType.DESTROY2.getvalue();
+      stream[1] = (byte) (pid); //truncate pid to a byte, cause we'll only have at max 4 players.
+      stream[2] = (byte) (frame >> 56);
+      stream[3] = (byte) (frame >> 48);
+      stream[4] = (byte) (frame >> 40);
+      stream[5] = (byte) (frame >> 32);
+      stream[6] = (byte) (frame >> 24);
+      stream[7] = (byte) (frame >> 16);
+      stream[8] = (byte) (frame >> 8);
+      stream[9] = (byte) (frame);
+
+      return stream;
+   }
+
    public static byte[] updatePlayer(int pid){
       byte[] stream = new byte[128];
       stream[0] = (byte) PacketType.UPDATE_PLAYER.getvalue();
@@ -68,12 +91,20 @@ public class StreamMaker {
       return stream;
    }
 
-   public static byte[] keys(int pid, byte[] keymask){
+   public static byte[] keys(int pid, long frame, byte[] keymask){
       byte[] stream = new byte[128];
       stream[0] = (byte) PacketType.KEYS.getvalue();
       stream[1] = (byte) pid;
+      stream[2] = (byte) (frame >> 56);
+      stream[3] = (byte) (frame >> 48);
+      stream[4] = (byte) (frame >> 40);
+      stream[5] = (byte) (frame >> 32);
+      stream[6] = (byte) (frame >> 24);
+      stream[7] = (byte) (frame >> 16);
+      stream[8] = (byte) (frame >> 8);
+      stream[9] = (byte) (frame);
       for (int i = 0; i < keymask.length; i++){
-         stream[i+2] = keymask[i];
+         stream[i+9] = keymask[i];
       }
       return stream;
    }

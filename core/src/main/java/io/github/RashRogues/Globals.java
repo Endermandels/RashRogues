@@ -8,17 +8,31 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class Globals {
-    public static int PAROLE_TIME = 3;
+    public long frame = 0;
+
     public static Network network;
     public RRScreen currentScreen;
-    public HashMap<Integer, Player> players = new HashMap<>();
-    public HashMap<Integer,Entity> replicatedEntities = new HashMap<>();
-    public HashSet<Entity> replicatedEntitiesSet  = new HashSet<>();
+
     public HashSet<Player> playersSet = new HashSet<>();
     public HashSet<Integer> clientSet = new HashSet<>();
+    public HashMap<Integer, Player> players = new HashMap<>();
+
+    //Entities that are deterministic can be associated with foreign entities simply by creation order.
+    public HashMap<Integer,Entity> deterministicReplicatedEntities = new HashMap<>();
+    public HashSet<Entity> deterministicReplicatedEntitiesSet  = new HashSet<>();
+
+    // Entities that are not deterministic but must be tied to a frame.
+    private HashMap<Integer, HashMap<Long,Entity>> nondeterministicReplicatedEntities = new HashMap<>();
+
     public int currentNumPlayers = 0;
     public int pid = -1;
-    private int entityIncrementor = 0;
+
+
+    public void setPID(int pid){
+       this.pid = pid;
+        this.nondeterministicReplicatedEntities.put(pid,new HashMap<>());
+    }
+
     /**
      * Add an Entity to the game.
      * Entities that are registered will be automatically placed in the current screen.
@@ -26,20 +40,26 @@ public class Globals {
      * and will be matched with an entity on a foreign endpoint.
      * If no screen is currently active, the entity will not be created.
      * @param e Entity to register
-     * @param networked Auto-associate with another entity on a different endpoint?
+     * @param deterministic Auto-associate with another entity on a different endpoint based on creation order?
      */
-    public void registerEntity(Entity e, boolean networked){
+    public void registerEntity(Entity e, boolean deterministic, int pid, long frame){
+
+        //Cannot register entities if there is no screen.
         if (currentScreen == null){
            return;
         }
 
-        System.currentTimeMillis();
+        // This entity needs to be indexed to a certain 'frame'. It originated the from player with a pid of 'pid'.
+        if (pid != -1) {
+            System.out.println("Getting " + Integer.toString(pid) + " out.");
+            this.nondeterministicReplicatedEntities.get(pid).put(frame,e);
+            e.pid = pid;
 
-        if (networked){
-            replicatedEntities.put(entityIncrementor, e);
-            replicatedEntitiesSet.add(e);
-            e.id = entityIncrementor;
-            entityIncrementor+=1;
+        // This entity is matched with another entity based on creation order.
+        } else if (deterministic){
+            deterministicReplicatedEntities.put(this.deterministicReplicatedEntitiesSet.size(), e);
+            deterministicReplicatedEntitiesSet.add(e);
+            e.id = deterministicReplicatedEntitiesSet.size();
         }
         System.out.println("Registered : " + e.toString() + " with pid of " + Integer.toString(e.id));
         RRGame.globals.currentScreen.registerEntity(e);
@@ -55,7 +75,7 @@ public class Globals {
             return;
         }
 
-        //This is a networked entity
+        //This is a deterministic replicated entity
         if (e.id != -1){
 
             //we are the server. Tell client to eliminate this entity.
@@ -67,7 +87,17 @@ public class Globals {
             this.removeReplicatedEntity(e);
         }
 
-        //remove from screen.
+        //This is a nondeterministic replicated entity
+        if (e.pid != -1){
+            this.nondeterministicReplicatedEntities.get(e.pid).remove(e.frame);
+
+            //We are the server. Tell client to eliminate this entity.
+            if (this.pid == 0){
+                Globals.network.connection.dispatchDestroyEntity2(e.pid, e.frame);
+            }
+        }
+
+        //Remove from screen.
         RRGame.globals.currentScreen.removeEntity(e);
     }
 
@@ -75,12 +105,25 @@ public class Globals {
      * Get all entites that are replicated on 2 or more endpoints.
      * @return ArrayList of Entities
      */
-    public ArrayList<Entity> getReplicatedEntities(){
+    public ArrayList<Entity> getdeterministicReplicatedEntities(){
         ArrayList entities = new ArrayList();
-        for (Entity e : replicatedEntitiesSet){
+        for (Entity e : deterministicReplicatedEntitiesSet){
             entities.add(e);
         }
         return entities;
+    }
+
+    /**
+     * Get an entity that was registered as nondeterministic.
+     * @param pid
+     * @param frame
+     * @return
+     */
+    public Entity findNondeterministicEntity(int pid, long frame){
+       if (this.nondeterministicReplicatedEntities.containsKey(pid)){
+           return this.nondeterministicReplicatedEntities.get(pid).get(frame);
+       }
+       return null;
     }
 
     /**
@@ -89,8 +132,8 @@ public class Globals {
      * @return Entity associated with id
      */
     public Entity getReplicatedEntity(int id){
-        if (this.replicatedEntities.containsKey(id)){
-            return this.replicatedEntities.get(id);
+        if (this.deterministicReplicatedEntities.containsKey(id)){
+            return this.deterministicReplicatedEntities.get(id);
         }
         return null;
     }
@@ -103,11 +146,11 @@ public class Globals {
         if (e.id == -1){
             return;
         }
-        if (this.replicatedEntities.containsKey(e.id)){
-            this.replicatedEntities.remove(e.id);
+        if (this.deterministicReplicatedEntities.containsKey(e.id)){
+            this.deterministicReplicatedEntities.remove(e.id);
         }
-        if (this.replicatedEntitiesSet.contains(e)){
-            this.replicatedEntitiesSet.remove(e);
+        if (this.deterministicReplicatedEntitiesSet.contains(e)){
+            this.deterministicReplicatedEntitiesSet.remove(e);
         }
     }
 
@@ -127,11 +170,10 @@ public class Globals {
      */
     public void addClient(int pid){
         RRGame.globals.clientSet.add(pid);
+        this.nondeterministicReplicatedEntities.put(pid,new HashMap<>());
     }
 
     /**
-     * Stop tracking a player.
-     * @param pid
      */
     public void removePlayer(int pid){
         Player p = RRGame.globals.players.get(pid);

@@ -153,6 +153,8 @@ public class Client implements Endpoint {
                 this.handleDestroyPlayer(msg);
             } else if (msgType == DESTROY.getvalue()){
                 this.handleDestroyEntity(msg);
+            } else if (msgType == DESTROY2.getvalue()){
+                this.handleDestroyEntity2(msg);
             }
         }
 
@@ -208,8 +210,8 @@ public class Client implements Endpoint {
      *
      * @param keymask Keys pressed.
      */
-    public void dispatchKeys(byte[] keymask) {
-        this.outgoingMessages.add(StreamMaker.keys(pid, keymask));
+    public void dispatchKeys(byte[] keymask, long frame) {
+        this.outgoingMessages.add(StreamMaker.keys(pid, frame, keymask));
     }
 
     /**
@@ -228,7 +230,7 @@ public class Client implements Endpoint {
     public void handleInvite(byte[] packet) {
         this.pid = (int) packet[1];
         RRGame.globals.addClient(this.pid);
-        RRGame.globals.pid = this.pid;
+        RRGame.globals.setPID(this.pid);
     }
 
     /**
@@ -291,6 +293,13 @@ public class Client implements Endpoint {
         RRGame.globals.deregisterEntity(RRGame.globals.getReplicatedEntity(eid));
     }
 
+    public void handleDestroyEntity2(byte[] packet){
+        int pid = (int) packet[1];
+        long frame = ((packet[2] >> 56) | (packet[3] >> 48) | (packet[4] >> 40) | (packet[5] >> 32) | (packet[6] >> 24) | (packet[7] >> 16) | (packet[8] >> 8) | packet[9]);
+        Entity e = RRGame.globals.findNondeterministicEntity(pid,frame);
+        RRGame.globals.deregisterEntity(e);
+    }
+
     /**
      * We received a farewell message from the server.
      * The connection is closed and we can dipose of our
@@ -317,27 +326,35 @@ public class Client implements Endpoint {
     }
 
     public void handleKeys(byte[] packet){
+        int pid = (int) packet[1];
+        long frame = (long) ((packet[2] >> 56) | (packet[3] >> 48) | (packet[4] >> 40) | (packet[5] >> 32) | (packet[6] >> 24) | (packet[7] >> 16) | (packet[8] >> 8) | ( packet[9]));
         Player p = RRGame.globals.players.get((int) packet[1]);
-        if (packet[2] == 1){
+        if (packet[9] == 1){
             p.moveUp();
         }
-        if (packet[3] == 1){
+        if (packet[10] == 1){
             p.moveDown();
         }
-        if (packet[4] == 1){
+        if (packet[11] == 1){
             p.moveRight();
         }
-        if (packet[5] == 1){
+        if (packet[12] == 1){
             p.moveLeft();
         }
-        if (packet[6] == 1){
+        if (packet[13] == 1){
             p.dash();
         }
-        if (packet[7] == 1){
-            p.useAbility();
+
+        if (packet[14] == 1){
+            p.useConsumable(pid, frame);
         }
-        if (packet[8] == 1){
-            p.useConsumable();
+
+        if (packet[15] == 1){
+            p.useAbility(pid, frame);
+        }
+
+        if (packet[16] == 1){
+            p.attack(pid, frame);
         }
     }
 
@@ -369,6 +386,11 @@ public class Client implements Endpoint {
     @Override
     public void dispatchDestroyEntity(int eid) {
         return;
+    }
+
+    @Override
+    public void dispatchDestroyEntity2(int pid, long frame) {
+       return;
     }
 
     /**

@@ -168,8 +168,8 @@ public class ClientListener implements Endpoint {
      * Communicate keystrokes to client.
      * @param keymask Keystroke Bytemap
      */
-    public void dispatchKeys(byte[] keymask){
-        this.outgoingMessages.add(StreamMaker.keys(pid, keymask));
+    public void dispatchKeys(byte[] keymask, long frame){
+        this.outgoingMessages.add(StreamMaker.keys(pid, frame, keymask));
     }
 
     /**
@@ -206,7 +206,6 @@ public class ClientListener implements Endpoint {
      */
     public void dispatchCreatePlayer(Player player){
         RRGame.globals.addPlayer(this.pid,player);
-        System.out.println("SERVER PID: " + Integer.toString(this.pid));
         this.outgoingMessages.add(StreamMaker.createPlayer(0, (int) player.getX(), (int) player.getY()));
     }
 
@@ -215,6 +214,11 @@ public class ClientListener implements Endpoint {
      */
     public void dispatchDestroyEntity(int eid) {
         this.outgoingMessages.add(StreamMaker.destroyEntity(eid));
+    }
+
+    @Override
+    public void dispatchDestroyEntity2(int pid, long frame) {
+        this.outgoingMessages.add(StreamMaker.destroyEntity2(pid,frame));
     }
 
     /**
@@ -248,27 +252,33 @@ public class ClientListener implements Endpoint {
      */
     public void handleKeys(byte[] packet){
         this.server.relay(packet,this.client_pid);
+        int pid = (int) packet[1];
+        long frame = (long) ((packet[2] >> 56) | (packet[3] >> 48) | (packet[4] >> 40) | (packet[5] >> 32) | (packet[6] >> 24) | (packet[7] >> 16) | (packet[8] >> 8) | ( packet[9]));
         Player p = RRGame.globals.players.get((int) packet[1]);
-        if (packet[2] == 1) {
+
+        if (packet[9] == 1) {
             p.moveUp();
         }
-        if (packet[3] == 1) {
+        if (packet[10] == 1) {
             p.moveDown();
         }
-        if (packet[4] == 1) {
+        if (packet[11] == 1) {
             p.moveRight();
         }
-        if (packet[5] == 1) {
+        if (packet[12] == 1) {
             p.moveLeft();
         }
-        if (packet[6] == 1) {
+        if (packet[13] == 1) {
             p.dash();
         }
-        if (packet[7] == 1) {
-            p.useAbility();
+        if (packet[14] == 1) {
+            p.useConsumable(pid,frame);
         }
-        if (packet[8] == 1) {
-            p.useConsumable();
+        if (packet[15] == 1) {
+            p.useAbility(pid,frame);
+        }
+        if (packet[16] == 1) {
+            p.attack(pid,frame);
         }
     }
 

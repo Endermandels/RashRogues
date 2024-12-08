@@ -80,7 +80,6 @@ public class Player extends Entity {
         hurtBox.update(delta);
         keySprite.setX(getX()-getWidth()/2);
         keySprite.setY(getY()+getHeight()/2);
-        if (attackTimer >= (1 / stats.getAttackSpeed())) { attack(); attackTimer = 0f; }
     }
 
     public void moveLeft(){
@@ -101,7 +100,7 @@ public class Player extends Entity {
         yVelocity -= ACCELERATION;
     }
 
-    public void attack() {
+    public boolean attack(int pid, long frame) {
         // good spot for a sound effect
         float throwingKnifeXDir = Math.signum(xVelocity);
         float throwingKnifeYDir = Math.signum(yVelocity);
@@ -110,7 +109,8 @@ public class Player extends Entity {
             else throwingKnifeXDir = 1;
         }
         new ThrowingKnife(getX(), getY(), throwingKnifeXDir, throwingKnifeYDir, stats.getDamage(),
-                RRGame.STANDARD_PROJECTILE_SPEED);
+                RRGame.STANDARD_PROJECTILE_SPEED, pid, frame);
+        return true;
     }
 
     public void dash() {
@@ -142,7 +142,7 @@ public class Player extends Entity {
         setY(y+yOffset);
     }
 
-    public void useAbility() {
+    public void useAbility(int pid, long frame) {
         if (abilityTimer < abilityCooldown) { return; }
         // good spot for a sound effect
         abilityTimer = 0f;
@@ -168,7 +168,7 @@ public class Player extends Entity {
         return holdingKey;
     }
 
-    public void useConsumable() {
+    public void useConsumable(int pid, long frame) {
         // this is currently only healthPotions; this could be changed to consumablesHeld and diff consumables
         // but that is currently out of scope
         if (consumableTimer < CONSUMABLE_COOLDOWN || healthPotionsHeld <= 0) { return; }

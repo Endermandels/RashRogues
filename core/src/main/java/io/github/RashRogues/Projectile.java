@@ -18,6 +18,23 @@ public class Projectile extends Entity {
     private float speed;
     private float distance;
 
+
+    Projectile(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
+               float xDirection, float yDirection, int damage, float degreesOffsetFromFacingRight,
+               boolean onlyHitOneTarget, float distance, float speed, int pid, long frame) {
+        super(alignment,texture,x,y,width,height,Layer.PROJECTILE,false,pid,frame);
+        Vector2 direction = new Vector2(xDirection, yDirection).nor();
+        this.damage = damage;
+        this.distance = distance;
+        this.speed = speed;
+        this.duration = distance / speed;
+        this.xVelocity = direction.x * speed;
+        this.yVelocity = direction.y * speed;
+        this.setRotation(degreesOffsetFromFacingRight+direction.angleDeg());
+        this.onlyHitOneTarget = onlyHitOneTarget;
+        this.travelTimer = 0f;
+    }
+
     /**
      * Typical Ranged Projectile (direction, distance, and speed based)
      * @param alignment
@@ -37,17 +54,7 @@ public class Projectile extends Entity {
     Projectile(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
                float xDirection, float yDirection, int damage, float degreesOffsetFromFacingRight,
                boolean onlyHitOneTarget, float distance, float speed) {
-        super(alignment, texture, x, y, width, height, Layer.PROJECTILE,true);
-        Vector2 direction = new Vector2(xDirection, yDirection).nor();
-        this.damage = damage;
-        this.distance = distance;
-        this.speed = speed;
-        this.duration = distance / speed;
-        this.xVelocity = direction.x * speed;
-        this.yVelocity = direction.y * speed;
-        this.setRotation(degreesOffsetFromFacingRight+direction.angleDeg());
-        this.onlyHitOneTarget = onlyHitOneTarget;
-        this.travelTimer = 0f;
+        this(alignment,texture,x,y,width,height,xDirection,yDirection,damage,degreesOffsetFromFacingRight,onlyHitOneTarget,distance,speed,-1,-1);
     }
 
     /**
@@ -65,15 +72,8 @@ public class Projectile extends Entity {
      */
     Projectile(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
                int damage, float degreesOffsetFromFacingRight, boolean onlyHitOneTarget, float duration) {
-        super(alignment, texture, x, y, width, height, Layer.PROJECTILE,false);
-        this.damage = damage;
-        this.speed = 0;
-        this.duration = duration;
-        this.xVelocity = 0;
-        this.yVelocity = 0;
-        this.setRotation(degreesOffsetFromFacingRight+90);
-        this.onlyHitOneTarget = onlyHitOneTarget;
-        this.travelTimer = 0f;
+        super(alignment, texture, x, y, width, height, Layer.PROJECTILE,false, -1, -1);
+
     }
 
     /**

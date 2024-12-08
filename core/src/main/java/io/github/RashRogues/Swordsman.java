@@ -38,8 +38,8 @@ public class Swordsman extends Enemy {
 
     private void move() {
         // Get distance from player
-        float xDist = player.getX()+player.getWidth()/2-getX()-getWidth()/2;
-        float yDist = player.getY()+player.getHeight()/2-getY()-getHeight()/2;
+        float xDist = player.getX() + player.getWidth() / 2 - getX() - getWidth() / 2;
+        float yDist = player.getY() + player.getHeight() / 2 - getY() - getHeight() / 2;
         // Detect if the swordsman is within striking distance
         if (Math.abs(xDist) < 5f && Math.abs(yDist) < 5f) {
             // Strike
@@ -50,15 +50,17 @@ public class Swordsman extends Enemy {
             state = State.ATTACK;
         } else {
             // Move towards player
-            if (Math.abs(xDist) > 0.1f)
-                xVelocity = stats.getMoveSpeed() * Math.signum(xDist);
-            else
-                xVelocity = 0f;
-            if (Math.abs(yDist) > 0.1f)
-                yVelocity = stats.getMoveSpeed() * Math.signum(yDist);
-            else
-                yVelocity = 0f;
-            flipped = xVelocity < 0f;
+            if (Math.abs(xDist) > 0.1f) {
+                //        xVelocity = stats.getMoveSpeed() * Math.signum(xDist);
+            } else {
+                //       xVelocity = 0f;
+            }
+            if (Math.abs(yDist) > 0.1f) {
+                //      yVelocity = stats.getMoveSpeed() * Math.signum(yDist);
+            } else {
+                //     yVelocity = 0f;
+                //flipped = xVelocity < 0f;
+            }
         }
     }
 

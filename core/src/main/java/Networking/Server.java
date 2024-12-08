@@ -43,7 +43,7 @@ public class Server implements Endpoint{
         heartbeatStatus = new LinkedHashMap();
         System.out.println(">>> Server listening on 127.0.0.1:" + Integer.toString(Network.PORT));
         RRGame.globals.addClient(0);
-        RRGame.globals.pid = 0;
+        RRGame.globals.setPID(0);
 
         primarySocketThread = new Thread(
             new Runnable() {
@@ -156,9 +156,16 @@ public class Server implements Endpoint{
     }
 
     @Override
-    public void dispatchKeys(byte[] keymask) {
+    public void dispatchDestroyEntity2(int pid, long frame) {
         for (ClientListener c : clients){
-            c.dispatchKeys(keymask);
+            c.dispatchDestroyEntity2(pid, frame);
+        }
+    }
+
+    @Override
+    public void dispatchKeys(byte[] keymask, long frame) {
+        for (ClientListener c : clients){
+            c.dispatchKeys(keymask, frame);
         }
     }
 

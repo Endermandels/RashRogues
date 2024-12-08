@@ -10,7 +10,7 @@ public class NetViewer extends Entity {
     private String text;
 
     public NetViewer() {
-        super(EntityAlignment.BACKGROUND, RRGame.am.get(RSC_NET_VIEWER), 0, 0, 5, 5, Layer.FOREGROUND, false);
+        super(EntityAlignment.BACKGROUND, RRGame.am.get(RSC_NET_VIEWER), 0, 0, 5, 5, Layer.FOREGROUND);
     }
 
     public void outputToConsole(){
@@ -30,16 +30,17 @@ public class NetViewer extends Entity {
     }
 
     public String getInfo(){
-       ArrayList<Entity> entities = RRGame.globals.getReplicatedEntities();
-       StringBuilder str = new StringBuilder();
-       str.append("Networked Entities: \n");
-       str.append("---------------\n");
-       for (Entity e : entities){
-           str.append(e.toString());
-           str.append("\n");
-       }
-       str.append("---------------\n");
-       return str.toString();
+//       ArrayList<Entity> entities = RRGame.globals.getReplicatedEntities();
+//       StringBuilder str = new StringBuilder();
+//       str.append("Networked Entities: \n");
+//       str.append("---------------\n");
+//       for (Entity e : entities){
+//           str.append(e.toString());
+//           str.append("\n");
+//       }
+//       str.append("---------------\n");
+//       return str.toString();
+        return "";
     }
 
     @Override
