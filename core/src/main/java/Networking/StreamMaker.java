@@ -6,6 +6,10 @@ import io.github.RashRogues.RRGame;
 import java.nio.ByteBuffer;
 
 public class StreamMaker {
+   private static ByteBuffer longbuffer = ByteBuffer.allocate(Long.BYTES);
+   private static ByteBuffer intbuffer = ByteBuffer.allocate(Integer.BYTES);
+
+
    public static byte[] farewell(){
       byte[] stream = new byte[128];
       stream[0] = (byte) PacketType.FAREWELL.getvalue();
@@ -54,10 +58,14 @@ public class StreamMaker {
    public  static byte[] destroyEntity(int eid){
       byte[] stream = new byte[128];
       stream[0] = (byte) PacketType.DESTROY.getvalue();
-      stream[1] = (byte) (eid >> 24);
-      stream[2] = (byte) (eid >> 16);
-      stream[3] = (byte) (eid >> 8);
-      stream[4] = (byte) (eid);
+
+      byte[] eidBytes = intToBytes(eid);
+
+      stream[1] = eidBytes[0];
+      stream[2] = eidBytes[1];
+      stream[3] = eidBytes[2];
+      stream[4] = eidBytes[3];
+
       return stream;
    }
 
@@ -103,9 +111,7 @@ public class StreamMaker {
       stream[7] = (byte) (frame >> 16);
       stream[8] = (byte) (frame >> 8);
       stream[9] = (byte) (frame);
-      for (int i = 0; i < keymask.length; i++){
-         stream[i+9] = keymask[i];
-      }
+      System.arraycopy(keymask, 0, stream, 10, keymask.length);
       return stream;
    }
 
@@ -167,6 +173,30 @@ public class StreamMaker {
       return stream;
    }
 
+   public static byte[] intToBytes(int i){
+      intbuffer.clear();
+      intbuffer.putInt(i);
+      return intbuffer.array();
+   }
 
+   public static int bytesToInt(byte[] bytes){
+      intbuffer.clear();
+      intbuffer.put(bytes, 0, bytes.length);
+      intbuffer.flip();
+      return intbuffer.getInt();
+   }
+
+   public static byte[] longToBytes(long l){
+      longbuffer.clear();
+      longbuffer.putLong(0, l);
+      return longbuffer.array();
+   }
+
+   public static long bytesToLong(byte[] bytes){
+      longbuffer.clear();
+      longbuffer.put(bytes, 0, bytes.length);
+      longbuffer.flip();
+      return longbuffer.getLong();
+   }
 
 }

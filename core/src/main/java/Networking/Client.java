@@ -272,8 +272,14 @@ public class Client implements Endpoint {
      */
     public void handleCreatePlayer(byte[] packet) {
         int new_pid = packet[1];
-        int x = ((packet[2] >> 24) | (packet[3] >> 16) | (packet[4] >> 8) | (packet[5]));
-        int y = ((packet[6] >> 24) | (packet[7] >> 16) | (packet[8] >> 8) | (packet[9]));
+
+        byte[] xIntBytes = new byte[4];
+        byte[] yIntBytes = new byte[4];
+        System.arraycopy(packet,2,xIntBytes,0,4);
+        System.arraycopy(packet,6,yIntBytes,0,4);
+        int x = StreamMaker.bytesToInt(xIntBytes);
+        int y = StreamMaker.bytesToInt(yIntBytes);
+
         Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG), x, y, RRGame.PLAYER_SIZE);
         this.inputQueues.put((int) packet[1],new Queue<byte[]>());
         RRGame.globals.addPlayer(new_pid,player);
@@ -288,14 +294,24 @@ public class Client implements Endpoint {
     }
 
     public void handleDestroyEntity(byte[] packet){
-        int eid = ((packet[1] >> 24) | (packet[2] >> 16) | (packet[3] >> 8) | (packet[4]));
+
+        byte[] eidBytes = new byte[4];
+        System.arraycopy(packet,1,eidBytes,0,4);
+        int eid = StreamMaker.bytesToInt(eidBytes);
+
         System.out.println("Destroying: " + Integer.toString(eid));
+        Entity entityToDestroy = RRGame.globals.getReplicatedEntity(eid);
+        System.out.println(entityToDestroy);
         RRGame.globals.deregisterEntity(RRGame.globals.getReplicatedEntity(eid));
     }
 
     public void handleDestroyEntity2(byte[] packet){
         int pid = (int) packet[1];
-        long frame = ((packet[2] >> 56) | (packet[3] >> 48) | (packet[4] >> 40) | (packet[5] >> 32) | (packet[6] >> 24) | (packet[7] >> 16) | (packet[8] >> 8) | packet[9]);
+
+        byte[] longBytes = new byte[8];
+        System.arraycopy(packet,2, longBytes,0,8);
+        long frame = StreamMaker.bytesToLong(longBytes);
+
         Entity e = RRGame.globals.findNondeterministicEntity(pid,frame);
         RRGame.globals.deregisterEntity(e);
     }
@@ -327,33 +343,37 @@ public class Client implements Endpoint {
 
     public void handleKeys(byte[] packet){
         int pid = (int) packet[1];
-        long frame = (long) ((packet[2] >> 56) | (packet[3] >> 48) | (packet[4] >> 40) | (packet[5] >> 32) | (packet[6] >> 24) | (packet[7] >> 16) | (packet[8] >> 8) | ( packet[9]));
-        Player p = RRGame.globals.players.get((int) packet[1]);
-        if (packet[9] == 1){
+        Player p = RRGame.globals.players.get(pid);
+
+        byte[] longBytes = new byte[8];
+        System.arraycopy(packet,2, longBytes,0,8);
+        long frame = StreamMaker.bytesToLong(longBytes);
+
+        if (packet[10] == 1){
             p.moveUp();
         }
-        if (packet[10] == 1){
+        if (packet[11] == 1){
             p.moveDown();
         }
-        if (packet[11] == 1){
+        if (packet[12] == 1){
             p.moveRight();
         }
-        if (packet[12] == 1){
+        if (packet[13] == 1){
             p.moveLeft();
         }
-        if (packet[13] == 1){
+        if (packet[14] == 1){
             p.dash();
         }
 
-        if (packet[14] == 1){
+        if (packet[15] == 1){
             p.useConsumable(pid, frame);
         }
 
-        if (packet[15] == 1){
+        if (packet[16] == 1){
             p.useAbility(pid, frame);
         }
 
-        if (packet[16] == 1){
+        if (packet[17] == 1){
             p.attack(pid, frame);
         }
     }

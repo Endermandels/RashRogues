@@ -22,7 +22,7 @@ public class Globals {
     public HashSet<Entity> deterministicReplicatedEntitiesSet  = new HashSet<>();
 
     // Entities that are not deterministic but must be tied to a frame.
-    private HashMap<Integer, HashMap<Long,Entity>> nondeterministicReplicatedEntities = new HashMap<>();
+    private final HashMap<Integer, HashMap<Long,Entity>> nondeterministicReplicatedEntities = new HashMap<>();
 
     public int currentNumPlayers = 0;
     public int pid = -1;
@@ -51,15 +51,15 @@ public class Globals {
 
         // This entity needs to be indexed to a certain 'frame'. It originated the from player with a pid of 'pid'.
         if (pid != -1) {
-            System.out.println("Getting " + Integer.toString(pid) + " out.");
+            System.out.println("we registered " + e.toString() + " from " + Integer.toString(pid) + " with frame id of : " + Long.toString(frame) );
             this.nondeterministicReplicatedEntities.get(pid).put(frame,e);
             e.pid = pid;
 
         // This entity is matched with another entity based on creation order.
         } else if (deterministic){
             deterministicReplicatedEntities.put(this.deterministicReplicatedEntitiesSet.size(), e);
-            deterministicReplicatedEntitiesSet.add(e);
             e.id = deterministicReplicatedEntitiesSet.size();
+            deterministicReplicatedEntitiesSet.add(e);
         }
         System.out.println("Registered : " + e.toString() + " with pid of " + Integer.toString(e.id));
         RRGame.globals.currentScreen.registerEntity(e);
