@@ -33,6 +33,7 @@ public class Swordsman extends Enemy {
         this.stats = new EnemyStats(BASE_SWORDSMAN_HEALTH, BASE_SWORDSMAN_DAMAGE, BASE_SWORDSMAN_ATTACK_SPEED, BASE_SWORDSMAN_MOVE_SPEED, this);
         setBoxPercentSize(SWORDSMAN_HIT_BOX_PERCENT_SCALAR, SWORDSMAN_HIT_BOX_PERCENT_SCALAR, hitBox);
         setBoxPercentSize(SWORDSMAN_HURT_BOX_PERCENT_SCALAR, SWORDSMAN_HURT_BOX_PERCENT_SCALAR, hurtBox);
+
         this.playerSet = playerSet;
         state = State.WALK;
         attackTimer = 0f;
@@ -44,6 +45,7 @@ public class Swordsman extends Enemy {
         float yDist = 1000000000f;
         Player p = null;
         for (Player player : playerSet) {
+            if (player.stats.isDead()) continue;
             float xd = player.getX()+player.getWidth()/2-getX()-getWidth()/2;
             float yd = player.getY()+player.getHeight()/2-getY()-getHeight()/2;
             if (xd*xd + yd*yd < xDist*xDist + yDist*yDist) {

@@ -374,7 +374,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                         case "a":
                         case "archer":
                         case "Archer":
-                            new Archer(x, y, RRGame.STANDARD_ENEMY_SIZE);
+                            new Archer(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet);
                             break;
                         case "b":
                         case "bomber":
