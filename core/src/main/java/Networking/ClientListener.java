@@ -209,6 +209,14 @@ public class ClientListener implements Endpoint {
     }
 
     /**
+     * Communicate to the client a random seed to be used for all random activities.
+     * @param seed
+     */
+    public void dispatchSeed(long seed){
+        this.outgoingMessages.add(StreamMaker.seed(seed));
+    }
+
+    /**
      * Communicate to the client to destroy an entity.
      */
     public void dispatchDestroyEntity(int eid) {

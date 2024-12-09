@@ -155,6 +155,8 @@ public class Client implements Endpoint {
                 this.handleDestroyEntity(msg);
             } else if (msgType == DESTROY2.getvalue()){
                 this.handleDestroyEntity2(msg);
+            } else if (msgType == RANDOM_SEED.getvalue()){
+                this.handleSeed(msg);
             }
         }
 
@@ -201,6 +203,16 @@ public class Client implements Endpoint {
         this.outgoingMessages.add(StreamMaker.farewell());
         this.listening = false;
         this.dispose();
+    }
+
+    /**
+     * Sends a seed for random events to the server.
+     * Not implemented as server is the only one who
+     * gets to create seeds.
+     * @param seed
+     */
+    public void dispatchSeed(long seed){
+        return;
     }
 
 
@@ -263,6 +275,18 @@ public class Client implements Endpoint {
     public void handleStartGame() {
         System.out.println("Server started the game.");
         RRGame.globals.currentScreen.nextScreen();
+    }
+
+    /**
+     * We received a seed from the server to base
+     * all random events off.
+     * @param packet
+     */
+    public void handleSeed(byte[] packet){
+        byte[] seedBytes = new byte[8];
+        System.arraycopy(packet,1, seedBytes, 0, 8);
+        long seed = StreamMaker.bytesToLong(seedBytes);
+        RRGame.globals.setRandomSeed(seed);
     }
 
     /**

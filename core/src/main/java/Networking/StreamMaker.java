@@ -173,6 +173,21 @@ public class StreamMaker {
       return stream;
    }
 
+   public static byte[] seed(long seed){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.RANDOM_SEED.getvalue();
+      byte[] seedBytes = longToBytes(seed);
+      stream[1] = seedBytes[0];
+      stream[2] = seedBytes[1];
+      stream[3] = seedBytes[2];
+      stream[4] = seedBytes[3];
+      stream[5] = seedBytes[4];
+      stream[6] = seedBytes[5];
+      stream[7] = seedBytes[6];
+      stream[8] = seedBytes[7];
+      return stream;
+   }
+
    public static byte[] intToBytes(int i){
       intbuffer.clear();
       intbuffer.putInt(i);
@@ -198,5 +213,6 @@ public class StreamMaker {
       longbuffer.flip();
       return longbuffer.getLong();
    }
+
 
 }

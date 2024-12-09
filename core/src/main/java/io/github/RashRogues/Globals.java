@@ -6,12 +6,18 @@ import Networking.Network;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Random;
 
 public class Globals {
     public long frame = 0;
+    public int pid = -1;
+    public int currentNumPlayers = 0;
 
     public static Network network;
     public RRScreen currentScreen;
+
+    public static final long RANDOM_SEED = 10358923;
+    private Random random;
 
     public HashSet<Player> playersSet = new HashSet<>();
     public HashSet<Integer> clientSet = new HashSet<>();
@@ -24,9 +30,10 @@ public class Globals {
     // Entities that are not deterministic but must be tied to a frame.
     private final HashMap<Integer, HashMap<Long,Entity>> nondeterministicReplicatedEntities = new HashMap<>();
 
-    public int currentNumPlayers = 0;
-    public int pid = -1;
 
+    public Globals(){
+        random = new Random(RANDOM_SEED);
+    }
 
     public void setPID(int pid){
        this.pid = pid;
@@ -192,8 +199,34 @@ public class Globals {
         }
     }
 
-    public void timeStampEntity(Entity e, int pid, long timestamp){
 
-
+    /**
+     * Set the seed for all random numbers.
+     * @param seed
+     */
+    public void setRandomSeed(long seed){
+        random = new Random(seed);
     }
+
+    /**
+     * Returns a number between 0 and bound
+     * @param bound Upper bound
+     * @return int
+     */
+    public int getRandomInteger(int bound){
+       if (this.random != null){
+           return random.nextInt(bound);
+       }
+       return 0;
+    }
+
+    /**
+     * Returns a random number generator.
+     * This number generator is synced to all clients.
+     * @return Random
+     */
+    public Random getRandom(){
+        return this.random;
+    }
+
 }

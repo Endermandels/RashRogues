@@ -72,17 +72,6 @@ public class Server implements Endpoint{
         primarySocketThread.start();
     }
 
-    /**
-     * Instructs all connections to send farwell messages and close.
-     * Effectively ends the multiplayer game.
-     */
-    public void dispatchFarewell(){
-        for (ClientListener c : clients){
-            c.dispatchFarewell();
-        }
-        clients.clear();
-    }
-
     @Override
     public void processMessages() {
 
@@ -122,13 +111,6 @@ public class Server implements Endpoint{
         this.heartbeatStatus.put(clientPID,0);
     }
 
-    @Override
-    public void dispatchCreatePlayer(Player player) {
-        for (ClientListener c : clients){
-            c.dispatchCreatePlayer(player);
-        }
-    }
-
     public void relay(byte[] packet, int notMe){
         for (ClientListener c : clients){
             if (c.client_pid != notMe){
@@ -149,6 +131,25 @@ public class Server implements Endpoint{
     }
 
     @Override
+    public void dispatchCreatePlayer(Player player) {
+        for (ClientListener c : clients){
+            c.dispatchCreatePlayer(player);
+        }
+    }
+
+    /**
+     * Instructs all connections to send farwell messages and close.
+     * Effectively ends the multiplayer game.
+     */
+    public void dispatchFarewell(){
+        for (ClientListener c : clients){
+            c.dispatchFarewell();
+        }
+        clients.clear();
+    }
+
+
+    @Override
     public void dispatchDestroyEntity(int eid) {
         for (ClientListener c : clients){
             c.dispatchDestroyEntity(eid);
@@ -166,6 +167,12 @@ public class Server implements Endpoint{
     public void dispatchKeys(byte[] keymask, long frame) {
         for (ClientListener c : clients){
             c.dispatchKeys(keymask, frame);
+        }
+    }
+
+    public void dispatchSeed(long seed){
+        for (ClientListener c : clients){
+            c.dispatchSeed(seed);
         }
     }
 

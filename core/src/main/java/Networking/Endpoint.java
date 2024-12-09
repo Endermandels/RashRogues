@@ -15,4 +15,5 @@ public interface Endpoint {
     public void dispose();
     public void dispatchDestroyEntity(int eid);
     public void dispatchDestroyEntity2(int pid, long frame);
+    void dispatchSeed(long randomSeed);
 }
