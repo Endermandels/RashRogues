@@ -48,6 +48,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
         /* Player Creation */
         player = new Player(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, (int) RRGame.PLAYER_SIZE);
+        RRGame.globals.addPlayer(RRGame.globals.pid,player);
         this.game.network.connection.dispatchCreatePlayer(player);
 
         /* Instance Creation */

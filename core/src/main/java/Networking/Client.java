@@ -182,7 +182,6 @@ public class Client implements Endpoint {
      * Tells server about our player.
      */
     public void dispatchCreatePlayer(Player player) {
-        RRGame.globals.addPlayer(this.pid, player);
         this.outgoingMessages.add(StreamMaker.createPlayer(this.pid, (int) player.getX(), (int) player.getY()));
     }
 

@@ -205,7 +205,6 @@ public class ClientListener implements Endpoint {
      * Communicate to the client to create the server's player
      */
     public void dispatchCreatePlayer(Player player){
-        RRGame.globals.addPlayer(this.pid,player);
         this.outgoingMessages.add(StreamMaker.createPlayer(0, (int) player.getX(), (int) player.getY()));
     }
 

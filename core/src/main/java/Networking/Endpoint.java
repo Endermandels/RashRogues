@@ -1,9 +1,6 @@
 package Networking;
 
-import io.github.RashRogues.Entity;
-import io.github.RashRogues.EntityType;
 import io.github.RashRogues.Player;
-import io.github.RashRogues.RRGame;
 
 public interface Endpoint {
     /**
