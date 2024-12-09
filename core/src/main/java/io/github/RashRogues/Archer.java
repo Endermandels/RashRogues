@@ -25,7 +25,7 @@ public class Archer extends Enemy {
     private HashSet<Player> playerSet;
     private State state;
 
-    private final float attackTimerMax = 0.6f;
+    private final float attackTimerMax = 0.7f;
     private float attackTimer;
     private float attackXDir, attackYDir;
 
@@ -58,9 +58,20 @@ public class Archer extends Enemy {
             }
         }
         if (p == null) return;
-        // Detect if the swordsman is within striking distance
-        if (Math.abs(xDist) < 20f && Math.abs(yDist) < 20f) {
-            // Strike
+
+        if (Math.sqrt(xDist*xDist + yDist*yDist) < 8f) {
+            // Too close, back up
+            if (Math.abs(xDist) > 0.1f)
+                xVelocity = stats.getMoveSpeed() * Math.signum(-xDist);
+            else
+                xVelocity = 0f;
+            if (Math.abs(yDist) > 0.1f)
+                yVelocity = stats.getMoveSpeed() * Math.signum(-yDist);
+            else
+                yVelocity = 0f;
+            flipped = xVelocity < 0f;
+        } else if (Math.sqrt(xDist*xDist + yDist*yDist) < 20f) {
+            // Start shooting
             xVelocity = 0f;
             yVelocity = 0f;
             attackXDir = xDist / (float) Math.sqrt(xDist*xDist + yDist*yDist);

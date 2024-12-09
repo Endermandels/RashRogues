@@ -57,7 +57,7 @@ public class Swordsman extends Enemy {
         }
         if (p == null) return;
         // Detect if the swordsman is within striking distance
-        if (Math.abs(xDist) < 5f && Math.abs(yDist) < 5f) {
+        if (Math.sqrt(xDist*xDist + yDist*yDist) < 4f) {
             // Strike
             xVelocity = 0f;
             yVelocity = 0f;
