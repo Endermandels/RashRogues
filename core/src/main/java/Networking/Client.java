@@ -312,6 +312,8 @@ public class Client implements Endpoint {
         System.arraycopy(packet,2, longBytes,0,8);
         long frame = StreamMaker.bytesToLong(longBytes);
 
+        System.out.println("Server says to destroy an entity. PID: " + Integer.toString(pid) + " FRAME ID: " + Long.toString(frame));
+
         Entity e = RRGame.globals.findNondeterministicEntity(pid,frame);
         RRGame.globals.deregisterEntity(e);
     }

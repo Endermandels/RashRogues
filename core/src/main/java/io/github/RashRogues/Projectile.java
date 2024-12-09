@@ -19,10 +19,29 @@ public class Projectile extends Entity {
     private float distance;
 
 
+    /**
+     * Typical Ranged Projectile (direction, distance, and speed based)
+     * This projectile will be synced.
+     * @param alignment
+     * @param texture
+     * @param x
+     * @param y
+     * @param width
+     * @param height
+     * @param xDirection
+     * @param yDirection
+     * @param damage
+     * @param degreesOffsetFromFacingRight
+     * @param onlyHitOneTarget
+     * @param distance
+     * @param speed
+     * @param pid
+     * @param frame
+     */
     Projectile(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
                float xDirection, float yDirection, int damage, float degreesOffsetFromFacingRight,
-               boolean onlyHitOneTarget, float distance, float speed, int pid, long frame) {
-        super(alignment,texture,x,y,width,height,Layer.PROJECTILE,false,pid,frame);
+               boolean onlyHitOneTarget, float distance, float speed, int pid, long frame, boolean clientside) {
+        super(alignment,texture,x,y,width,height,Layer.PROJECTILE,false,pid,frame, clientside);
         Vector2 direction = new Vector2(xDirection, yDirection).nor();
         this.damage = damage;
         this.distance = distance;
@@ -37,6 +56,7 @@ public class Projectile extends Entity {
 
     /**
      * Typical Ranged Projectile (direction, distance, and speed based)
+     * This projectile will not be synced.
      * @param alignment
      * @param texture
      * @param x
@@ -54,11 +74,12 @@ public class Projectile extends Entity {
     Projectile(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
                float xDirection, float yDirection, int damage, float degreesOffsetFromFacingRight,
                boolean onlyHitOneTarget, float distance, float speed) {
-        this(alignment,texture,x,y,width,height,xDirection,yDirection,damage,degreesOffsetFromFacingRight,onlyHitOneTarget,distance,speed,-1,-1);
+        this(alignment,texture,x,y,width,height,xDirection,yDirection,damage,degreesOffsetFromFacingRight,onlyHitOneTarget,distance,speed,-1,-1, true);
     }
 
     /**
      * Explosion or Melee Projectile (duration based)
+     * This projectile will not be synced.
      * @param alignment
      * @param texture
      * @param x
@@ -72,8 +93,37 @@ public class Projectile extends Entity {
      */
     Projectile(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
                int damage, float degreesOffsetFromFacingRight, boolean onlyHitOneTarget, float duration) {
-        super(alignment, texture, x, y, width, height, Layer.PROJECTILE,false, -1, -1);
+        this(alignment,texture,x,y,width,height,damage,degreesOffsetFromFacingRight,onlyHitOneTarget,duration,-1,-1, true);
+    }
 
+
+    /**
+     * Explosion or Melee Projectile (duration based)
+     * This projectile will be synced.
+     * @param alignment
+     * @param texture
+     * @param x
+     * @param y
+     * @param width
+     * @param height
+     * @param damage
+     * @param degreesOffsetFromFacingRight
+     * @param onlyHitOneTarget
+     * @param duration
+     * @param pid
+     * @param frame
+     */
+    Projectile(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
+               int damage, float degreesOffsetFromFacingRight, boolean onlyHitOneTarget, float duration, int pid, long frame, boolean clientside) {
+        super(alignment, texture, x, y, width, height, Layer.PROJECTILE,false, pid, frame, clientside);
+        this.damage = damage;
+        this.speed = 0;
+        this.duration = duration;
+        this.xVelocity = 0;
+        this.yVelocity = 0;
+        this.setRotation(degreesOffsetFromFacingRight+90);
+        this.onlyHitOneTarget = onlyHitOneTarget;
+        this.travelTimer = 0f;
     }
 
     /**
@@ -86,18 +136,18 @@ public class Projectile extends Entity {
      * @param explosionOrMelee should be true if an explosion or a melee projectile (unmoving).
      * @return A copy of this projectile
      */
-    public Projectile makeProjectile(boolean explosionOrMelee) {
+    public Projectile makeProjectile(boolean explosionOrMelee, boolean clientside) {
         Projectile returnProjectile;
         if (!explosionOrMelee) {
             Vector2 direction = new Vector2(xVelocity, yVelocity);
             float degOffset = this.getRotation() - direction.angleDeg();
             returnProjectile = new Projectile(this.alignment, this.getTexture(), this.getX(), this.getY(), this.getWidth(),
                     this.getHeight(), this.xVelocity, this.yVelocity, this.damage, degOffset, this.onlyHitOneTarget,
-                    this.distance, this.speed);
+                    this.distance, this.speed, pid, frame, clientside);
         }
         else {
             returnProjectile =  new Projectile(this.alignment, this.getTexture(), this.getX(), this.getY(), this.getWidth(),
-                    this.getHeight(), this.damage, this.getRotation(), this.onlyHitOneTarget, this.duration);
+                    this.getHeight(), this.damage, this.getRotation(), this.onlyHitOneTarget, this.duration, pid, frame, clientside);
         }
         // because this step is done on each subclass, we need to do it here
         returnProjectile.setBoxPercentSize(this.hitBoxWidthScalar, this.hitBoxHeightScalar, returnProjectile.hitBox);
