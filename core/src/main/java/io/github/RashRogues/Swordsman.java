@@ -2,6 +2,8 @@ package io.github.RashRogues;
 
 import com.badlogic.gdx.graphics.Texture;
 
+import java.util.HashSet;
+
 public class Swordsman extends Enemy {
 
     private enum State {
@@ -10,7 +12,7 @@ public class Swordsman extends Enemy {
         DIE
     };
 
-    private final int BASE_SWORDSMAN_HEALTH = 10;
+    private final int BASE_SWORDSMAN_HEALTH = 100;
     private final int BASE_SWORDSMAN_DAMAGE = 10;
     private final int ATTACK_DAMAGE = 50;
     private final float ATTACK_DURATION = 0.5f;
@@ -19,34 +21,46 @@ public class Swordsman extends Enemy {
     private final float SWORDSMAN_HIT_BOX_PERCENT_SCALAR = 0.4f;
     private final float SWORDSMAN_HURT_BOX_PERCENT_SCALAR = 0.58f;
 
-    private Player player;
+    private HashSet<Player> playerSet;
     private State state;
 
     private final float attackTimerMax = 1f;
     private float attackTimer;
     private float attackX, attackY;
 
-    Swordsman(float x, float y, float size, Player player) {
+    Swordsman(float x, float y, float size, HashSet<Player> playerSet) {
         super(RRGame.am.get(RRGame.RSC_SWORDSMAN_IMG), x, y, size);
         this.stats = new EnemyStats(BASE_SWORDSMAN_HEALTH, BASE_SWORDSMAN_DAMAGE, BASE_SWORDSMAN_ATTACK_SPEED, BASE_SWORDSMAN_MOVE_SPEED, this);
         setBoxPercentSize(SWORDSMAN_HIT_BOX_PERCENT_SCALAR, SWORDSMAN_HIT_BOX_PERCENT_SCALAR, hitBox);
         setBoxPercentSize(SWORDSMAN_HURT_BOX_PERCENT_SCALAR, SWORDSMAN_HURT_BOX_PERCENT_SCALAR, hurtBox);
-        this.player = player;
+        this.playerSet = playerSet;
         state = State.WALK;
         attackTimer = 0f;
     }
 
     private void move() {
-        // Get distance from player
-        float xDist = player.getX()+player.getWidth()/2-getX()-getWidth()/2;
-        float yDist = player.getY()+player.getHeight()/2-getY()-getHeight()/2;
+        // Get distance from each player
+        float xDist = 1000000000f;
+        float yDist = 1000000000f;
+        Player p = null;
+        for (Player player : playerSet) {
+            float xd = player.getX()+player.getWidth()/2-getX()-getWidth()/2;
+            float yd = player.getY()+player.getHeight()/2-getY()-getHeight()/2;
+            if (xd*xd + yd*yd < xDist*xDist + yDist*yDist) {
+                // player is closer using euclidean distance
+                xDist = xd;
+                yDist = yd;
+                p = player;
+            }
+        }
+        if (p == null) return;
         // Detect if the swordsman is within striking distance
         if (Math.abs(xDist) < 5f && Math.abs(yDist) < 5f) {
             // Strike
             xVelocity = 0f;
             yVelocity = 0f;
-            attackX = player.getX();
-            attackY = player.getY();
+            attackX = p.getX();
+            attackY = p.getY();
             state = State.ATTACK;
         } else {
             // Move towards player
