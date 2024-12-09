@@ -22,6 +22,7 @@ public abstract class Entity extends Sprite {
     protected EntityAlignment alignment;
     protected Layer layer;
     private HashMap<Effect, Float> activeEffects;
+    public boolean clientSideOnly = false;
 
     // Used For Networking
     public int id     = -1;
@@ -29,8 +30,9 @@ public abstract class Entity extends Sprite {
     public long frame = -1;
 
     protected Entity(EntityAlignment alignment, Texture texture, float x, float y,
-                     float width, float height, Layer layer, boolean replicated, int pid, long frame) {
+                     float width, float height, Layer layer, boolean replicated, int pid, long frame, boolean clientside) {
         super(texture);
+        this.clientSideOnly = clientside;
         setSize(width, height);
         setOrigin(width / 2, height / 2);
         setPosition(x, y);
@@ -60,7 +62,7 @@ public abstract class Entity extends Sprite {
      */
     protected Entity(EntityAlignment alignment, Texture texture, float x, float y,
                      float width, float height, Layer layer) {
-        this(alignment, texture, x, y, width, height, layer, false,-1,-1);
+        this(alignment, texture, x, y, width, height, layer, false,-1,-1, true);
     }
    /**
     * Create an Entity on the current screen.
@@ -75,7 +77,7 @@ public abstract class Entity extends Sprite {
     */
    protected Entity(EntityAlignment alignment, Texture texture, float x, float y,
                     float width, float height, Layer layer, boolean replicated) {
-        this(alignment, texture, x, y, width, height, layer, replicated,-1,-1);
+        this(alignment, texture, x, y, width, height, layer, replicated,-1,-1, false);
    }
 
     /**
@@ -170,7 +172,8 @@ public abstract class Entity extends Sprite {
     protected void removeSelf() {
         // Only the host has the authority to remove an Entity directly.
         // Clients will be instructed to do so via the network.
-        if (RRGame.globals.pid == 0) {
+        // Entities marked with clientSideOnly may be removed by anyone.
+        if (RRGame.globals.pid == 0 || this.clientSideOnly) {
             RRGame.globals.deregisterEntity(this);
         }
     }
