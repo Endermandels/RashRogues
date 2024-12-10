@@ -1,8 +1,9 @@
 package io.github.RashRogues;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+
+import java.util.Random;
 
 public class Room extends Sprite {
     // other stuff like bounding box idk yet, would be nice to keep all that logic out of PlayScreen.java
@@ -10,10 +11,13 @@ public class Room extends Sprite {
     public int roomHeight;
     protected int doorPositionX;
     protected int doorPositionY;
+
+    protected int numEnemies;
+    protected int difficulty;
     // enemies would likely be spawned in here
     // this would include the one that drops the key.
 
-    Room(Texture texture, int doorPositionX, int doorPositionY) {
+    Room(Texture texture, int doorPositionX, int doorPositionY, int numEnemies, int difficulty) {
         super(texture);
         this.doorPositionX = doorPositionX;
         this.doorPositionY = doorPositionY;
@@ -28,5 +32,32 @@ public class Room extends Sprite {
         roomHeight = texture.getHeight() * roomWidth / texture.getWidth();
         setSize(roomWidth, roomHeight);
         setPosition(0, 0);
+
+        this.numEnemies = numEnemies;
+        this.difficulty = difficulty;
+    }
+
+    void spawnInitialEnemies() {
+        Random rnd = RRGame.globals.getRandom();
+        for (int i = 0; i < numEnemies; i++) {
+            float x = rnd.nextFloat(10, roomWidth-10);
+            float y = rnd.nextFloat(10, roomHeight);
+            int choice = rnd.nextInt(3);
+            Enemy e = null;
+            switch (choice) {
+                case 0:
+                    e = new Swordsman(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet);
+                    break;
+                case 1:
+                    e = new Archer(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet);
+                    break;
+                case 2:
+                    e = new Bomber(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet);
+                    break;
+            }
+            for (int j = 0; j < difficulty; j++){
+                e.levelUpEnemy();
+            }
+        }
     }
 }
