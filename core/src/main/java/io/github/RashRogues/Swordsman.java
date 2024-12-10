@@ -57,7 +57,8 @@ public class Swordsman extends Enemy {
         }
         if (p == null) return;
         // Detect if the swordsman is within striking distance
-        if (Math.sqrt(xDist*xDist + yDist*yDist) < 4f) {
+        float magnitude = (float) Math.sqrt(xDist * xDist + yDist * yDist);
+        if (magnitude < 4f) {
             // Strike
             xVelocity = 0f;
             yVelocity = 0f;
@@ -67,11 +68,11 @@ public class Swordsman extends Enemy {
         } else {
             // Move towards player
             if (Math.abs(xDist) > 0.1f)
-                xVelocity = stats.getMoveSpeed() * Math.signum(xDist);
+                xVelocity = stats.getMoveSpeed() * xDist / magnitude;
             else
                 xVelocity = 0f;
             if (Math.abs(yDist) > 0.1f)
-                yVelocity = stats.getMoveSpeed() * Math.signum(yDist);
+                yVelocity = stats.getMoveSpeed() * yDist / magnitude;
             else
                 yVelocity = 0f;
             flipped = xVelocity < 0f;

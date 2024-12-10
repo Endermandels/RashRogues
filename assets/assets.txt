@@ -35,6 +35,7 @@ Images/archer sprite sheet.png
 Images/bomb sprite sheet.png
 Images/chest sprite sheet.png
 Images/door sprite sheet.png
+Images/dragon sprite sheet.png
 Images/explosion sprite sheet.png
 Images/grenadier sprite sheet.png
 Images/king sprite sheet.png
