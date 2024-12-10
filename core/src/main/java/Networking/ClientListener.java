@@ -2,6 +2,7 @@ package Networking;
 
 import com.badlogic.gdx.net.Socket;
 import com.badlogic.gdx.utils.Queue;
+import io.github.RashRogues.Entity;
 import io.github.RashRogues.Player;
 import io.github.RashRogues.RRGame;
 
@@ -43,6 +44,7 @@ public class ClientListener implements Endpoint {
 
         try {
             this.dispatchWelcome(this.client_pid);
+            this.dispatchSeed(RRGame.globals.getRandomSeed());
             this.listen(in);
             this.speak(out);
         } catch (IOException | InterruptedException e) {
@@ -90,23 +92,23 @@ public class ClientListener implements Endpoint {
      */
     private void speak(OutputStream out) throws IOException, InterruptedException {
         this.speakingThread = new Thread(
-            new Runnable() {
-                public void run() {
-                    while (speaking) {
-                        while (!outgoingMessages.isEmpty()) {
-                            byte[] msg = outgoingMessages.poll();
-                            try {
-                                out.write(msg);
-                                out.flush();
-                            } catch (IOException e) {
-                                System.out.println("Speaking thread stopped.");
-                                System.out.flush();
-                                speaking = false;
+                new Runnable() {
+                    public void run() {
+                        while (speaking) {
+                            while (!outgoingMessages.isEmpty()){
+                                byte[] msg = outgoingMessages.poll();
+                                try {
+                                    out.write(msg);
+                                    out.flush();
+                                } catch (IOException e) {
+                                    System.out.println("Speaking thread stopped.");
+                                    System.out.flush();
+                                    speaking = false;
+                                }
                             }
                         }
                     }
                 }
-            }
         );
         this.speakingThread.start();
     }
@@ -167,8 +169,8 @@ public class ClientListener implements Endpoint {
      * Communicate keystrokes to client.
      * @param keymask Keystroke Bytemap
      */
-    public void dispatchKeys(byte[] keymask){
-        this.outgoingMessages.add(StreamMaker.keys(pid, keymask));
+    public void dispatchKeys(byte[] keymask, long frame){
+        this.outgoingMessages.add(StreamMaker.keys(pid, frame, keymask));
     }
 
     /**
@@ -183,7 +185,7 @@ public class ClientListener implements Endpoint {
     public void forward(byte[] packet) {
         this.outgoingMessages.add(packet);
     }
-  
+
     /**
      * Communicate to client that the game has started.
      */
@@ -195,19 +197,41 @@ public class ClientListener implements Endpoint {
      * Communicate to the client that the server is shutting down.
      */
     public void dispatchFarewell(){
-
         this.outgoingMessages.add(StreamMaker.farewell());
         this.listening = false;
         this.dispose();
+    }
+
+
+    public void dispatchDestroyProjectile(int pid, long number){
+        this.outgoingMessages.add(StreamMaker.destroyProjectile(pid,number));
     }
 
     /**
      * Communicate to the client to create the server's player
      */
     public void dispatchCreatePlayer(Player player){
-        RRGame.globals.addPlayer(this.pid,player);
-        System.out.println("SERVER PID: " + Integer.toString(this.pid));
         this.outgoingMessages.add(StreamMaker.createPlayer(0, (int) player.getX(), (int) player.getY()));
+    }
+
+    /**
+     * Communicate to the client a random seed to be used for all random activities.
+     * @param seed
+     */
+    public void dispatchSeed(long seed){
+        this.outgoingMessages.add(StreamMaker.seed(seed));
+    }
+
+    /**
+     * Communicate to the client to destroy an entity.
+     */
+    public void dispatchDestroyEntity(int eid) {
+        this.outgoingMessages.add(StreamMaker.destroyEntity(eid));
+    }
+
+    @Override
+    public void dispatchDestroyEntity2(int pid, long frame) {
+        this.outgoingMessages.add(StreamMaker.destroyEntity2(pid,frame));
     }
 
     /**
@@ -229,9 +253,15 @@ public class ClientListener implements Endpoint {
         this.server.relay(packet,(int) packet[1]);
         this.inputQueues.put((int) packet[1],new Queue<byte[]>());
         int new_pid = packet[1];
-        int x = ((packet[2] >> 24) | (packet[3] >> 16) | (packet[4] >> 8) | (packet[5]));
-        int y = ((packet[6] >> 24) | (packet[7] >> 16) | (packet[8] >> 8) | (packet[9]));
-        Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y, RRGame.PLAYER_SIZE);
+
+        byte[] xIntBytes = new byte[4];
+        byte[] yIntBytes = new byte[4];
+        System.arraycopy(packet,2,xIntBytes,0,4);
+        System.arraycopy(packet,6,yIntBytes,0,4);
+        int x = StreamMaker.bytesToInt(xIntBytes);
+        int y = StreamMaker.bytesToInt(yIntBytes);
+
+        Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y, RRGame.PLAYER_SIZE, new_pid);
         RRGame.globals.addPlayer(new_pid,player);
     }
 
@@ -241,27 +271,37 @@ public class ClientListener implements Endpoint {
      */
     public void handleKeys(byte[] packet){
         this.server.relay(packet,this.client_pid);
-        Player p = RRGame.globals.players.get((int) packet[1]);
-        if (packet[2] == 1) {
+
+        byte[] longBytes = new byte[8];
+        System.arraycopy(packet,2, longBytes,0,8);
+        long frame = StreamMaker.bytesToLong(longBytes);
+
+        int pid = packet[1];
+        Player p = RRGame.globals.players.get(pid);
+
+        if (packet[10] == 1) {
             p.moveUp();
         }
-        if (packet[3] == 1) {
+        if (packet[11] == 1) {
             p.moveDown();
         }
-        if (packet[4] == 1) {
+        if (packet[12] == 1) {
             p.moveRight();
         }
-        if (packet[5] == 1) {
+        if (packet[13] == 1) {
             p.moveLeft();
         }
-        if (packet[6] == 1) {
+        if (packet[14] == 1) {
             p.dash();
         }
-        if (packet[7] == 1) {
-            p.useAbility();
+        if (packet[15] == 1) {
+            p.useConsumable(pid,frame);
         }
-        if (packet[8] == 1) {
-            p.useConsumable();
+        if (packet[16] == 1) {
+            p.useAbility(pid,frame);
+        }
+        if (packet[17] == 1) {
+            p.attack(pid,frame);
         }
     }
 
@@ -273,7 +313,7 @@ public class ClientListener implements Endpoint {
         Player p = RRGame.globals.players.get(client_pid);
         RRGame.globals.removePlayer(client_pid);
         RRGame.globals.removeClient(client_pid);
-        RRGame.globals.currentScreen.removeEntity(p);
+        RRGame.globals.deregisterEntity(p);
         this.dispose();
         System.out.println(">>> Client #" + Integer.toString(this.client_pid) + " left the game.");
     }
@@ -302,6 +342,8 @@ public class ClientListener implements Endpoint {
             incomingMessages.clear();
         }
     }
+
+
 
     /**
      * Are we a server or a client?

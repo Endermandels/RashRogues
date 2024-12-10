@@ -1,6 +1,7 @@
 package UI;
 
 import Networking.Network;
+import Networking.ReplicationType;
 import Networking.Solicitee;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -19,7 +20,7 @@ public class PlayerList extends Entity {
     private BitmapFont font = new BitmapFont();
 
     public PlayerList(float x, float y, int width, int height){
-        super(EntityAlignment.BACKGROUND, RRGame.am.get(RRGame.RSC_GAME_LIST),x,y,width,height, Layer.BACKGROUND);
+        super(EntityAlignment.BACKGROUND, RRGame.am.get(RRGame.RSC_GAME_LIST),x,y,width,height, Layer.BACKGROUND, ReplicationType.CLIENTSIDE,-1,-1);
         this.players         = new HashSet<>();
     }
 

@@ -6,6 +6,10 @@ import io.github.RashRogues.RRGame;
 import java.nio.ByteBuffer;
 
 public class StreamMaker {
+   private static ByteBuffer longbuffer = ByteBuffer.allocate(Long.BYTES);
+   private static ByteBuffer intbuffer = ByteBuffer.allocate(Integer.BYTES);
+
+
    public static byte[] farewell(){
       byte[] stream = new byte[128];
       stream[0] = (byte) PacketType.FAREWELL.getvalue();
@@ -50,7 +54,65 @@ public class StreamMaker {
       stream[1] = (byte) pid;
       return stream;
    }
-  
+
+   public  static byte[] destroyEntity(int eid){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.DESTROY.getvalue();
+
+      byte[] eidBytes = intToBytes(eid);
+
+      stream[1] = eidBytes[0];
+      stream[2] = eidBytes[1];
+      stream[3] = eidBytes[2];
+      stream[4] = eidBytes[3];
+
+      return stream;
+   }
+
+   /**
+    * Destroys entity belonging to player 'pid', created on frame 'frame'
+    * @param pid Player whom this entity belongs to.
+    * @param frame Frame on which this entity was created (frame is relative to endpoint pid originated from).
+    * @return
+    */
+   public static byte[] destroyEntity2(int pid, long frame){
+      byte[] stream = new byte[128];
+
+      stream[0] = (byte) PacketType.DESTROY2.getvalue();
+      stream[1] = (byte) (pid); //truncate pid to a byte, cause we'll only have at max 4 players.
+      stream[2] = (byte) (frame >> 56);
+      stream[3] = (byte) (frame >> 48);
+      stream[4] = (byte) (frame >> 40);
+      stream[5] = (byte) (frame >> 32);
+      stream[6] = (byte) (frame >> 24);
+      stream[7] = (byte) (frame >> 16);
+      stream[8] = (byte) (frame >> 8);
+      stream[9] = (byte) (frame);
+
+      return stream;
+   }
+
+   /**
+    * Destroys the number'th projectile belonging to player 'pid'.
+    * @param pid
+    * @param number
+    * @return
+    */
+   public static byte[] destroyProjectile(int pid, long number){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.DESTROY3.getvalue();
+      stream[1] = (byte) (pid); //truncate pid to a byte, cause we'll only have at max 4 players.
+      stream[2] = (byte) (number >> 56);
+      stream[3] = (byte) (number >> 48);
+      stream[4] = (byte) (number >> 40);
+      stream[5] = (byte) (number >> 32);
+      stream[6] = (byte) (number >> 24);
+      stream[7] = (byte) (number >> 16);
+      stream[8] = (byte) (number >> 8);
+      stream[9] = (byte) (number);
+      return stream;
+   }
+
    public static byte[] updatePlayer(int pid){
       byte[] stream = new byte[128];
       stream[0] = (byte) PacketType.UPDATE_PLAYER.getvalue();
@@ -58,13 +120,19 @@ public class StreamMaker {
       return stream;
    }
 
-   public static byte[] keys(int pid, byte[] keymask){
+   public static byte[] keys(int pid, long frame, byte[] keymask){
       byte[] stream = new byte[128];
       stream[0] = (byte) PacketType.KEYS.getvalue();
       stream[1] = (byte) pid;
-      for (int i = 0; i < keymask.length; i++){
-         stream[i+2] = keymask[i];
-      }
+      stream[2] = (byte) (frame >> 56);
+      stream[3] = (byte) (frame >> 48);
+      stream[4] = (byte) (frame >> 40);
+      stream[5] = (byte) (frame >> 32);
+      stream[6] = (byte) (frame >> 24);
+      stream[7] = (byte) (frame >> 16);
+      stream[8] = (byte) (frame >> 8);
+      stream[9] = (byte) (frame);
+      System.arraycopy(keymask, 0, stream, 10, keymask.length);
       return stream;
    }
 
@@ -125,4 +193,47 @@ public class StreamMaker {
       }
       return stream;
    }
+
+   public static byte[] seed(long seed){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.RANDOM_SEED.getvalue();
+      byte[] seedBytes = longToBytes(seed);
+      stream[1] = seedBytes[0];
+      stream[2] = seedBytes[1];
+      stream[3] = seedBytes[2];
+      stream[4] = seedBytes[3];
+      stream[5] = seedBytes[4];
+      stream[6] = seedBytes[5];
+      stream[7] = seedBytes[6];
+      stream[8] = seedBytes[7];
+      return stream;
+   }
+
+   public static byte[] intToBytes(int i){
+      intbuffer.clear();
+      intbuffer.putInt(i);
+      return intbuffer.array();
+   }
+
+   public static int bytesToInt(byte[] bytes){
+      intbuffer.clear();
+      intbuffer.put(bytes, 0, bytes.length);
+      intbuffer.flip();
+      return intbuffer.getInt();
+   }
+
+   public static byte[] longToBytes(long l){
+      longbuffer.clear();
+      longbuffer.putLong(0, l);
+      return longbuffer.array();
+   }
+
+   public static long bytesToLong(byte[] bytes){
+      longbuffer.clear();
+      longbuffer.put(bytes, 0, bytes.length);
+      longbuffer.flip();
+      return longbuffer.getLong();
+   }
+
+
 }

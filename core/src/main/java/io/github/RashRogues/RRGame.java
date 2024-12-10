@@ -40,6 +40,7 @@ public class RRGame extends Game {
     public static final float KEY_SIZE = 4;
     public static final float ARROW_SIZE = 2;
     public static final float THROWING_KNIFE_SIZE = 2;
+    public static final float BOMB_EXPLOSION_DURATION = 1;
     public static final float SMOKE_BOMB_SIZE = 4;
     public static final float SMOKE_BOMB_EXPLOSION_SIZE = 10;
     public static final float SMOKE_BOMB_EXPLOSION_DURATION = 8;
@@ -67,6 +68,9 @@ public class RRGame extends Game {
     public static final String RSC_ROOM2_IMG = "DefaultImages/room2.png";
     public static final String RSC_KEY_IMG = "DefaultImages/key.png";
     public static final String RSC_DOOR_IMG = "DefaultImages/door.png";
+
+    //debug tools
+    public static final String RSC_NET_VIEWER = "Menu/net_viewer.png";
 
     // item animations
 
@@ -106,6 +110,8 @@ public class RRGame extends Game {
         am.load(RSC_KEY_IMG, Texture.class);
         am.load(RSC_DOOR_IMG, Texture.class);
 
+        am.load(RSC_NET_VIEWER, Texture.class);
+
         am.load(RSC_BTN_HOST, Texture.class);
         am.load(RSC_BTN_JOIN, Texture.class);
         am.load(RSC_BTN_START_GAME, Texture.class);
@@ -116,7 +122,8 @@ public class RRGame extends Game {
         hudBatch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
 
-        network = new Network();
+        Globals.network = new Network();
+        network = Globals.network;
 
         globalEntities = new HashSet<>();
 
