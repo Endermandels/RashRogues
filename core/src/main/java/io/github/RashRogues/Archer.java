@@ -59,32 +59,33 @@ public class Archer extends Enemy {
         }
         if (p == null) return;
 
-        if (Math.sqrt(xDist*xDist + yDist*yDist) < 8f) {
+        float magnitude = (float) Math.sqrt(xDist * xDist + yDist * yDist);
+        if (magnitude < 8f) {
             // Too close, back up
             if (Math.abs(xDist) > 0.1f)
-                xVelocity = stats.getMoveSpeed() * Math.signum(-xDist);
+                xVelocity = stats.getMoveSpeed() * -xDist / magnitude;
             else
                 xVelocity = 0f;
             if (Math.abs(yDist) > 0.1f)
-                yVelocity = stats.getMoveSpeed() * Math.signum(-yDist);
+                yVelocity = stats.getMoveSpeed() * -yDist / magnitude;
             else
                 yVelocity = 0f;
             flipped = xVelocity < 0f;
-        } else if (Math.sqrt(xDist*xDist + yDist*yDist) < 20f) {
+        } else if (magnitude < 20f) {
             // Start shooting
             xVelocity = 0f;
             yVelocity = 0f;
-            attackXDir = xDist / (float) Math.sqrt(xDist*xDist + yDist*yDist);
-            attackYDir = yDist / (float) Math.sqrt(xDist*xDist + yDist*yDist);
+            attackXDir = xDist / magnitude;
+            attackYDir = yDist / magnitude;
             state = State.ATTACK;
         } else {
             // Move towards player
             if (Math.abs(xDist) > 0.1f)
-                xVelocity = stats.getMoveSpeed() * Math.signum(xDist);
+                xVelocity = stats.getMoveSpeed() * xDist / magnitude;
             else
                 xVelocity = 0f;
             if (Math.abs(yDist) > 0.1f)
-                yVelocity = stats.getMoveSpeed() * Math.signum(yDist);
+                yVelocity = stats.getMoveSpeed() * yDist / magnitude;
             else
                 yVelocity = 0f;
             flipped = xVelocity < 0f;
