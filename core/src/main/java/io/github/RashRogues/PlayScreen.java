@@ -209,8 +209,8 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
     private void loadRooms() {
         this.rooms = new ArrayList<>();
-        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM1_IMG), 35, 301));
-        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM2_IMG), 35, 301));
+        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM1_IMG), 35, 301, 80, 0));
+        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM2_IMG), 35, 301, 120, 10));
         // other rooms will go below here
     }
 
@@ -236,6 +236,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                 tempLocalEntities.add(e);
             }
         }
+        currentRoom.spawnInitialEnemies();
         localEntities = tempLocalEntities;
         currentDoor = new Door(currentRoom.doorPositionX, currentRoom.doorPositionY);
         game.playerCam.changeWorldSize(currentRoom.roomWidth, currentRoom.roomHeight);
