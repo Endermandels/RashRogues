@@ -172,16 +172,25 @@ public class Player extends Entity {
         new SmokeBomb(getX(), getY(), bombXDir, bombYDir, SMOKE_BOMB_THROW_DISTANCE, RRGame.STANDARD_PROJECTILE_SPEED);
     }
 
+    public void setHoldingKey(boolean holdingKey){
+        this.holdingKey = holdingKey;
+    }
+
     public void dropKey(){
         if (holdingKey){
-            holdingKey = false;
+            setHoldingKey(false);
             new Key(getX(),getY());
         }
     }
 
     public void grabKey(){
-        holdingKey = true;
+        //Players on server pick up keys directly, and tell clients that a player picked up a key.
+        if (RRGame.globals.pid == 0){
+            setHoldingKey(true);
+            RRGame.globals.network.connection.dispatchKeyPickup(this.associatedPID);
+        }
     }
+
 
     public boolean isHoldingKey(){
         return holdingKey;

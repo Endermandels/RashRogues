@@ -208,6 +208,14 @@ public class ClientListener implements Endpoint {
     }
 
     /**
+     * Tell client that 'pid' picked up a key.
+     * @param pid
+     */
+    public void dispatchKeyPickup(int pid){
+        this.outgoingMessages.add(StreamMaker.pickupKey(pid));
+    }
+
+    /**
      * Communicate to the client to create the server's player
      */
     public void dispatchCreatePlayer(Player player){
