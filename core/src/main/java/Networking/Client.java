@@ -14,6 +14,7 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Stream;
 
 import static Networking.PacketType.*;
 
@@ -21,18 +22,16 @@ public class Client implements Endpoint {
     private Socket socket;
     private InputStream in;
     private OutputStream out;
-    private Thread speakingThread;
     private Thread listeningThread;
-    public ConcurrentLinkedQueue<byte[]> messages = new ConcurrentLinkedQueue<>();
-    public HashMap<String, Entity> syncedEntities = new HashMap<>();
+    private Thread speakingThread;
     private int pid;
-    public volatile boolean listening = true;
-    public Queue<byte[]> inputQueue = new Queue<byte[]>();
 
     public ConcurrentLinkedQueue<byte[]> incomingMessages = new ConcurrentLinkedQueue<>();
     public ConcurrentLinkedQueue<byte[]> outgoingMessages = new ConcurrentLinkedQueue<>();
+    public volatile boolean listening = true;
     public volatile boolean speaking = true;
     public LinkedHashMap<Integer, Queue<byte[]>> inputQueues;
+    public HashMap<String, Entity> syncedEntities = new HashMap<>();
     public int lastHeartbeat = 0;
 
     /**
@@ -127,6 +126,7 @@ public class Client implements Endpoint {
      * sure we don't cluster multiple player inputs on one frame.
      */
     public void processMessages() {
+
         //READ MESSAGES FROM LISTENER THREAD
         while (!this.incomingMessages.isEmpty()) {
             byte[] msg = this.incomingMessages.poll();
@@ -152,6 +152,14 @@ public class Client implements Endpoint {
                 this.handleClientUpdate(msg);
             } else if (msgType == DESTROY_PLAYER.getvalue()){
                 this.handleDestroyPlayer(msg);
+            } else if (msgType == DESTROY.getvalue()){
+                this.handleDestroyEntity(msg);
+            } else if (msgType == DESTROY2.getvalue()){
+                this.handleDestroyEntity2(msg);
+            } else if (msgType == RANDOM_SEED.getvalue()){
+                this.handleSeed(msg);
+            } else if (msgType == DESTROY3.getvalue()){
+                this.handleDestroyProjectile(msg);
             }
         }
 
@@ -179,7 +187,6 @@ public class Client implements Endpoint {
      * Tells server about our player.
      */
     public void dispatchCreatePlayer(Player player) {
-        RRGame.globals.addPlayer(this.pid, player);
         this.outgoingMessages.add(StreamMaker.createPlayer(this.pid, (int) player.getX(), (int) player.getY()));
     }
 
@@ -201,14 +208,24 @@ public class Client implements Endpoint {
         this.dispose();
     }
 
+    /**
+     * Sends a seed for random events to the server.
+     * Not implemented as server is the only one who
+     * gets to create seeds.
+     * @param seed
+     */
+    public void dispatchSeed(long seed){
+        return;
+    }
+
 
     /**
      * Communicate to server which keys are pressed down.
      *
      * @param keymask Keys pressed.
      */
-    public void dispatchKeys(byte[] keymask) {
-        this.outgoingMessages.add(StreamMaker.keys(pid, keymask));
+    public void dispatchKeys(byte[] keymask, long frame) {
+        this.outgoingMessages.add(StreamMaker.keys(pid, frame, keymask));
     }
 
     /**
@@ -227,7 +244,7 @@ public class Client implements Endpoint {
     public void handleInvite(byte[] packet) {
         this.pid = (int) packet[1];
         RRGame.globals.addClient(this.pid);
-        RRGame.globals.pid = this.pid;
+        RRGame.globals.setPID(this.pid);
     }
 
     /**
@@ -264,14 +281,32 @@ public class Client implements Endpoint {
     }
 
     /**
+     * We received a seed from the server to base
+     * all random events off.
+     * @param packet
+     */
+    public void handleSeed(byte[] packet){
+        byte[] seedBytes = new byte[8];
+        System.arraycopy(packet,1, seedBytes, 0, 8);
+        long seed = StreamMaker.bytesToLong(seedBytes);
+        RRGame.globals.setRandomSeed(seed);
+    }
+
+    /**
      * We received a message to create a player locally.
      * @param packet Player Data
      */
     public void handleCreatePlayer(byte[] packet) {
         int new_pid = packet[1];
-        int x = ((packet[2] >> 24) | (packet[3] >> 16) | (packet[4] >> 8) | (packet[5]));
-        int y = ((packet[6] >> 24) | (packet[7] >> 16) | (packet[8] >> 8) | (packet[9]));
-        Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG), x, y, RRGame.PLAYER_SIZE);
+
+        byte[] xIntBytes = new byte[4];
+        byte[] yIntBytes = new byte[4];
+        System.arraycopy(packet,2,xIntBytes,0,4);
+        System.arraycopy(packet,6,yIntBytes,0,4);
+        int x = StreamMaker.bytesToInt(xIntBytes);
+        int y = StreamMaker.bytesToInt(yIntBytes);
+
+        Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG), x, y, RRGame.PLAYER_SIZE, new_pid);
         this.inputQueues.put((int) packet[1],new Queue<byte[]>());
         RRGame.globals.addPlayer(new_pid,player);
     }
@@ -281,7 +316,39 @@ public class Client implements Endpoint {
         Player p = RRGame.globals.players.get(pid);
         RRGame.globals.removePlayer(pid);
         RRGame.globals.removeClient(pid);
-        RRGame.globals.currentScreen.removeEntity(p);
+        RRGame.globals.deregisterEntity(p);
+    }
+
+    public void handleDestroyProjectile(byte[] packet){
+        int pid = packet[1];
+        byte[] numberBytes = new byte[8];
+        System.arraycopy(packet,2,numberBytes,0,8);
+        long number = StreamMaker.bytesToLong(numberBytes);
+        RRGame.globals.deregisterEntity(RRGame.globals.findNondeterministicProjectile(pid,number));
+    }
+
+    public void handleDestroyEntity(byte[] packet){
+        byte[] eidBytes = new byte[4];
+        System.arraycopy(packet,1,eidBytes,0,4);
+        int eid = StreamMaker.bytesToInt(eidBytes);
+        RRGame.globals.deregisterEntity(RRGame.globals.getReplicatedEntity(eid));
+    }
+
+    public void handleDestroyEntity2(byte[] packet){
+        int pid = (int) packet[1];
+
+        byte[] longBytes = new byte[8];
+        System.arraycopy(packet,2, longBytes,0,8);
+        long frame = StreamMaker.bytesToLong(longBytes);
+
+        System.out.println("Server says to destroy an entity. PID: " + Integer.toString(pid) + " FRAME ID: " + Long.toString(frame));
+
+        Entity e = RRGame.globals.findNondeterministicEntity(pid,frame);
+        RRGame.globals.deregisterEntity(e);
+    }
+
+    public void dispatchDestroyProjectile(int pid, long number){
+        return;
     }
 
     /**
@@ -310,27 +377,39 @@ public class Client implements Endpoint {
     }
 
     public void handleKeys(byte[] packet){
-        Player p = RRGame.globals.players.get((int) packet[1]);
-        if (packet[2] == 1){
+        int pid = (int) packet[1];
+        Player p = RRGame.globals.players.get(pid);
+
+        byte[] longBytes = new byte[8];
+        System.arraycopy(packet,2, longBytes,0,8);
+        long frame = StreamMaker.bytesToLong(longBytes);
+
+        if (packet[10] == 1){
             p.moveUp();
         }
-        if (packet[3] == 1){
+        if (packet[11] == 1){
             p.moveDown();
         }
-        if (packet[4] == 1){
+        if (packet[12] == 1){
             p.moveRight();
         }
-        if (packet[5] == 1){
+        if (packet[13] == 1){
             p.moveLeft();
         }
-        if (packet[6] == 1){
+        if (packet[14] == 1){
             p.dash();
         }
-        if (packet[7] == 1){
-            p.useAbility();
+
+        if (packet[15] == 1){
+            p.useConsumable(pid, frame);
         }
-        if (packet[8] == 1){
-            p.useConsumable();
+
+        if (packet[16] == 1){
+            p.useAbility(pid, frame);
+        }
+
+        if (packet[17] == 1){
+            p.attack(pid, frame);
         }
     }
 
@@ -338,7 +417,6 @@ public class Client implements Endpoint {
     public void forward(byte[] packet) {
         return;
     }
-
 
     /**
      * Safely informs the server that we are disconnecting,
@@ -358,6 +436,16 @@ public class Client implements Endpoint {
             socket.dispose();
             this.incomingMessages.clear();
         }
+    }
+
+    @Override
+    public void dispatchDestroyEntity(int eid) {
+        return;
+    }
+
+    @Override
+    public void dispatchDestroyEntity2(int pid, long frame) {
+       return;
     }
 
     /**

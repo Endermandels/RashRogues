@@ -1,11 +1,12 @@
 package io.github.RashRogues;
 
+import Networking.ReplicationType;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Rectangle;
 
 import java.util.HashMap;
-import java.util.HashSet;
 
 public abstract class Entity extends Sprite {
 
@@ -22,12 +23,34 @@ public abstract class Entity extends Sprite {
     protected EntityAlignment alignment;
     protected Layer layer;
     private HashMap<Effect, Float> activeEffects;
+    public ReplicationType replicationType;
 
+    private BitmapFont font = new BitmapFont();
+
+    // Used For Networking
+    public int id     = -1;
+    public int pid    = -1;
+    public long frame = -1;
+
+    /**
+     * Create an Entity on the current screen.
+     * Entities will be updated and drawn every frame.
+     * @param alignment
+     * @param texture
+     * @param x
+     * @param y
+     * @param width
+     * @param height
+     * @param layer
+     * @param replicationType
+     * @param creatorPID
+     * @param number
+     */
     protected Entity(EntityAlignment alignment, Texture texture, float x, float y,
-                     float width, float height, Layer layer) {
+                     float width, float height, Layer layer, ReplicationType replicationType, int creatorPID, long number) {
         super(texture);
         setSize(width, height);
-        setOrigin(width/2, height/2);
+        setOrigin(width / 2, height / 2);
         setPosition(x, y);
         hitBox = new HitBox(this.getBoundingRectangle(), this);
         this.maxXVelocity = 15.0f;
@@ -40,9 +63,8 @@ public abstract class Entity extends Sprite {
         this.layer = layer;
         this.alignment = alignment;
         this.activeEffects = new HashMap<Effect, Float>();
-
-        //add our entity to the current screen.
-        RRGame.globals.currentScreen.registerEntity(this);
+        this.replicationType = replicationType;
+        RRGame.globals.registerEntity(this, replicationType, creatorPID,number);
     }
 
     /**
@@ -135,7 +157,11 @@ public abstract class Entity extends Sprite {
     }
 
     protected void removeSelf() {
-        RRGame.globals.currentScreen.removeEntity(this);
+        // Only the host has the authority to remove an Entity directly.
+        // Clients will be instructed to do so via the network.
+        // Entities marked with clientSideOnly may be removed by anyone.
+        if (RRGame.globals.pid == 0 || replicationType == ReplicationType.CLIENTSIDE) {
+            RRGame.globals.deregisterEntity(this);
+        }
     }
-
 }

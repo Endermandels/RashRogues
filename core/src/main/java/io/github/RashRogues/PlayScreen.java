@@ -1,5 +1,6 @@
 package io.github.RashRogues;
 
+import Networking.NetViewer;
 import Networking.Network;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.FPSLogger;
@@ -27,6 +28,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     private HashSet<Entity> entitiesToRemove;
     private PriorityQueue<Entity> renderQueue;
     private HashMap<Integer, Boolean> inputs;
+    private NetViewer netViewer;
     public static CollisionGrid collisionGrid = new CollisionGrid();
 
     public PlayScreen(RRGame game) {
@@ -42,9 +44,11 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         loadRooms();
         setNextRoom();
         createHUDAndInputs();
+        this.netViewer = new NetViewer();
 
         /* Player Creation */
-        player = new Player(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, (int) RRGame.PLAYER_SIZE);
+        player = new Player(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, (int) RRGame.PLAYER_SIZE, RRGame.globals.pid);
+        RRGame.globals.addPlayer(RRGame.globals.pid,player);
         this.game.network.connection.dispatchCreatePlayer(player);
 
         /* Instance Creation */
@@ -54,6 +58,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         /* Camera Setup */
         game.playerCam.bind(player);
         game.playerCam.center();
+
     }
 
     @Override
@@ -66,7 +71,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
      * This method executes inputs locally, then sends them over the network.
      */
     public void getInputs() {
-        byte[] keyMask = new byte[8];
+        byte[] keyMask = new byte[9];
         if (inputs.get(Input.Keys.UP)) {
             this.player.moveUp();
             keyMask[0] = 1;
@@ -89,16 +94,18 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             keyMask[4] = 1;
         }
         if (inputs.get(Input.Keys.E)) {
-            this.player.useConsumable();
+            this.player.useConsumable(RRGame.globals.pid, RRGame.globals.frame);
             inputs.put(Input.Keys.E, false);
             keyMask[5] = 1;
         }
         if (inputs.get(Input.Keys.Q)){
-            this.player.useAbility();
+            this.player.useAbility(RRGame.globals.pid, RRGame.globals.frame);
             inputs.put(Input.Keys.Q, false);
             keyMask[6] = 1;
         }
-        game.network.connection.dispatchKeys(keyMask);
+
+        game.network.connection.dispatchKeys(keyMask, RRGame.globals.frame);
+        RRGame.globals.frame++;
     }
 
     public void update(float delta) {
@@ -145,6 +152,8 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             renderQueue.poll().draw(game.batch);
         }
         game.batch.end();
+
+
         game.hudBatch.begin();
         hud.draw(game.hudBatch);
         game.hudBatch.end();
@@ -279,6 +288,14 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             }
         });
 
+        hud.registerAction("netviewer", new HUDActionCommand() {
+            @Override
+            public String execute(String[] cmd) {
+                netViewer.outputToConsole();
+                return "see console.";
+            }
+        });
+
         hud.registerAction("addPots", new HUDActionCommand() {
             static final String help = "Add health potions to your inventory. Usage: addPots <amount> ";
             @Override
@@ -401,7 +418,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         });
 
         // HUD Data
-
         hud.registerView("Number of Players:", new HUDViewCommand(HUDViewCommand.Visibility.WHEN_OPEN) {
             @Override
             public String execute(boolean consoleIsOpen) {
@@ -412,16 +428,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         // we're adding an input processor AFTER the HUD has been created,
         // so we need to be a bit careful here and make sure not to clobber
         // the HUD's input controls. Do that by using an InputMultiplexer
-        /*
-        proposition 11/22 CT - Executing player actions on both keyup and keydown has presented a huge challenge in the
-        networking.
-
-        We can still using the multiplexor, but instead of acting on both key-up/key-down, we are instead setting
-        the state of those keys to an input hashmap that we can poll during the update event.
-
-        This way we only have to worry about whether the key is being pressed or not during a given frame.
-        Otherwise we have to worry about which key-down pertains to which key-up etc, and which frames those happened on.
-        */
         InputMultiplexer multiplexer = new InputMultiplexer();
         // let the HUD's input processor handle things first....
         multiplexer.addProcessor(Gdx.input.getInputProcessor());
@@ -460,6 +466,8 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                 if (keycode == Input.Keys.Q) {
                     inputs.put(Input.Keys.Q, true);
                 }
+
+
                 return true;
             }
 
