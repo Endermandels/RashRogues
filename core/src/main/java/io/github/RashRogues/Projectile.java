@@ -1,7 +1,10 @@
 package io.github.RashRogues;
 
+import Networking.ReplicationType;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
+
+import java.security.Timestamp;
 
 public class Projectile extends Entity {
     // Melee Projectiles are just projectiles that don't move and only last a small amount of time (animation time)
@@ -15,9 +18,12 @@ public class Projectile extends Entity {
     protected float travelTimer;
     private float speed;
     private float distance;
+    private long number;
+    private int creator;
 
     /**
      * Typical Ranged Projectile (direction, distance, and speed based)
+     * This projectile will be synced.
      * @param alignment
      * @param texture
      * @param x
@@ -31,11 +37,13 @@ public class Projectile extends Entity {
      * @param onlyHitOneTarget
      * @param distance
      * @param speed
+     * @param pid Creator of projectile.
+     * @param number How many projectiles have came before.
      */
     Projectile(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
                float xDirection, float yDirection, int damage, float degreesOffsetFromFacingRight,
-               boolean onlyHitOneTarget, float distance, float speed) {
-        super(alignment, texture, x, y, width, height, Layer.PROJECTILE);
+               boolean onlyHitOneTarget, float distance, float speed, int pid, long number) {
+        super(alignment,texture,x,y,width,height,Layer.PROJECTILE, ReplicationType.PROJECTILE_NUMBER, pid, number);
         Vector2 direction = new Vector2(xDirection, yDirection).nor();
         this.damage = damage;
         this.distance = distance;
@@ -46,10 +54,13 @@ public class Projectile extends Entity {
         this.setRotation(degreesOffsetFromFacingRight+direction.angleDeg());
         this.onlyHitOneTarget = onlyHitOneTarget;
         this.travelTimer = 0f;
+        this.number = number;
+        this.creator = pid;
     }
 
     /**
      * Explosion or Melee Projectile (duration based)
+     * Duration based projectiles do not need synced.
      * @param alignment
      * @param texture
      * @param x
@@ -63,7 +74,7 @@ public class Projectile extends Entity {
      */
     Projectile(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
                int damage, float degreesOffsetFromFacingRight, boolean onlyHitOneTarget, float duration) {
-        super(alignment, texture, x, y, width, height, Layer.PROJECTILE);
+        super(alignment, texture, x, y, width, height, Layer.PROJECTILE,ReplicationType.CLIENTSIDE,-1,-1);
         this.damage = damage;
         this.speed = 0;
         this.duration = duration;
@@ -72,6 +83,8 @@ public class Projectile extends Entity {
         this.setRotation(degreesOffsetFromFacingRight+90);
         this.onlyHitOneTarget = onlyHitOneTarget;
         this.travelTimer = 0f;
+        this.number = -1;
+        this.creator = -1;
     }
 
     /**
@@ -84,14 +97,14 @@ public class Projectile extends Entity {
      * @param explosionOrMelee should be true if an explosion or a melee projectile (unmoving).
      * @return A copy of this projectile
      */
-    public Projectile makeProjectile(boolean explosionOrMelee) {
+    public Projectile makeProjectile(boolean explosionOrMelee, boolean clientside) {
         Projectile returnProjectile;
         if (!explosionOrMelee) {
             Vector2 direction = new Vector2(xVelocity, yVelocity);
             float degOffset = this.getRotation() - direction.angleDeg();
             returnProjectile = new Projectile(this.alignment, this.getTexture(), this.getX(), this.getY(), this.getWidth(),
                     this.getHeight(), this.xVelocity, this.yVelocity, this.damage, degOffset, this.onlyHitOneTarget,
-                    this.distance, this.speed);
+                    this.distance, this.speed, this.creator,this.number);
         }
         else {
             returnProjectile =  new Projectile(this.alignment, this.getTexture(), this.getX(), this.getY(), this.getWidth(),

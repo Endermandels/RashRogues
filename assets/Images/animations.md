@@ -39,3 +39,7 @@ This file maps each row of a sprite sheet to its intended animation use.
 3. attack
 4. die
 
+# Dragon
+1. walk
+2. attack
+3. die

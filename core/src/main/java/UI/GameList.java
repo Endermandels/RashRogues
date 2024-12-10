@@ -1,5 +1,6 @@
 package UI;
 
+import Networking.ReplicationType;
 import Networking.Solicitee;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -27,7 +28,7 @@ public class GameList extends Entity {
     private RRGame game;
 
     public GameList(RRGame game, float x, float y, int width, int height, Solicitee solicitee){
-        super(EntityAlignment.BACKGROUND, RRGame.am.get(RRGame.RSC_GAME_LIST),x,y,width,height, Layer.BACKGROUND);
+        super(EntityAlignment.BACKGROUND, RRGame.am.get(RRGame.RSC_GAME_LIST),x,y,width,height, Layer.BACKGROUND, ReplicationType.CLIENTSIDE,-1,-1);
         this.game = game;
         this.games          = new HashSet<>();
         this.gamesAge       = new HashMap<>();

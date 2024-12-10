@@ -8,12 +8,10 @@ import com.badlogic.gdx.utils.Queue;
 import io.github.RashRogues.Player;
 import io.github.RashRogues.RRGame;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * The server class is the central control hub for multiplayer games.
@@ -45,7 +43,8 @@ public class Server implements Endpoint{
         heartbeatStatus = new LinkedHashMap();
         System.out.println(">>> Server listening on 127.0.0.1:" + Integer.toString(Network.PORT));
         RRGame.globals.addClient(0);
-        RRGame.globals.pid = 0;
+        RRGame.globals.setPID(0);
+        RRGame.globals.setupRandomNumberGenerator();
 
         primarySocketThread = new Thread(
             new Runnable() {
@@ -72,17 +71,6 @@ public class Server implements Endpoint{
             }
         );
         primarySocketThread.start();
-    }
-
-    /**
-     * Instructs all connections to send farwell messages and close.
-     * Effectively ends the multiplayer game.
-     */
-    public void dispatchFarewell(){
-        for (ClientListener c : clients){
-            c.dispatchFarewell();
-        }
-        clients.clear();
     }
 
     @Override
@@ -115,20 +103,19 @@ public class Server implements Endpoint{
     @Override
     public void dispatchStartGame() {
         System.out.println(">>> Starting game.");
-        for (ClientListener c : clients) {
+        for (ClientListener c : clients){
             c.dispatchStartGame();
+        }
+    }
+
+    public void dispatchDestroyProjectile(int pid, long number){
+        for (ClientListener c : clients){
+            c.dispatchDestroyProjectile(pid,number);
         }
     }
 
     public void heartbeat(int clientPID){
         this.heartbeatStatus.put(clientPID,0);
-    }
-
-    @Override
-    public void dispatchCreatePlayer(Player player) {
-        for (ClientListener c : clients){
-            c.dispatchCreatePlayer(player);
-        }
     }
 
     public void relay(byte[] packet, int notMe){
@@ -151,10 +138,56 @@ public class Server implements Endpoint{
     }
 
     @Override
-    public void dispatchKeys(byte[] keymask) {
+    public void dispatchCreatePlayer(Player player) {
         for (ClientListener c : clients){
-            c.dispatchKeys(keymask);
+            c.dispatchCreatePlayer(player);
         }
+    }
+
+    /**
+     * Instructs all connections to send farwell messages and close.
+     * Effectively ends the multiplayer game.
+     */
+    public void dispatchFarewell(){
+        for (ClientListener c : clients){
+            c.dispatchFarewell();
+        }
+        clients.clear();
+    }
+
+
+    @Override
+    public void dispatchDestroyEntity(int eid) {
+        for (ClientListener c : clients){
+            c.dispatchDestroyEntity(eid);
+        }
+    }
+
+    @Override
+    public void dispatchDestroyEntity2(int pid, long frame) {
+        for (ClientListener c : clients){
+            c.dispatchDestroyEntity2(pid, frame);
+        }
+    }
+
+    @Override
+    public void dispatchKeys(byte[] keymask, long frame) {
+        for (ClientListener c : clients){
+            c.dispatchKeys(keymask, frame);
+        }
+    }
+
+    public void dispatchSeed(long seed){
+        for (ClientListener c : clients){
+            c.dispatchSeed(seed);
+        }
+    }
+
+    @Override
+    public void dispatchKillPlayer(int pid) {
+       for (ClientListener c : clients){
+           c.dispatchKillPlayer(pid);
+       }
     }
 
     @Override

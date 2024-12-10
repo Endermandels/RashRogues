@@ -28,12 +28,17 @@ DefaultImages/swordsman.png
 DefaultImages/throne.png
 DefaultImages/throwing_knife.png
 Fonts/JetBrainsMono-Regular.ttf
+Fonts/debug.fnt
+Fonts/debug.png
+Images/animations.md
 Images/archer sprite sheet.png
 Images/bomb sprite sheet.png
 Images/chest sprite sheet.png
 Images/door sprite sheet.png
 Images/explosion sprite sheet.png
 Images/grenadier sprite sheet.png
+Images/king sprite sheet.png
+Images/merchant sprite sheet.png
 Images/rogue sprite sheet 2.png
 Images/rogue sprite sheet 3.png
 Images/rogue sprite sheet 4.png
@@ -41,3 +46,4 @@ Images/rogue sprite sheet.png
 Images/swordsman sprite sheet.png
 Menu/game_list_background.png
 Menu/game_list_item.png
+Menu/net_viewer.png

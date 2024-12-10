@@ -1,5 +1,6 @@
 package io.github.RashRogues;
 
+import Networking.ReplicationType;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -17,6 +18,7 @@ public class Player extends Entity {
     private final float BASE_PLAYER_MOVE_SPEED = 15.0f;
     private final float BASE_PLAYER_DEXTERITY = 10f;
     public PlayerStats stats;
+    public int associatedPID = -1;
     protected HurtBox hurtBox;
     private final float PLAYER_HIT_BOX_PERCENT_SCALAR = 0.01f;
     private final float PLAYER_HURT_BOX_WIDTH_PERCENT_SCALAR = 0.2f;
@@ -34,8 +36,8 @@ public class Player extends Entity {
     private Sprite keySprite;
     private int healthPotionsHeld;
 
-    public Player(Texture texture, float x, float y, float width, float height) {
-        super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER);
+    public Player(Texture texture, float x, float y, float width, float height, int pid) {
+        super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER, ReplicationType.PLAYER, -1, -1);
         RRGame.globals.currentNumPlayers++;
         this.maxXVelocity = BASE_PLAYER_MOVE_SPEED;
         this.maxYVelocity = BASE_PLAYER_MOVE_SPEED;
@@ -53,16 +55,18 @@ public class Player extends Entity {
         hurtBox = new HurtBox(hitBox, this);
         setBoxPercentSize(PLAYER_HIT_BOX_PERCENT_SCALAR, PLAYER_HIT_BOX_PERCENT_SCALAR, hitBox);
         setBoxPercentSize(PLAYER_HURT_BOX_WIDTH_PERCENT_SCALAR, PLAYER_HURT_BOX_HEIGHT_PERCENT_SCALAR, hurtBox);
+        this.associatedPID = pid;
         // this will obviously change based on a number of factors later
     }
 
-    public Player(Texture texture, float x, float y, float size) {
-        this(texture, x, y, size, size);
+    public Player(Texture texture, float x, float y, float size, int pid) {
+        this(texture, x, y, size, size, pid);
     }
 
-    public Player(float x, float y, int size){
-        this(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y,size,size);
+    public Player(float x, float y, int size, int pid){
+        this(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y,size,size, pid);
     }
+
     /**
      * Ran every frame.
      * @param delta Time since last frame
@@ -79,7 +83,13 @@ public class Player extends Entity {
         hurtBox.update(delta);
         keySprite.setX(getX()-getWidth()/2);
         keySprite.setY(getY()+getHeight()/2);
-        if (attackTimer >= (1 / stats.getAttackSpeed())) { attack(); attackTimer = 0f; }
+        if (attackTimer >= (1 / stats.getAttackSpeed())){
+            int myPID    = this.associatedPID;
+            long projNum = RRGame.globals.getProjectileNumber(myPID);
+
+            attack(myPID,projNum);
+            attackTimer = 0f;
+        }
     }
 
     public void moveLeft(){
@@ -100,7 +110,14 @@ public class Player extends Entity {
         yVelocity -= ACCELERATION;
     }
 
-    public void attack() {
+    /**
+     * Attack, tie any projectiles to a frame/pid
+     * @param pid
+     * @param frame
+     * @return
+     */
+    public boolean attack(int pid, long frame) {
+        System.out.println(Integer.toString(pid) + " is attacking with projectile number " + Long.toString(frame));
         // good spot for a sound effect
         float throwingKnifeXDir = Math.signum(xVelocity);
         float throwingKnifeYDir = Math.signum(yVelocity);
@@ -109,7 +126,8 @@ public class Player extends Entity {
             else throwingKnifeXDir = 1;
         }
         new ThrowingKnife(getX(), getY(), throwingKnifeXDir, throwingKnifeYDir, stats.getDamage(),
-                RRGame.STANDARD_PROJECTILE_SPEED);
+                RRGame.STANDARD_PROJECTILE_SPEED, pid, frame);
+        return true;
     }
 
     public void dash() {
@@ -141,7 +159,7 @@ public class Player extends Entity {
         setY(y+yOffset);
     }
 
-    public void useAbility() {
+    public void useAbility(int pid, long frame) {
         if (abilityTimer < abilityCooldown) { return; }
         // good spot for a sound effect
         abilityTimer = 0f;
@@ -167,7 +185,7 @@ public class Player extends Entity {
         return holdingKey;
     }
 
-    public void useConsumable() {
+    public void useConsumable(int pid, long frame) {
         // this is currently only healthPotions; this could be changed to consumablesHeld and diff consumables
         // but that is currently out of scope
         if (consumableTimer < CONSUMABLE_COOLDOWN || healthPotionsHeld <= 0) { return; }
