@@ -1,12 +1,13 @@
 package io.github.RashRogues;
 
+import Networking.ReplicationType;
 import com.badlogic.gdx.graphics.Texture;
 
 public class Key extends Entity {
 
     Key(float x, float y) {
         super(EntityAlignment.BACKGROUND, RRGame.am.get(RRGame.RSC_KEY_IMG, Texture.class),
-                x, y, RRGame.KEY_SIZE, RRGame.KEY_SIZE, Layer.BACKGROUND, false);
+                x, y, RRGame.KEY_SIZE, RRGame.KEY_SIZE, Layer.BACKGROUND, ReplicationType.CLIENTSIDE,-1,-1);
         this.setBoxPercentSize(1f, 1f, hitBox);
     }
 

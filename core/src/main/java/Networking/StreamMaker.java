@@ -92,6 +92,27 @@ public class StreamMaker {
       return stream;
    }
 
+   /**
+    * Destroys the number'th projectile belonging to player 'pid'.
+    * @param pid
+    * @param number
+    * @return
+    */
+   public static byte[] destroyProjectile(int pid, long number){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.DESTROY3.getvalue();
+      stream[1] = (byte) (pid); //truncate pid to a byte, cause we'll only have at max 4 players.
+      stream[2] = (byte) (number >> 56);
+      stream[3] = (byte) (number >> 48);
+      stream[4] = (byte) (number >> 40);
+      stream[5] = (byte) (number >> 32);
+      stream[6] = (byte) (number >> 24);
+      stream[7] = (byte) (number >> 16);
+      stream[8] = (byte) (number >> 8);
+      stream[9] = (byte) (number);
+      return stream;
+   }
+
    public static byte[] updatePlayer(int pid){
       byte[] stream = new byte[128];
       stream[0] = (byte) PacketType.UPDATE_PLAYER.getvalue();

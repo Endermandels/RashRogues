@@ -1,5 +1,6 @@
 package io.github.RashRogues;
 
+import Networking.ReplicationType;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 
@@ -17,7 +18,8 @@ public class Projectile extends Entity {
     protected float travelTimer;
     private float speed;
     private float distance;
-
+    private long number;
+    private int creator;
 
     /**
      * Typical Ranged Projectile (direction, distance, and speed based)
@@ -35,13 +37,13 @@ public class Projectile extends Entity {
      * @param onlyHitOneTarget
      * @param distance
      * @param speed
-     * @param pid
-     * @param frame
+     * @param pid Creator of projectile.
+     * @param number How many projectiles have came before.
      */
     Projectile(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
                float xDirection, float yDirection, int damage, float degreesOffsetFromFacingRight,
-               boolean onlyHitOneTarget, float distance, float speed, int pid, long frame, boolean clientside) {
-        super(alignment,texture,x,y,width,height,Layer.PROJECTILE,false,pid,frame, clientside);
+               boolean onlyHitOneTarget, float distance, float speed, int pid, long number) {
+        super(alignment,texture,x,y,width,height,Layer.PROJECTILE, ReplicationType.PROJECTILE_NUMBER, pid, number);
         Vector2 direction = new Vector2(xDirection, yDirection).nor();
         this.damage = damage;
         this.distance = distance;
@@ -52,34 +54,13 @@ public class Projectile extends Entity {
         this.setRotation(degreesOffsetFromFacingRight+direction.angleDeg());
         this.onlyHitOneTarget = onlyHitOneTarget;
         this.travelTimer = 0f;
-    }
-
-    /**
-     * Typical Ranged Projectile (direction, distance, and speed based)
-     * This projectile will not be synced.
-     * @param alignment
-     * @param texture
-     * @param x
-     * @param y
-     * @param width
-     * @param height
-     * @param xDirection
-     * @param yDirection
-     * @param damage
-     * @param degreesOffsetFromFacingRight
-     * @param onlyHitOneTarget
-     * @param distance
-     * @param speed
-     */
-    Projectile(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
-               float xDirection, float yDirection, int damage, float degreesOffsetFromFacingRight,
-               boolean onlyHitOneTarget, float distance, float speed) {
-        this(alignment,texture,x,y,width,height,xDirection,yDirection,damage,degreesOffsetFromFacingRight,onlyHitOneTarget,distance,speed,-1,-1, true);
+        this.number = number;
+        this.creator = pid;
     }
 
     /**
      * Explosion or Melee Projectile (duration based)
-     * This projectile will not be synced.
+     * Duration based projectiles do not need synced.
      * @param alignment
      * @param texture
      * @param x
@@ -93,29 +74,7 @@ public class Projectile extends Entity {
      */
     Projectile(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
                int damage, float degreesOffsetFromFacingRight, boolean onlyHitOneTarget, float duration) {
-        this(alignment,texture,x,y,width,height,damage,degreesOffsetFromFacingRight,onlyHitOneTarget,duration,-1,-1, true);
-    }
-
-
-    /**
-     * Explosion or Melee Projectile (duration based)
-     * This projectile will be synced.
-     * @param alignment
-     * @param texture
-     * @param x
-     * @param y
-     * @param width
-     * @param height
-     * @param damage
-     * @param degreesOffsetFromFacingRight
-     * @param onlyHitOneTarget
-     * @param duration
-     * @param pid
-     * @param frame
-     */
-    Projectile(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
-               int damage, float degreesOffsetFromFacingRight, boolean onlyHitOneTarget, float duration, int pid, long frame, boolean clientside) {
-        super(alignment, texture, x, y, width, height, Layer.PROJECTILE,false, pid, frame, clientside);
+        super(alignment, texture, x, y, width, height, Layer.PROJECTILE,ReplicationType.CLIENTSIDE,-1,-1);
         this.damage = damage;
         this.speed = 0;
         this.duration = duration;
@@ -124,6 +83,8 @@ public class Projectile extends Entity {
         this.setRotation(degreesOffsetFromFacingRight+90);
         this.onlyHitOneTarget = onlyHitOneTarget;
         this.travelTimer = 0f;
+        this.number = -1;
+        this.creator = -1;
     }
 
     /**
@@ -143,11 +104,11 @@ public class Projectile extends Entity {
             float degOffset = this.getRotation() - direction.angleDeg();
             returnProjectile = new Projectile(this.alignment, this.getTexture(), this.getX(), this.getY(), this.getWidth(),
                     this.getHeight(), this.xVelocity, this.yVelocity, this.damage, degOffset, this.onlyHitOneTarget,
-                    this.distance, this.speed, pid, frame, clientside);
+                    this.distance, this.speed, this.creator,this.number);
         }
         else {
             returnProjectile =  new Projectile(this.alignment, this.getTexture(), this.getX(), this.getY(), this.getWidth(),
-                    this.getHeight(), this.damage, this.getRotation(), this.onlyHitOneTarget, this.duration, pid, frame, clientside);
+                    this.getHeight(), this.damage, this.getRotation(), this.onlyHitOneTarget, this.duration);
         }
         // because this step is done on each subclass, we need to do it here
         returnProjectile.setBoxPercentSize(this.hitBoxWidthScalar, this.hitBoxHeightScalar, returnProjectile.hitBox);

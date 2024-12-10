@@ -14,6 +14,7 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Stream;
 
 import static Networking.PacketType.*;
 
@@ -157,6 +158,8 @@ public class Client implements Endpoint {
                 this.handleDestroyEntity2(msg);
             } else if (msgType == RANDOM_SEED.getvalue()){
                 this.handleSeed(msg);
+            } else if (msgType == DESTROY3.getvalue()){
+                this.handleDestroyProjectile(msg);
             }
         }
 
@@ -303,7 +306,7 @@ public class Client implements Endpoint {
         int x = StreamMaker.bytesToInt(xIntBytes);
         int y = StreamMaker.bytesToInt(yIntBytes);
 
-        Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG), x, y, RRGame.PLAYER_SIZE);
+        Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG), x, y, RRGame.PLAYER_SIZE, new_pid);
         this.inputQueues.put((int) packet[1],new Queue<byte[]>());
         RRGame.globals.addPlayer(new_pid,player);
     }
@@ -316,15 +319,18 @@ public class Client implements Endpoint {
         RRGame.globals.deregisterEntity(p);
     }
 
-    public void handleDestroyEntity(byte[] packet){
+    public void handleDestroyProjectile(byte[] packet){
+        int pid = packet[1];
+        byte[] numberBytes = new byte[8];
+        System.arraycopy(packet,2,numberBytes,0,8);
+        long number = StreamMaker.bytesToLong(numberBytes);
+        RRGame.globals.deregisterEntity(RRGame.globals.findNondeterministicProjectile(pid,number));
+    }
 
+    public void handleDestroyEntity(byte[] packet){
         byte[] eidBytes = new byte[4];
         System.arraycopy(packet,1,eidBytes,0,4);
         int eid = StreamMaker.bytesToInt(eidBytes);
-
-        System.out.println("Destroying: " + Integer.toString(eid));
-        Entity entityToDestroy = RRGame.globals.getReplicatedEntity(eid);
-        System.out.println(entityToDestroy);
         RRGame.globals.deregisterEntity(RRGame.globals.getReplicatedEntity(eid));
     }
 
@@ -339,6 +345,10 @@ public class Client implements Endpoint {
 
         Entity e = RRGame.globals.findNondeterministicEntity(pid,frame);
         RRGame.globals.deregisterEntity(e);
+    }
+
+    public void dispatchDestroyProjectile(int pid, long number){
+        return;
     }
 
     /**

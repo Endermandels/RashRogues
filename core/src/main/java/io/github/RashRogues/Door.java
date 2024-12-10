@@ -1,5 +1,6 @@
 package io.github.RashRogues;
 
+import Networking.ReplicationType;
 import com.badlogic.gdx.graphics.Texture;
 
 import java.util.HashSet;
@@ -11,7 +12,7 @@ public class Door extends Entity {
 
     Door(float x, float y) {
         super(EntityAlignment.BACKGROUND, RRGame.am.get(RRGame.RSC_DOOR_IMG, Texture.class),
-                x, y, RRGame.DOOR_SIZE, RRGame.DOOR_SIZE, Layer.BACKGROUND, true);
+                x, y, RRGame.DOOR_SIZE, RRGame.DOOR_SIZE, Layer.BACKGROUND, ReplicationType.ENTITY_NUMBER,-1,-1);
         this.setBoxPercentSize(0.6f, 0.98f, hitBox);
         this.locked = true;
         this.playersAtDoor = new HashSet<>();

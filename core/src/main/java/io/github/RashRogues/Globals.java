@@ -2,6 +2,7 @@ package io.github.RashRogues;
 
 import Networking.Endpoint;
 import Networking.Network;
+import Networking.ReplicationType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,14 +11,16 @@ import java.util.Random;
 
 public class Globals {
     public long frame = 0;
+    public int eid = 0;
+
     public int pid = -1;
     public int currentNumPlayers = 0;
 
     public static Network network;
     public RRScreen currentScreen;
 
-    public static final long RANDOM_SEED = 10358923;
     private Random random;
+    private long seed;
 
     public HashSet<Player> playersSet = new HashSet<>();
     public HashSet<Integer> clientSet = new HashSet<>();
@@ -28,16 +31,20 @@ public class Globals {
     public HashSet<Entity> deterministicReplicatedEntitiesSet  = new HashSet<>();
 
     // Entities that are not deterministic but must be tied to a frame.
-    private final HashMap<Integer, HashMap<Long,Entity>> nondeterministicReplicatedEntities = new HashMap<>();
+    private final HashMap<Integer, HashMap<Long,Entity>> nondeterministicReplicatedEntities     = new HashMap<>();
+    private final HashMap<Integer, HashMap<Long,Entity>> nondeterministicReplicatedProjectiles  = new HashMap<>();
+    private final HashMap<Integer,Long> projectileNumber                                        = new HashMap<>();
 
-
-    public Globals(){
-        random = new Random(RANDOM_SEED);
+    public void setupRandomNumberGenerator(){
+        seed = new Random().nextLong();
+        random = new Random(seed);
     }
 
     public void setPID(int pid){
        this.pid = pid;
         this.nondeterministicReplicatedEntities.put(pid,new HashMap<>());
+        this.nondeterministicReplicatedProjectiles.put(pid, new HashMap<>());
+        this.projectileNumber.put(pid,0l);
     }
 
     /**
@@ -47,26 +54,36 @@ public class Globals {
      * and will be matched with an entity on a foreign endpoint.
      * If no screen is currently active, the entity will not be created.
      * @param e Entity to register
-     * @param deterministic Auto-associate with another entity on a different endpoint based on creation order?
+     * @param creatorPID Who created this?
+     * @param number Which number is this? (frame #, projectile #)
      */
-    public void registerEntity(Entity e, boolean deterministic, int pid, long frame){
+    public void registerEntity(Entity e, ReplicationType type, int creatorPID, long number){
 
         //Cannot register entities if there is no screen.
         if (currentScreen == null){
            return;
         }
 
-        // This entity needs to be indexed to a certain 'frame'. It originated the from player with a pid of 'pid'.
-        if (pid != -1) {
-            System.out.println("We registered " + e.toString() + " from " + Integer.toString(pid) + " with frame id of : " + Long.toString(frame) );
-            this.nondeterministicReplicatedEntities.get(pid).put(frame,e);
-            e.pid = pid;
+        // This entity needs to be indexed to a certain 'frame', and originator.
+        if (type == ReplicationType.FRAME_NUMBER) {
+            this.nondeterministicReplicatedEntities.get(creatorPID).put(number, e);
+            e.pid = creatorPID;
+            e.frame = number;
+
+        // This entity needs to be indexed to projectile creation number, and originator.
+        } else if (type == ReplicationType.PROJECTILE_NUMBER){
+            this.nondeterministicReplicatedProjectiles.get(creatorPID).put(number,e);
+            e.pid = creatorPID;
+            e.frame = number;
+            this.projectileNumber.put(creatorPID,this.projectileNumber.get(creatorPID)+1);
+            System.out.println(Integer.toString(creatorPID) + " created projectile #" + number);
 
         // This entity is matched with another entity based on creation order.
-        } else if (deterministic){
-            deterministicReplicatedEntities.put(this.deterministicReplicatedEntitiesSet.size(), e);
-            e.id = deterministicReplicatedEntitiesSet.size();
+        } else if (type == ReplicationType.ENTITY_NUMBER){
+            deterministicReplicatedEntities.put(this.eid, e);
+            e.id = this.eid;
             deterministicReplicatedEntitiesSet.add(e);
+            this.eid++;
         }
         RRGame.globals.currentScreen.registerEntity(e);
     }
@@ -82,26 +99,34 @@ public class Globals {
         }
 
         //This is a deterministic replicated entity
-        if (e.id != -1){
+        if (e.replicationType == ReplicationType.ENTITY_NUMBER){
 
             // We are the server. Tell client to eliminate this entity.
             // If this entity is client-side-only, don't bother dispatching removal
-            if (this.pid == 0 && !e.clientSideOnly){
+            if (this.pid == 0){
                 Globals.network.connection.dispatchDestroyEntity(e.id);
             }
-
             //stop tracking this entity.
             this.removeReplicatedEntity(e);
+            System.out.println("Removed " + e.toString() + " with eid of " + Integer.toString(e.id));
         }
 
         //This is a nondeterministic replicated entity
-        if (e.pid != -1){
+        if (e.replicationType == ReplicationType.FRAME_NUMBER){
             this.nondeterministicReplicatedEntities.get(e.pid).remove(e.frame);
-
             //We are the server. Tell client to eliminate this entity.
-            if (this.pid == 0 && !e.clientSideOnly){
-                System.out.println("Client, destroy this entity. PID: " + Integer.toString(e.pid) + " FRAME: " + Long.toString(e.frame));
+            if (this.pid == 0){
                 Globals.network.connection.dispatchDestroyEntity2(e.pid, e.frame);
+            }
+        }
+
+        //This is a nondeterministic replicated projectile
+        if (e.replicationType == ReplicationType.PROJECTILE_NUMBER){
+            this.nondeterministicReplicatedProjectiles.get(e.pid).remove(e.frame);
+            System.out.println("We are supposed to destroy: " + Integer.toString(e.pid) + "'s projectile #" + e.frame);
+            //We are the server. Tell client to eliminate this entity.
+            if (this.pid == 0){
+                Globals.network.connection.dispatchDestroyProjectile(e.pid, e.frame);
             }
         }
 
@@ -109,16 +134,10 @@ public class Globals {
         RRGame.globals.currentScreen.removeEntity(e);
     }
 
-    /**
-     * Get all entites that are replicated on 2 or more endpoints.
-     * @return ArrayList of Entities
-     */
-    public ArrayList<Entity> getdeterministicReplicatedEntities(){
-        ArrayList entities = new ArrayList();
-        for (Entity e : deterministicReplicatedEntitiesSet){
-            entities.add(e);
-        }
-        return entities;
+    public long getProjectileNumber(int pid){
+        System.out.println(this.projectileNumber.size());
+        System.out.println(pid);
+        return this.projectileNumber.get(pid);
     }
 
     /**
@@ -132,6 +151,19 @@ public class Globals {
            return this.nondeterministicReplicatedEntities.get(pid).get(frame);
        }
        return null;
+    }
+
+    /**
+     * Get a projectile that was registered as nondeterministic.
+     * @param pid
+     * @param number
+     * @return
+     */
+    public Entity findNondeterministicProjectile(int pid, long number){
+        if (this.nondeterministicReplicatedProjectiles.containsKey(pid)){
+            return this.nondeterministicReplicatedProjectiles.get(pid).get(number);
+        }
+        return null;
     }
 
     /**
@@ -179,6 +211,8 @@ public class Globals {
     public void addClient(int pid){
         RRGame.globals.clientSet.add(pid);
         this.nondeterministicReplicatedEntities.put(pid,new HashMap<>());
+        this.nondeterministicReplicatedProjectiles.put(pid,new HashMap<>());
+        this.projectileNumber.put(pid,0l);
     }
 
     /**
@@ -199,13 +233,21 @@ public class Globals {
         }
     }
 
-
     /**
      * Set the seed for all random numbers.
      * @param seed
      */
     public void setRandomSeed(long seed){
-        random = new Random(seed);
+        this.seed = seed;
+        this.random = new Random(this.seed);
+    }
+
+    /**
+     * Get the currently set seed, used for random number generation.
+     * @return seed
+     */
+    public long getRandomSeed(){
+        return this.seed;
     }
 
     /**

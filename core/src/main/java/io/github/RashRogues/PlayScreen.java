@@ -47,7 +47,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         this.netViewer = new NetViewer();
 
         /* Player Creation */
-        player = new Player(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, (int) RRGame.PLAYER_SIZE);
+        player = new Player(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, (int) RRGame.PLAYER_SIZE, RRGame.globals.pid);
         RRGame.globals.addPlayer(RRGame.globals.pid,player);
         this.game.network.connection.dispatchCreatePlayer(player);
 
@@ -104,16 +104,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             keyMask[6] = 1;
         }
 
-        if (inputs.get(Input.Buttons.LEFT)){
-            this.player.attack(RRGame.globals.pid, RRGame.globals.frame);
-            inputs.put(Input.Buttons.LEFT, false);
-            keyMask[7] = 1;
-        }
-
-        if (inputs.get(Input.Buttons.RIGHT)) {
-            inputs.put(Input.Buttons.RIGHT, false);
-            keyMask[8] = 1;
-        }
         game.network.connection.dispatchKeys(keyMask, RRGame.globals.frame);
         RRGame.globals.frame++;
     }
@@ -215,8 +205,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         this.inputs.put(Input.Keys.SPACE, false);
         this.inputs.put(Input.Keys.E, false);
         this.inputs.put(Input.Keys.Q, false);
-        this.inputs.put(Input.Buttons.LEFT, false);
-        this.inputs.put(Input.Buttons.RIGHT, false);
     }
 
     private void loadRooms() {
@@ -446,28 +434,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         multiplexer.addProcessor(new InputAdapter() {
 
             @Override
-            public boolean touchDown(int x, int y, int pointer, int button){
-                if (button == Input.Buttons.LEFT){
-                    inputs.put(Input.Buttons.LEFT, true);
-                }
-                if (button == Input.Buttons.RIGHT){
-                    inputs.put(Input.Buttons.RIGHT, true);
-                }
-                return false;
-            }
-
-            @Override
-            public boolean touchUp(int x, int y, int pointer, int button){
-                if (button == Input.Buttons.LEFT){
-                    inputs.put(Input.Buttons.LEFT, false);
-                }
-                if (button == Input.Buttons.RIGHT){
-                    inputs.put(Input.Buttons.RIGHT, false);
-                }
-                return false;
-            }
-
-            @Override
             public boolean keyDown(int keycode) {
                 if (hud.isOpen()) { return false; }
                 if (keycode == Input.Keys.ESCAPE) {
@@ -518,12 +484,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                 }
                 if (keycode == Input.Keys.W || keycode == Input.Keys.UP) {
                     inputs.put(Input.Keys.UP,false);
-                }
-                if (keycode == Input.Buttons.RIGHT){
-                   inputs.put(Input.Keys.RIGHT,false);
-                }
-                if (keycode == Input.Buttons.LEFT){
-                    inputs.put(Input.Keys.LEFT,false);
                 }
                 return true;
             }

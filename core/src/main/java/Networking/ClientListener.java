@@ -44,6 +44,7 @@ public class ClientListener implements Endpoint {
 
         try {
             this.dispatchWelcome(this.client_pid);
+            this.dispatchSeed(RRGame.globals.getRandomSeed());
             this.listen(in);
             this.speak(out);
         } catch (IOException | InterruptedException e) {
@@ -201,6 +202,11 @@ public class ClientListener implements Endpoint {
         this.dispose();
     }
 
+
+    public void dispatchDestroyProjectile(int pid, long number){
+        this.outgoingMessages.add(StreamMaker.destroyProjectile(pid,number));
+    }
+
     /**
      * Communicate to the client to create the server's player
      */
@@ -255,7 +261,7 @@ public class ClientListener implements Endpoint {
         int x = StreamMaker.bytesToInt(xIntBytes);
         int y = StreamMaker.bytesToInt(yIntBytes);
 
-        Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y, RRGame.PLAYER_SIZE);
+        Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y, RRGame.PLAYER_SIZE, new_pid);
         RRGame.globals.addPlayer(new_pid,player);
     }
 

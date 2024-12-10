@@ -1,11 +1,12 @@
 package io.github.RashRogues;
 
+import Networking.ReplicationType;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Rectangle;
 
 import java.util.HashMap;
-import java.util.HashSet;
 
 public abstract class Entity extends Sprite {
 
@@ -22,17 +23,32 @@ public abstract class Entity extends Sprite {
     protected EntityAlignment alignment;
     protected Layer layer;
     private HashMap<Effect, Float> activeEffects;
-    public boolean clientSideOnly = false;
+    public ReplicationType replicationType;
+
+    private BitmapFont font = new BitmapFont();
 
     // Used For Networking
     public int id     = -1;
     public int pid    = -1;
     public long frame = -1;
 
+    /**
+     * Create an Entity on the current screen.
+     * Entities will be updated and drawn every frame.
+     * @param alignment
+     * @param texture
+     * @param x
+     * @param y
+     * @param width
+     * @param height
+     * @param layer
+     * @param replicationType
+     * @param creatorPID
+     * @param number
+     */
     protected Entity(EntityAlignment alignment, Texture texture, float x, float y,
-                     float width, float height, Layer layer, boolean replicated, int pid, long frame, boolean clientside) {
+                     float width, float height, Layer layer, ReplicationType replicationType, int creatorPID, long number) {
         super(texture);
-        this.clientSideOnly = clientside;
         setSize(width, height);
         setOrigin(width / 2, height / 2);
         setPosition(x, y);
@@ -47,38 +63,9 @@ public abstract class Entity extends Sprite {
         this.layer = layer;
         this.alignment = alignment;
         this.activeEffects = new HashMap<Effect, Float>();
-
-        this.pid = pid;
-        this.frame = frame;
-
-        //add our entity to the current screen.
-        RRGame.globals.registerEntity(this, replicated, pid, frame);
+        this.replicationType = replicationType;
+        RRGame.globals.registerEntity(this, replicationType, creatorPID,number);
     }
-
-    /**
-     * Create an Entity on the current screen.
-     * Entities will be updated and drawn every frame.
-     *
-     */
-    protected Entity(EntityAlignment alignment, Texture texture, float x, float y,
-                     float width, float height, Layer layer) {
-        this(alignment, texture, x, y, width, height, layer, false,-1,-1, true);
-    }
-   /**
-    * Create an Entity on the current screen.
-    * Entities will be updated and drawn every frame.
-    *
-    * If the 'replicated' parameter is true, this Entity will
-    * be associated with its equivalent entity on all endpoints. Consequently, major game events
-    * such as deaths will be reflected across these intertwined entities.
-    * The replicated option MUST ONLY BE USED FOR DETERMINISTIC ENTITIES.
-    * See Network documentation is more info is desired.
-    * When in doubt, set replicated to false.
-    */
-   protected Entity(EntityAlignment alignment, Texture texture, float x, float y,
-                    float width, float height, Layer layer, boolean replicated) {
-        this(alignment, texture, x, y, width, height, layer, replicated,-1,-1, false);
-   }
 
     /**
      * Ran Every Frame.
@@ -173,9 +160,8 @@ public abstract class Entity extends Sprite {
         // Only the host has the authority to remove an Entity directly.
         // Clients will be instructed to do so via the network.
         // Entities marked with clientSideOnly may be removed by anyone.
-        if (RRGame.globals.pid == 0 || this.clientSideOnly) {
+        if (RRGame.globals.pid == 0 || replicationType == ReplicationType.CLIENTSIDE) {
             RRGame.globals.deregisterEntity(this);
         }
     }
-
 }

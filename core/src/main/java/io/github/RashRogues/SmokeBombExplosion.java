@@ -10,6 +10,5 @@ public class SmokeBombExplosion extends Projectile {
                 0, false, RRGame.SMOKE_BOMB_EXPLOSION_DURATION);
         this.setBoxPercentSize(SMOKE_BOMB_EXPLOSION_HIT_BOX_PERCENT_SCALAR, SMOKE_BOMB_EXPLOSION_HIT_BOX_PERCENT_SCALAR, hitBox);
         this.hitBox.setEffect(Effect.SMOKE);
-        this.clientSideOnly = true;
     }
 }

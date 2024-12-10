@@ -1,5 +1,6 @@
 package io.github.RashRogues;
 
+import Networking.ReplicationType;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -33,9 +34,10 @@ public class Player extends Entity {
     private boolean holdingKey;
     private Sprite keySprite;
     private int healthPotionsHeld;
+    private int associatedPID = -1;
 
-    public Player(Texture texture, float x, float y, float width, float height) {
-        super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER,false);
+    public Player(Texture texture, float x, float y, float width, float height, int pid) {
+        super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER, ReplicationType.CLIENTSIDE, -1, -1);
         RRGame.globals.currentNumPlayers++;
         this.maxXVelocity = BASE_PLAYER_MOVE_SPEED;
         this.maxYVelocity = BASE_PLAYER_MOVE_SPEED;
@@ -53,15 +55,16 @@ public class Player extends Entity {
         hurtBox = new HurtBox(hitBox, this);
         setBoxPercentSize(PLAYER_HIT_BOX_PERCENT_SCALAR, PLAYER_HIT_BOX_PERCENT_SCALAR, hitBox);
         setBoxPercentSize(PLAYER_HURT_BOX_WIDTH_PERCENT_SCALAR, PLAYER_HURT_BOX_HEIGHT_PERCENT_SCALAR, hurtBox);
+        this.associatedPID = pid;
         // this will obviously change based on a number of factors later
     }
 
-    public Player(Texture texture, float x, float y, float size) {
-        this(texture, x, y, size, size);
+    public Player(Texture texture, float x, float y, float size, int pid) {
+        this(texture, x, y, size, size, pid);
     }
 
-    public Player(float x, float y, int size){
-        this(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y,size,size);
+    public Player(float x, float y, int size, int pid){
+        this(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y,size,size, pid);
     }
 
     /**
@@ -80,6 +83,13 @@ public class Player extends Entity {
         hurtBox.update(delta);
         keySprite.setX(getX()-getWidth()/2);
         keySprite.setY(getY()+getHeight()/2);
+        if (attackTimer >= (1 / stats.getAttackSpeed())){
+            int myPID    = this.associatedPID;
+            long projNum = RRGame.globals.getProjectileNumber(myPID);
+
+            attack(myPID,projNum);
+            attackTimer = 0f;
+        }
     }
 
     public void moveLeft(){
@@ -100,7 +110,14 @@ public class Player extends Entity {
         yVelocity -= ACCELERATION;
     }
 
+    /**
+     * Attack, tie any projectiles to a frame/pid
+     * @param pid
+     * @param frame
+     * @return
+     */
     public boolean attack(int pid, long frame) {
+        System.out.println(Integer.toString(pid) + " is attacking with projectile number " + Long.toString(frame));
         // good spot for a sound effect
         float throwingKnifeXDir = Math.signum(xVelocity);
         float throwingKnifeYDir = Math.signum(yVelocity);

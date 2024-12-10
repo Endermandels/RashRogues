@@ -44,6 +44,7 @@ public class Server implements Endpoint{
         System.out.println(">>> Server listening on 127.0.0.1:" + Integer.toString(Network.PORT));
         RRGame.globals.addClient(0);
         RRGame.globals.setPID(0);
+        RRGame.globals.setupRandomNumberGenerator();
 
         primarySocketThread = new Thread(
             new Runnable() {
@@ -104,6 +105,12 @@ public class Server implements Endpoint{
         System.out.println(">>> Starting game.");
         for (ClientListener c : clients){
             c.dispatchStartGame();
+        }
+    }
+
+    public void dispatchDestroyProjectile(int pid, long number){
+        for (ClientListener c : clients){
+            c.dispatchDestroyProjectile(pid,number);
         }
     }
 

@@ -16,7 +16,8 @@ public enum PacketType {
     CLIENT_UPDATE(33),
     DESTROY_PLAYER(34),
     DESTROY2(35),
-    RANDOM_SEED(36);
+    RANDOM_SEED(36),
+    DESTROY3(37);
 
     private final int value;
     PacketType(int value){
