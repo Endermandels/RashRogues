@@ -173,8 +173,10 @@ public class Player extends Entity {
     }
 
     public void dropKey(){
-        holdingKey = false;
-        new Key(getX(),getY());
+        if (holdingKey){
+            holdingKey = false;
+            new Key(getX(),getY());
+        }
     }
 
     public void grabKey(){
