@@ -184,6 +184,13 @@ public class Server implements Endpoint{
     }
 
     @Override
+    public void dispatchKillPlayer(int pid) {
+       for (ClientListener c : clients){
+           c.dispatchKillPlayer(pid);
+       }
+    }
+
+    @Override
     public void dispatchHeartbeat() {
         return;
     }

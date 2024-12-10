@@ -18,6 +18,7 @@ public class Player extends Entity {
     private final float BASE_PLAYER_MOVE_SPEED = 15.0f;
     private final float BASE_PLAYER_DEXTERITY = 10f;
     public PlayerStats stats;
+    public int associatedPID = -1;
     protected HurtBox hurtBox;
     private final float PLAYER_HIT_BOX_PERCENT_SCALAR = 0.01f;
     private final float PLAYER_HURT_BOX_WIDTH_PERCENT_SCALAR = 0.2f;
@@ -34,10 +35,9 @@ public class Player extends Entity {
     private boolean holdingKey;
     private Sprite keySprite;
     private int healthPotionsHeld;
-    private int associatedPID = -1;
 
     public Player(Texture texture, float x, float y, float width, float height, int pid) {
-        super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER, ReplicationType.CLIENTSIDE, -1, -1);
+        super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER, ReplicationType.PLAYER, -1, -1);
         RRGame.globals.currentNumPlayers++;
         this.maxXVelocity = BASE_PLAYER_MOVE_SPEED;
         this.maxYVelocity = BASE_PLAYER_MOVE_SPEED;

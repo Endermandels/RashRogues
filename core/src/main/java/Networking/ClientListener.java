@@ -222,6 +222,11 @@ public class ClientListener implements Endpoint {
         this.outgoingMessages.add(StreamMaker.seed(seed));
     }
 
+    @Override
+    public void dispatchKillPlayer(int pid) {
+       this.outgoingMessages.add(StreamMaker.killPlayer(pid));
+    }
+
     /**
      * Communicate to the client to destroy an entity.
      */

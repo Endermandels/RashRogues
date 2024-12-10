@@ -54,6 +54,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         /* Instance Creation */
 //        new Swordsman(50, 30, 10, RRGame.globals.playersSet);
         new Key(30, 280);
+        new Swordsman(30,30,5,RRGame.globals.playersSet);
 
         /* Camera Setup */
         game.playerCam.bind(player);
