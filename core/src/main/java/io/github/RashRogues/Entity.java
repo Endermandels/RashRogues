@@ -46,7 +46,7 @@ public abstract class Entity extends Sprite {
      * @param creatorPID
      * @param number
      */
-    protected Entity(EntityAlignment alignment, Texture texture, float x, float y,
+    public Entity(EntityAlignment alignment, Texture texture, float x, float y,
                      float width, float height, Layer layer, ReplicationType replicationType, int creatorPID, long number) {
         super(texture);
         setSize(width, height);
