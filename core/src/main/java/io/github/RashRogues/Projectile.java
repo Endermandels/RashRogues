@@ -43,7 +43,7 @@ public class Projectile extends Entity {
     Projectile(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
                float xDirection, float yDirection, int damage, float degreesOffsetFromFacingRight,
                boolean onlyHitOneTarget, float distance, float speed, int pid, long number) {
-        super(alignment,texture,x,y,width,height,Layer.PROJECTILE, ReplicationType.PROJECTILE_NUMBER, pid, number);
+        super(alignment,texture,x,y,width,height,Layer.PROJECTILE, ReplicationType.CLIENTSIDE, pid, number);
         Vector2 direction = new Vector2(xDirection, yDirection).nor();
         this.damage = damage;
         this.distance = distance;
