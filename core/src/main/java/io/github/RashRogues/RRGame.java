@@ -40,6 +40,7 @@ public class RRGame extends Game {
     public static final float KEY_SIZE = 4;
     public static final float ARROW_SIZE = 2;
     public static final float THROWING_KNIFE_SIZE = 2;
+    public static final float BOMB_EXPLOSION_DURATION = 1;
     public static final float SMOKE_BOMB_SIZE = 4;
     public static final float SMOKE_BOMB_EXPLOSION_SIZE = 10;
     public static final float SMOKE_BOMB_EXPLOSION_DURATION = 8;
