@@ -98,6 +98,15 @@ public class Globals {
             return;
         }
 
+        if (e.replicationType == ReplicationType.PLAYER){
+            Player p = (Player) e;
+            if (this.pid == 0){
+                Globals.network.connection.dispatchKillPlayer(p.associatedPID);
+            }
+            this.players.remove(p.associatedPID);
+            this.playersSet.remove(p);
+        }
+
         //This is a deterministic replicated entity
         if (e.replicationType == ReplicationType.ENTITY_NUMBER){
 

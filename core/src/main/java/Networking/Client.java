@@ -160,6 +160,8 @@ public class Client implements Endpoint {
                 this.handleSeed(msg);
             } else if (msgType == DESTROY3.getvalue()){
                 this.handleDestroyProjectile(msg);
+            } else if (msgType == KILL_PLAYER.getvalue()){
+                this.handleKillPlayer(msg);
             }
         }
 
@@ -218,6 +220,11 @@ public class Client implements Endpoint {
         return;
     }
 
+    @Override
+    public void dispatchKillPlayer(int pid) {
+       return;
+    }
+
 
     /**
      * Communicate to server which keys are pressed down.
@@ -245,6 +252,16 @@ public class Client implements Endpoint {
         this.pid = (int) packet[1];
         RRGame.globals.addClient(this.pid);
         RRGame.globals.setPID(this.pid);
+    }
+
+    /**
+     * We received the instruction to kill a player.
+     * @param packet
+     */
+    public void handleKillPlayer(byte[] packet){
+        int pidToKill = packet[1];
+        Entity playerEntity = (Entity) RRGame.globals.players.get(pidToKill);
+        RRGame.globals.deregisterEntity(playerEntity);
     }
 
     /**
@@ -380,6 +397,10 @@ public class Client implements Endpoint {
         int pid = (int) packet[1];
         Player p = RRGame.globals.players.get(pid);
 
+        if (p == null){
+            return;
+        }
+
         byte[] longBytes = new byte[8];
         System.arraycopy(packet,2, longBytes,0,8);
         long frame = StreamMaker.bytesToLong(longBytes);
@@ -406,10 +427,6 @@ public class Client implements Endpoint {
 
         if (packet[16] == 1){
             p.useAbility(pid, frame);
-        }
-
-        if (packet[17] == 1){
-            p.attack(pid, frame);
         }
     }
 
