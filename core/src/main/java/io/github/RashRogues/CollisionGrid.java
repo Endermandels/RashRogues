@@ -100,7 +100,9 @@ public class CollisionGrid {
                     for (Iterator<HurtBox> hurtBoxIterator = hurtBoxes.iterator(); hurtBoxIterator.hasNext();) {
                         HurtBox hurtBox = hurtBoxIterator.next();
                         if (hitBox.overlaps(hurtBox)) {
-                            hitBox.hitHurtBox(hurtBox);
+                            if (RRGame.globals.pid == 0){   //only apply collision damage on the server.
+                                hitBox.hitHurtBox(hurtBox);
+                            }
                         }
                     }
                 }

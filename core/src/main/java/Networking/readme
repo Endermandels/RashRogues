@@ -1,0 +1,149 @@
+0. Terminology
+
+    0.1: Endpoint:
+        an interface to the game at which a player can interact.
+        The server and each client are all endpoints.
+
+    0.2: Replication:
+        The same object on two-or-more endpoints.
+        If an object is replicated, I can make state changes to the object,
+        tell other endpoints about the changes I made to that object,
+        and then the other endpoints will know which object I'm talking about
+        and be able to reflect those state changes.
+
+        Getting endpoints to agree on which objects are which is difficult,
+        especially in time-sensitive scenarios such as projectile creation/collisions.
+
+    0.3: Determinism:
+        The state of an object is determined at runtime.
+
+        Entities that:
+         1. occur on both systems
+         2. occur in the same order every time
+        are deterministic.
+
+        Enemy spawns are generally deterministic.
+        Pseudorandom events that share a seed across endpoints are also deterministic.
+
+        However, enemy reactions to non-deterministic actions, such as player inputs and consequent actions are not.
+        This means enemy reactions (targetting for example) may need to be sent over the wire.
+        This isn't a huge deal cause it's a small amount of data to send, and it'll only delay a frame or two.
+
+        Determinism is the most powerful tool in networking - if an object's state is determined before runtime,
+        no updates about the objects state have to be shared between endpoints.
+
+
+1. Solicitation
+
+    Solicitation is the act of broadcasting the existence of a game to the network.
+
+    In the Join lobby the solicitee object is created.
+    In the Host lobby the solicitor object is created.
+
+    The solicitor broadcasts a 4 byte key (known by solicitor and solicitee) to every host on the network. This is done via UDP.
+    Solicitee's are listening on a specific port for these broadcasts.
+
+    Upon receiving a UDP packet,the solicitee reads the payload and ensures it matches the 4-byte key copy. Upon validating this key,
+    the solicitor informs the game that a game has been found on the network.
+
+    The purpose of the key is to ensure random broadcasts from other devices aren't misread as games, since
+    there are a lot of devices broadcasting on the network at any given time, albeit likely not on the port used for solicitation.
+
+    Solictor and solicitee objects are destroyed upon starting the game or leaving the lobby, meaning clients cannot
+    find/join active games via the lobby.
+
+2. Endpoints:
+    2.1: the Server object
+
+        The server object has two main jobs:
+            1. Accept clients and spin up seperate sockets to communicate with them on a isolated connection.
+            2. Broadcast network messages to all clients.
+
+        The Server is an endpoint, and implements the endpoint interface.
+        The PlayScreen uses this interface to access Server and send/receive game updates to/from clients.
+
+
+    2.2: the ClientListener object
+
+        The ClientListener is a dedicated connection between the server and one client.
+        It is the result of an accepted connection. The Server object creates a ClientListener every time it accepts.
+
+        The ClientListeners are the ones who actually send/recieve data to/from clients directly, but they are told
+        to send data from Server, and forward client messages they receive to Server.
+
+        The ClientListener is an endpoint, and implements the endpoint interface.
+        Server is the only object to access this interface, however. This is unlike Server and Client,
+        whose interface is acessed by PlayScreen.
+
+        If Server is an octopus, ClientListeners are it's arms.
+
+                /--- ClientListener1  <---> Client1
+        Server  |--- ClientListener2  <---> Client2
+                \--- ClientListener3  <---> Client3
+
+    2.3: the Client object
+
+        Each client has a Client object, and it uses this object to send
+        and receive updates from the Server. Client is the gateway to the multiplayer game.
+
+        Each client is associated with a client listener
+        ClientListener <--> Client
+
+        The Client is an endpoint, and implements the endpoint interface.
+        Playscreen uses this interface to send/receive game updates to/from the server.
+
+3. Packets
+
+    Data is send using TCP packets.
+    Each packet has a fixed 128 byte payload.
+    Most packets only send several bytes of data.
+    The smallest amount of data that can be put in a packet is 1 byte,
+    but that packet will still use 128 bytes due to the size of the buffer.
+
+    If bandwidth becomes an issue, there are easy space optimizations to be made here.
+    The system could be made much more complicated to support super tight packets,
+    but it's most likely not worth the complexity.
+
+    The first byte of every packet is always a number (1-127) representing
+    the type of packet it is. For example a packet with [0] == 26 starts the game.
+
+
+4. Inputs
+
+    Inputs were the first tricky obstacle in networking this game.
+
+    Sending inputs is the ideal way to communicate player actions across the net.
+    You could send state updates about the player's attributes,
+    such as position, orientation etc, but it's much easier to just send
+    inputs and have those be reflected as a consequence of the same inputs that were
+    pressed on the sender being played back on the receiver.
+
+    There is one small problem however; consider that each row in the diagram below represents a frame
+
+    If you press W for exactly one frame:
+
+                Client                |             Server
+         I pressed the W key          |
+                                      | Player1 hit W key: Player1 acceleration = 1
+                                      | Player1 accel--;
+                                      |
+    This works, and you have the exact same gamestate on client and server.
+
+
+    But what if I send W key two frames in a row, but they both get handled in a single frame on server?
+
+                   Client                                |             Server
+         I pressed the W key Player1 accel. = 1          |
+         I pressed the W key Player1 accel. = 1          |
+                                                         | Player1 hit W key: Player1 accel. = 1 Player1 hit W key: Player1 accel. = 1
+                                                         | (second input should have registered here!)
+
+    The game state will end up differently. The client's inputs were globbed into a single frame on the server.
+    To fix this, inputs are users are queued. Only one input event for each key, for each player is allowed per frame,
+    Additional inputs will be deferred to run the next frame:
+
+                        Client                           |             Server
+         I pressed the W key Player1 accel. = 1          |
+         I pressed the W key Player1 accel. = 1          |
+                                                         | Player1 hit W key: Player1 accel. = 1
+                                                         | Player1 hit W key: Player1 accel. = 1
