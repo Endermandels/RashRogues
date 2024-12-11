@@ -7,7 +7,7 @@ public class SmokeBombExplosion extends Projectile {
     SmokeBombExplosion(float x, float y) {
         super(EntityAlignment.PLAYER, RRGame.am.get(RRGame.RSC_SMOKE_BOMB_EXPLOSION_IMG), x, y,
                 RRGame.SMOKE_BOMB_EXPLOSION_SIZE, RRGame.SMOKE_BOMB_EXPLOSION_SIZE, 0,
-                0, false, RRGame.SMOKE_BOMB_EXPLOSION_DURATION);
+                0, false, RRGame.SMOKE_BOMB_EXPLOSION_DURATION, AnimationActor.SMOKE_BOMB_EXPLOSION);
         this.setBoxPercentSize(SMOKE_BOMB_EXPLOSION_HIT_BOX_PERCENT_SCALAR, SMOKE_BOMB_EXPLOSION_HIT_BOX_PERCENT_SCALAR, hitBox);
         this.hitBox.setEffect(Effect.SMOKE);
     }

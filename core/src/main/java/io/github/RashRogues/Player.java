@@ -35,9 +35,11 @@ public class Player extends Entity {
     private boolean holdingKey;
     private Sprite keySprite;
     private int healthPotionsHeld;
+    private float deathTimer = 0f;
 
     public Player(Texture texture, float x, float y, float width, float height, int pid) {
-        super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER, ReplicationType.PLAYER, -1, -1);
+        super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER, AnimationActor.PLAYER1,
+                ReplicationType.PLAYER, -1, -1);
         RRGame.globals.currentNumPlayers++;
         this.maxXVelocity = BASE_PLAYER_MOVE_SPEED;
         this.maxYVelocity = BASE_PLAYER_MOVE_SPEED;
@@ -76,10 +78,11 @@ public class Player extends Entity {
         dashTimer += delta;
         abilityTimer += delta;
         consumableTimer += delta;
-        // we likely want some resurrection sort of ability or even just a ghost camera you can move
-        if (stats.isDead()) { this.dropKey(); this.removeSelf(); return; }
         adjustVelocity();
         super.update(delta);
+        // we likely want some resurrection sort of ability or even just a ghost camera you can move
+        if (deathTimer >= RRGame.STANDARD_DEATH_DURATION) { this.removeSelf(); return; }
+        if (stats.isDead()) { this.dropKey(); deathTimer += delta; return; }
         hurtBox.update(delta);
         keySprite.setX(getX()-getWidth()/2);
         keySprite.setY(getY()+getHeight()/2);
@@ -126,6 +129,7 @@ public class Player extends Entity {
         }
         new ThrowingKnife(getX(), getY(), throwingKnifeXDir, throwingKnifeYDir, stats.getDamage(),
                 RRGame.STANDARD_PROJECTILE_SPEED, pid, frame);
+        this.setCurrentAnimation(AnimationAction.ATTACK);
         return true;
     }
 
@@ -256,12 +260,15 @@ public class Player extends Entity {
 
     @Override
     public void onHurt(Entity thingThatHurtMe) {
+        boolean tookDamage = false;
         if (thingThatHurtMe.alignment == EntityAlignment.PLAYER) { return; }
         else if (thingThatHurtMe instanceof Projectile && thingThatHurtMe.alignment == EntityAlignment.ENEMY) {
             this.stats.takeDamage(((Projectile) thingThatHurtMe).damage);
+            tookDamage = true;
         }
         else if (thingThatHurtMe instanceof Enemy) {
             this.stats.takeDamage(((Enemy) thingThatHurtMe).stats.getDamage());
+            tookDamage = true;
         }
         else if (thingThatHurtMe instanceof Key) {
             this.grabKey();
@@ -271,6 +278,15 @@ public class Player extends Entity {
         }
         else {
             System.out.println("This shouldn't ever happen...");
+        }
+
+        if (stats.isDead()) {
+            // sound
+            this.setCurrentAnimation(AnimationAction.DIE);
+        }
+        else if (tookDamage) {
+            // sound
+            this.setCurrentAnimation(AnimationAction.HURT);
         }
     }
 

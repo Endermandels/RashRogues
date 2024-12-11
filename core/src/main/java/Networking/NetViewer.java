@@ -10,7 +10,8 @@ public class NetViewer extends Entity {
     private String text;
 
     public NetViewer() {
-        super(EntityAlignment.BACKGROUND, RRGame.am.get(RSC_NET_VIEWER), 0, 0, 5, 5, Layer.FOREGROUND, ReplicationType.CLIENTSIDE, -1, -1);
+        super(EntityAlignment.BACKGROUND, RRGame.am.get(RSC_NET_VIEWER), 0, 0, 5, 5, Layer.FOREGROUND,
+                null, ReplicationType.CLIENTSIDE, -1, -1);
     }
 
     public void outputToConsole(){
