@@ -76,7 +76,6 @@ public class Globals {
             e.pid = creatorPID;
             e.frame = number;
             this.projectileNumber.put(creatorPID,this.projectileNumber.get(creatorPID)+1);
-            System.out.println(Integer.toString(creatorPID) + " created projectile #" + number);
 
         // This entity is matched with another entity based on creation order.
         } else if (type == ReplicationType.ENTITY_NUMBER){
@@ -132,7 +131,6 @@ public class Globals {
         //This is a nondeterministic replicated projectile
         if (e.replicationType == ReplicationType.PROJECTILE_NUMBER){
             this.nondeterministicReplicatedProjectiles.get(e.pid).remove(e.frame);
-            System.out.println("We are supposed to destroy: " + Integer.toString(e.pid) + "'s projectile #" + e.frame);
             //We are the server. Tell client to eliminate this entity.
             if (this.pid == 0){
                 Globals.network.connection.dispatchDestroyProjectile(e.pid, e.frame);
@@ -144,8 +142,6 @@ public class Globals {
     }
 
     public long getProjectileNumber(int pid){
-        System.out.println(this.projectileNumber.size());
-        System.out.println(pid);
         return this.projectileNumber.get(pid);
     }
 
