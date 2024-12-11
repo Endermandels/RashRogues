@@ -190,6 +190,12 @@ public class Server implements Endpoint{
        }
     }
 
+    public void dispatchKeyPickup(int pid){
+        for (ClientListener c : clients){
+            c.dispatchKeyPickup(pid);
+        }
+    }
+
     @Override
     public void dispatchHeartbeat() {
         return;

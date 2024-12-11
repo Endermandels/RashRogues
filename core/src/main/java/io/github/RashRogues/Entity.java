@@ -64,7 +64,7 @@ public abstract class Entity extends Sprite {
         this.alignment = alignment;
         this.activeEffects = new HashMap<Effect, Float>();
         this.replicationType = replicationType;
-        RRGame.globals.registerEntity(this, replicationType, creatorPID,number);
+        RRGame.globals.registerEntity(this, replicationType, creatorPID, number);
     }
 
     /**
