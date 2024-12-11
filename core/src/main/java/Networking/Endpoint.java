@@ -18,4 +18,5 @@ public interface Endpoint {
     public void dispatchDestroyProjectile(int pid, long number);
     void dispatchSeed(long randomSeed);
     void dispatchKillPlayer(int pid);
+    void dispatchKeyPickup(int pid);
 }
