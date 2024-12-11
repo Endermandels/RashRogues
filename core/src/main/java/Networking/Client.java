@@ -366,15 +366,16 @@ public class Client implements Endpoint {
         RRGame.globals.deregisterEntity(RRGame.globals.getReplicatedEntity(eid));
     }
 
+    /**
+     * Server instructs us to destroy entity that belongs to a certain pid, and was created on a certain frame.
+     * @param packet
+     */
+
     public void handleDestroyEntity2(byte[] packet){
         int pid = (int) packet[1];
-
         byte[] longBytes = new byte[8];
         System.arraycopy(packet,2, longBytes,0,8);
         long frame = StreamMaker.bytesToLong(longBytes);
-
-        System.out.println("Server says to destroy an entity. PID: " + Integer.toString(pid) + " FRAME ID: " + Long.toString(frame));
-
         Entity e = RRGame.globals.findNondeterministicEntity(pid,frame);
         RRGame.globals.deregisterEntity(e);
     }
@@ -395,16 +396,12 @@ public class Client implements Endpoint {
 
     public void handleUpdatePlayerPosition(byte[] packet) {
         int pid = packet[1];
-        System.out.println("SERVER TOLD US TO UPDATE THE PLAYER WITH PID: " + Integer.toString(pid));
         Player p = RRGame.globals.players.get(pid);
-        System.out.println("Player is: ");
-        System.out.println(p);
         if (p == null){
             return;
         }
         float x = ByteBuffer.wrap(new byte[]{packet[2], packet[3], packet[4], packet[5]}).getFloat();
         float y = ByteBuffer.wrap(new byte[]{packet[6], packet[7], packet[8], packet[9]}).getFloat();
-
         p.setPosition(x,y);
     }
 

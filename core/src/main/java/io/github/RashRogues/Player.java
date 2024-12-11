@@ -117,7 +117,6 @@ public class Player extends Entity {
      * @return
      */
     public boolean attack(int pid, long frame) {
-        System.out.println(Integer.toString(pid) + " is attacking with projectile number " + Long.toString(frame));
         // good spot for a sound effect
         float throwingKnifeXDir = Math.signum(xVelocity);
         float throwingKnifeYDir = Math.signum(yVelocity);

@@ -19,6 +19,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     private boolean debug = false;
     private RRGame game;
     private HUD hud;
+    private GUI gui;
     private Room currentRoom;
     private Player player;
     private Door currentDoor;
@@ -50,10 +51,11 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         player = new Player(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, (int) RRGame.PLAYER_SIZE, RRGame.globals.pid);
         RRGame.globals.addPlayer(RRGame.globals.pid,player);
         this.game.network.connection.dispatchCreatePlayer(player);
+        gui = new GUI(player);
 
         /* Instance Creation */
 //        new Swordsman(50, 30, 10, RRGame.globals.playersSet);
-        new Key(25, 280);
+//        new Key(30, 280);
 
         /* Camera Setup */
         game.playerCam.bind(player);
@@ -139,6 +141,8 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
          the door kill itself when it's ready to move on, so we just need to check:
         */
         if (!localEntities.contains(currentDoor)) { setNextRoom(); }
+
+        gui.update();
     }
 
     @Override
@@ -149,12 +153,14 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         game.batch.begin();
         currentRoom.draw(game.batch);
         while (!renderQueue.isEmpty()){
-            renderQueue.poll().draw(game.batch);
+            Entity e = renderQueue.poll();
+            if (!(e instanceof HealthBar)) e.draw(game.batch);
         }
         game.batch.end();
 
 
         game.hudBatch.begin();
+        gui.draw(game.hudBatch);
         hud.draw(game.hudBatch);
         game.hudBatch.end();
         debugRender();
@@ -209,7 +215,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
     private void loadRooms() {
         this.rooms = new ArrayList<>();
-        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM1_IMG), 35, 301, 10, 0));
+        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM1_IMG), 35, 301, 80, 0));
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM2_IMG), 35, 301, 120, 10));
         // other rooms will go below here
     }
@@ -392,17 +398,17 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                         case "a":
                         case "archer":
                         case "Archer":
-                            new Archer(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet);
+                            new Archer(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet, false);
                             break;
                         case "b":
                         case "bomber":
                         case "Bomber":
-                            new Bomber(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet);
+                            new Bomber(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet, false);
                             break;
                         case "s":
                         case "swordsman":
                         case "Swordsman":
-                            new Swordsman(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet);
+                            new Swordsman(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet, false);
                             break;
                         default:
                             return "Valid EnemyTypes: Archer, Bomber, Swordsman";

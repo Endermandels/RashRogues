@@ -29,8 +29,8 @@ public class Archer extends Enemy {
     private float attackTimer;
     private float attackXDir, attackYDir;
 
-    Archer(float x, float y, float size, HashSet<Player> playerSet) {
-        super(RRGame.am.get(RRGame.RSC_ARCHER_IMG), x, y, size);
+    Archer(float x, float y, float size, HashSet<Player> playerSet, boolean hasKey) {
+        super(RRGame.am.get(RRGame.RSC_ARCHER_IMG), x, y, size, hasKey);
         this.stats = new EnemyStats(BASE_ARCHER_HEALTH, BASE_ARCHER_DAMAGE, BASE_ARCHER_ATTACK_SPEED, BASE_ARCHER_MOVE_SPEED, this);
         setBoxPercentSize(ARCHER_HIT_BOX_PERCENT_WIDTH_SCALAR, ARCHER_HIT_BOX_PERCENT_HEIGHT_SCALAR, hitBox);
         setBoxPercentSize(ARCHER_HURT_BOX_PERCENT_WIDTH_SCALAR, ARCHER_HURT_BOX_PERCENT_HEIGHT_SCALAR, hurtBox);
