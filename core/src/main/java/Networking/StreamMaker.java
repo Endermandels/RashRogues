@@ -4,6 +4,7 @@ import io.github.RashRogues.Player;
 import io.github.RashRogues.RRGame;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 public class StreamMaker {
    private static ByteBuffer longbuffer = ByteBuffer.allocate(Long.BYTES);
@@ -148,6 +149,26 @@ public class StreamMaker {
       stream[9] = (byte) (frame);
       System.arraycopy(keymask, 0, stream, 10, keymask.length);
       return stream;
+   }
+
+   public static byte[] command(String[] cmd){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.COMMAND.getvalue();
+      int tx = 1;
+     for (int i = 0; i < cmd.length; i++){
+        String cmdlet = cmd[i];
+        byte[] cmdlet_bytes = cmdlet.getBytes(StandardCharsets.US_ASCII);
+        System.arraycopy(cmdlet_bytes,0, stream, tx, cmdlet_bytes.length);
+        if (tx > 1) {
+           stream[tx - 1] = '#';
+        }
+        tx += cmdlet_bytes.length+1;
+     }
+     stream[tx-1] = '#';
+     for (int i = 0; i < stream.length; i++){
+        System.out.println(stream[i]);
+     }
+     return stream;
    }
 
    public static byte[] playerPosition(Player player, int pid){

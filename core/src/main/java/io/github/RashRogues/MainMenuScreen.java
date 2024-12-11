@@ -66,4 +66,9 @@ public class MainMenuScreen extends ScreenAdapter implements RRScreen {
         this.localEntities.remove(entity);
         return;
     }
+
+    @Override
+    public void executeCommand(String[] cmd) {
+       return;
+    }
 }

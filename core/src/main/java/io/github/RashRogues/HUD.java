@@ -160,7 +160,14 @@ public class HUD {
                         cmd = currentLine.toString();
                         String[] words = cmd.split("[ \t]+");
                         HUDActionCommand callback = knownCommands.get(words[0]);
-                        result = (callback == null) ? "?" : callback.execute(words);
+                        if (callback == null){
+                            result = "?";
+                        }else{
+                            result = callback.execute(words);
+                            RRGame.globals.network.connection.dispatchCommand(words);
+                        }
+
+
                         consoleLines.add(PROMPT + cmd);
                         Collections.addAll(consoleLines, result.split("\n"));
                         while (consoleLines.size() >= linesbuffered) {
@@ -310,5 +317,19 @@ public class HUD {
         for(HUDViewCommand c : hudData.values()) {
             c.vis = v;
         }
+    }
+
+    /**
+     * Execute a console command.
+     * @param cmd Console Command
+     */
+    public void executeCommand(String[] cmd){
+        String result = ">>! Invalid Command.";
+        if (cmd.length >= 1){
+            if (knownCommands.containsKey(cmd[0])){
+                result = knownCommands.get(cmd[0]).execute(cmd);
+            }
+        }
+        System.out.println(result);
     }
 }
