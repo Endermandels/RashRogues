@@ -2,21 +2,28 @@ package io.github.RashRogues;
 
 import Networking.ReplicationType;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 
 public abstract class Enemy extends Entity {
 
     protected EnemyStats stats;
     protected HurtBox hurtBox;
-    // early thinking is that there can be a variable named "hasKey" and would drop the key, idk. determined in Room.
+    protected boolean hasKey;
+    private Sprite keySprite;
 
-    Enemy(Texture texture, float x, float y, float width, float height) {
+    Enemy(Texture texture, float x, float y, float width, float height, boolean hasKey) {
         super(EntityAlignment.ENEMY, texture, x, y, width, height, Layer.ENEMY, ReplicationType.ENTITY_NUMBER,-1,-1);
         hurtBox = new HurtBox(hitBox, this);
+        this.hasKey = hasKey;
+        this.keySprite = new Sprite(RRGame.am.get(RRGame.RSC_KEY_IMG, Texture.class));
+        this.keySprite.setSize(width/2, height/2);
+        this.keySprite.setOrigin(width/4, height/4);
         // this will obviously change based on a number of factors later
     }
 
-    Enemy(Texture texture, float x, float y, float size) {
-        this(texture, x, y, size, size);
+    Enemy(Texture texture, float x, float y, float size, boolean hasKey) {
+        this(texture, x, y, size, size, hasKey);
     }
 
     /**
@@ -24,9 +31,16 @@ public abstract class Enemy extends Entity {
      * @param delta
      */
     public void update(float delta) {
-        if (stats.isDead()) { this.removeSelf(); return; }
+        if (stats.isDead()) { dropKey(); this.removeSelf(); return; }
         super.update(delta);
         hurtBox.update(delta);
+        keySprite.setX(getX()+getWidth()/4);
+        keySprite.setY(getY()+getHeight()/4);
+    }
+
+    public void dropKey(){
+        hasKey = false;
+        new Key(getX(),getY());
     }
 
     /**
@@ -53,6 +67,14 @@ public abstract class Enemy extends Entity {
         else {
             // if an enemy hitBox is what hurt us, then ignore it
             return;
+        }
+    }
+
+    @Override
+    public void draw(Batch batch) {
+        super.draw(batch);
+        if (hasKey) {
+            keySprite.draw(batch);
         }
     }
 }

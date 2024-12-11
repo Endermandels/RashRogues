@@ -22,11 +22,11 @@
          2. occur in the same order every time
         are deterministic.
 
-        Enemy spawns are generally deterministic.
-        Pseudorandom events that share a seed across endpoints are also deterministic.
+        Enemy spawns, item spawns, and pre-existing world objects like doors are generally deterministic.
+        Pseudorandom events that share a seed across endpoints are also deterministic. See section 6 (Random) for more info.
 
         However, enemy reactions to non-deterministic actions, such as player inputs and consequent actions are not.
-        This means enemy reactions (targetting for example) may need to be sent over the wire.
+        This means enemy reactions (targeting for example) may need to be sent over the wire.
         This isn't a huge deal cause it's a small amount of data to send, and it'll only delay a frame or two.
 
         Determinism is the most powerful tool in networking - if an object's state is determined before runtime,
@@ -147,3 +147,45 @@
          I pressed the W key Player1 accel. = 1          |
                                                          | Player1 hit W key: Player1 accel. = 1
                                                          | Player1 hit W key: Player1 accel. = 1
+
+5. Syncing Entities
+
+    Entites can be synced between client and server in different ways.
+
+    There are three parameters in the Entity constructor that pertain to networking:
+        1. (ReplicationType) replicationType : replicationType defines what type of syncing will be used.
+        2. (int) creatorPID                  : which player the Entity belongs to.
+        3. (long) number                     : # of occurrences OR the frame Entity was created on.
+
+    Replication Types:
+        CLIENTSIDE:         No information is shared between endpoints about this Entity
+        ENTITY_NUMBER:      Info shared between endpoints by ref. which Entity # this is
+        FRAME_NUMBER:       Info shared between endpoints by ref. which frame this Entity was created, and who created it.
+        PROJECTILE_NUMBER:  Info shared between endpoints by ref. which Projectile # this is, and who created it.
+        PLAYER:             Special case. only Player class should utilize this.
+
+    Usage:
+
+        To create a simple entity that doesn't need to communicate it's state, use CLIENTSIDE.
+
+        For entities that have a fixed creation order in the game, use ENTITY_NUMBER.
+
+        For entities that do not have a fixed creation order, but have a specific creator with a globally addressable
+        id (such as a player), use FRAME_NUMBER.
+
+        For projectiles that don't follow a complete lifecycle on their own without interference from other objects,
+        from creation to destruction (like a bomb). For other projectiles that can hit enemies and players and destroy themselves
+        prematurely use PROJECTILE_NUMBER.
+
+        For players, use PLAYER.
+
+6. Randomness
+
+    The Globals object maintains a random number generator object that can be used
+    for any purpose. The seed of this random number generator is shared to clients on startup,
+    and any given random number from this generator will match across server/clients.
+
+    Example usage:
+        // Generate a random integer between 0 and 100
+        Random rng = RRGame.globals.getRandom();
+        int randomInt = rng.nextInt(100);

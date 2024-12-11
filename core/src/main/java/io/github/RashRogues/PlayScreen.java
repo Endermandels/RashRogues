@@ -55,7 +55,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
         /* Instance Creation */
 //        new Swordsman(50, 30, 10, RRGame.globals.playersSet);
-        new Key(30, 280);
+//        new Key(30, 280);
 
         /* Camera Setup */
         game.playerCam.bind(player);
@@ -398,17 +398,17 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                         case "a":
                         case "archer":
                         case "Archer":
-                            new Archer(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet);
+                            new Archer(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet, false);
                             break;
                         case "b":
                         case "bomber":
                         case "Bomber":
-                            new Bomber(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet);
+                            new Bomber(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet, false);
                             break;
                         case "s":
                         case "swordsman":
                         case "Swordsman":
-                            new Swordsman(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet);
+                            new Swordsman(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet, false);
                             break;
                         default:
                             return "Valid EnemyTypes: Archer, Bomber, Swordsman";
