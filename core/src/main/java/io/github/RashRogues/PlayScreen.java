@@ -271,15 +271,28 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         });
 
         hud.registerAction("tp", new HUDActionCommand() {
-            static final String help = "Teleport to a specific location. Usage: tp <x> <y> ";
+            static final String help = "Teleport to a specific location. Usage: tp <pid> <x> <y> ";
             @Override
             public String execute(String[] cmd) {
                 try {
-                    int x = Integer.parseInt(cmd[1]);
-                    int y = Integer.parseInt(cmd[2]);
-                    if (x < 0 || x > currentRoom.roomWidth-player.getWidth() || y < 0 ||
-                            y > currentRoom.roomHeight-player.getHeight()) return "Cannot tp out of bounds";
-                    player.setPosition(x, y);
+                    if (cmd.length != 4){
+                        return help;
+                    }
+
+                    int pid     = Integer.parseInt(cmd[1]);
+                    int x       = Integer.parseInt(cmd[2]);
+                    int y       = Integer.parseInt(cmd[3]);
+
+                    Player p    = RRGame.globals.players.get(pid);
+
+                    if (p == null){
+                        return "Player with id " + Integer.toString(pid) + " does not exist.";
+                    }
+
+                    if (x < 0 || x > currentRoom.roomWidth-p.getWidth() || y < 0 ||
+                            y > currentRoom.roomHeight-p.getHeight()) return "Cannot teleport out of bounds.";
+
+                    p.setPosition(x, y);
                     return "ok!";
                 } catch (Exception e) {
                     return help;
