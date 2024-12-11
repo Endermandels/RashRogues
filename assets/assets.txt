@@ -7,10 +7,13 @@ DefaultImages/bomb.png
 DefaultImages/bomber.png
 DefaultImages/boss room1.png
 DefaultImages/chest.png
+DefaultImages/cloak.png
 DefaultImages/coin.png
+DefaultImages/dagger.png
 DefaultImages/door.png
 DefaultImages/dragon.png
 DefaultImages/explosion.png
+DefaultImages/health_potion.png
 DefaultImages/hole.png
 DefaultImages/key.png
 DefaultImages/king.png
@@ -20,6 +23,7 @@ DefaultImages/merchant.png
 DefaultImages/particle_large.png
 DefaultImages/particle_medium.png
 DefaultImages/particle_small.png
+DefaultImages/ring.png
 DefaultImages/rogue.png
 DefaultImages/room1.png
 DefaultImages/room2.png
