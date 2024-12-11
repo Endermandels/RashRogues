@@ -7,7 +7,8 @@ Much info is found in AnimationHandler.java, but here are some extra notes:
 3. All Entities have their Move animation logic handled in Entity
 4. The above means that subclassed entities (players, specific enemies)
    only need to care about their Attack and other special animations
-5. Check Entity's animation-related functions for more info
+5. If there's no specified default animation, then a single frame is chosen
+6. Check Entity's animation-related functions for more info
 
 # Overview
 This file maps each row of a sprite sheet to its intended animation use.

@@ -10,6 +10,7 @@ public class Key extends Entity {
                 x, y, RRGame.KEY_SIZE, RRGame.KEY_SIZE, Layer.BACKGROUND, null,
                 ReplicationType.ENTITY_NUMBER, -1, -1);
         this.setBoxPercentSize(1f, 1f, hitBox);
+        hitBox.disableLength = 0f;
     }
 
     @Override

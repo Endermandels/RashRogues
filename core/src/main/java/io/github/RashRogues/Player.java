@@ -10,8 +10,8 @@ import static java.lang.Math.abs;
 
 public class Player extends Entity {
 
-    private final int BASE_PLAYER_HEALTH = 100;
-    private final int BASE_PLAYER_DAMAGE = 10;
+    private final int BASE_PLAYER_HEALTH = 100000;
+    private final int BASE_PLAYER_DAMAGE = 100000;
     private final float BASE_PLAYER_ATTACK_SPEED = 0.5f;
     private final float ACCELERATION = 50.0f;
     private final float FRICTION = 25.0f;
@@ -35,6 +35,7 @@ public class Player extends Entity {
     private boolean holdingKey;
     private Sprite keySprite;
     private int healthPotionsHeld;
+    private float deathTimer = 0f;
 
     public Player(Texture texture, float x, float y, float width, float height, int pid) {
         super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER, AnimationActor.PLAYER1,
@@ -77,10 +78,11 @@ public class Player extends Entity {
         dashTimer += delta;
         abilityTimer += delta;
         consumableTimer += delta;
-        // we likely want some resurrection sort of ability or even just a ghost camera you can move
-        if (stats.isDead() && this.isAnimationFinished()) { this.dropKey(); this.removeSelf(); return; }
         adjustVelocity();
         super.update(delta);
+        // we likely want some resurrection sort of ability or even just a ghost camera you can move
+        if (deathTimer >= RRGame.STANDARD_DEATH_DURATION) { this.removeSelf(); return; }
+        if (stats.isDead()) { this.dropKey(); deathTimer += delta; return; }
         hurtBox.update(delta);
         keySprite.setX(getX()-getWidth()/2);
         keySprite.setY(getY()+getHeight()/2);
