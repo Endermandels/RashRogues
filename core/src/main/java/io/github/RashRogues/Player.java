@@ -86,7 +86,6 @@ public class Player extends Entity {
         if (attackTimer >= (1 / stats.getAttackSpeed())){
             int myPID    = this.associatedPID;
             long projNum = RRGame.globals.getProjectileNumber(myPID);
-
             attack(myPID,projNum);
             attackTimer = 0f;
         }

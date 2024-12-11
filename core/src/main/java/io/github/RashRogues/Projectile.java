@@ -42,8 +42,8 @@ public class Projectile extends Entity {
      */
     Projectile(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
                float xDirection, float yDirection, int damage, float degreesOffsetFromFacingRight,
-               boolean onlyHitOneTarget, float distance, float speed, int pid, long number) {
-        super(alignment,texture,x,y,width,height,Layer.PROJECTILE, ReplicationType.CLIENTSIDE, pid, number);
+               boolean onlyHitOneTarget, float distance, float speed, ReplicationType replicationType, int pid, long number) {
+        super(alignment,texture,x,y,width,height,Layer.PROJECTILE, replicationType, pid, number);
         Vector2 direction = new Vector2(xDirection, yDirection).nor();
         this.damage = damage;
         this.distance = distance;
@@ -104,7 +104,7 @@ public class Projectile extends Entity {
             float degOffset = this.getRotation() - direction.angleDeg();
             returnProjectile = new Projectile(this.alignment, this.getTexture(), this.getX(), this.getY(), this.getWidth(),
                     this.getHeight(), this.xVelocity, this.yVelocity, this.damage, degOffset, this.onlyHitOneTarget,
-                    this.distance, this.speed, this.creator,this.number);
+                    this.distance, this.speed, this.replicationType, this.creator,this.number);
         }
         else {
             returnProjectile =  new Projectile(this.alignment, this.getTexture(), this.getX(), this.getY(), this.getWidth(),

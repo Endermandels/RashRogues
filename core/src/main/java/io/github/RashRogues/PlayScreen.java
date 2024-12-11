@@ -33,7 +33,10 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     private PriorityQueue<Entity> renderQueue;
     private HashMap<Integer, Boolean> inputs;
     public static CollisionGrid collisionGrid = new CollisionGrid();
+
+    //Debugging
     private static BitmapFont font = new BitmapFont(Gdx.files.internal("fonts/debug.fnt"),false);
+    private static Entity debugEntity = null;
 
     public PlayScreen(RRGame game) {
 
@@ -48,7 +51,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         loadRooms();
         setNextRoom();
         createHUDAndInputs();
-        font.getData().setScale(0.15f);
+        font.getData().setScale(3f);
 
         /* Player Creation */
         player = new Player(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, (int) RRGame.PLAYER_SIZE, RRGame.globals.pid);
@@ -209,19 +212,23 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         mouse.z = 0;
         game.playerCam.unproject(mouse);
 
-        Entity hovered = null;
         for (Entity e : localEntities){
             if ((mouse.x > e.hitBox.getX() && mouse.x < e.hitBox.getX() + e.hitBox.getWidth()) && (mouse.y > e.hitBox.getY() && mouse.y < e.hitBox.getY() + e.hitBox.getHeight())){
-                hovered = e;
+                debugEntity = e;
                 break;
             }
         }
 
-        if (hovered != null) {
-            game.debugBatch.setProjectionMatrix(game.playerCam.combined);
-            game.debugBatch.begin();
-            font.draw(game.debugBatch, "Entity: " + hovered.toString(), 5, 5);
-            game.debugBatch.end();
+        if (debugEntity != null) {
+            game.hudBatch.begin();
+            font.getData().setScale(3f);
+            font.draw(game.hudBatch, "Entity: " + debugEntity.toString(), 5, Gdx.graphics.getHeight()-30);
+            font.draw(game.hudBatch, "Repl. Type: " + debugEntity.replicationType, 5, Gdx.graphics.getHeight()-60);
+            font.getData().setScale(2.5f);
+            font.draw(game.hudBatch, "ID: " + debugEntity.id, 5, Gdx.graphics.getHeight() - 90);
+            font.draw(game.hudBatch, "Number: " + debugEntity.frame, 5, Gdx.graphics.getHeight() - 110);
+            font.draw(game.hudBatch, "Creator: " + debugEntity.pid, 5, Gdx.graphics.getHeight() - 130);
+            game.hudBatch.end();
         }
 
     }
