@@ -39,20 +39,25 @@ public class Room extends Sprite {
 
     void spawnInitialEnemies() {
         Random rnd = RRGame.globals.getRandom();
+        int numKeys = 5;
         for (int i = 0; i < numEnemies; i++) {
             float x = rnd.nextFloat(10, roomWidth-10);
             float y = rnd.nextFloat(10, roomHeight);
+            if (numKeys > 0) {
+                // Key enemies should be up towards the door
+                y = rnd.nextFloat(roomHeight-10, roomHeight);
+            }
             int choice = rnd.nextInt(3);
             Enemy e = null;
             switch (choice) {
                 case 0:
-                    e = new Swordsman(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet);
+                    e = new Swordsman(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet, numKeys-- > 0);
                     break;
                 case 1:
-                    e = new Archer(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet);
+                    e = new Archer(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet, numKeys-- > 0);
                     break;
                 case 2:
-                    e = new Bomber(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet);
+                    e = new Bomber(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet, numKeys-- > 0);
                     break;
             }
             for (int j = 0; j < difficulty; j++){

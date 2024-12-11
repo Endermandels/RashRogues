@@ -33,8 +33,8 @@ public class Bomber extends Enemy {
     private float attackTimer;
     private float attackXDir, attackYDir;
 
-    Bomber(float x, float y, float size, HashSet<Player> playerSet) {
-        super(RRGame.am.get(RRGame.RSC_BOMBER_IMG), x, y, size);
+    Bomber(float x, float y, float size, HashSet<Player> playerSet, boolean hasKey) {
+        super(RRGame.am.get(RRGame.RSC_BOMBER_IMG), x, y, size, hasKey);
         this.stats = new EnemyStats(BASE_BOMBER_HEALTH, BASE_BOMBER_DAMAGE, BASE_BOMBER_ATTACK_SPEED, BASE_BOMBER_MOVE_SPEED, this);
         setBoxPercentSize(BOMBER_HIT_BOX_PERCENT_WIDTH_SCALAR, BOMBER_HIT_BOX_PERCENT_HEIGHT_SCALAR, hitBox);
         setBoxPercentSize(BOMBER_HURT_BOX_PERCENT_WIDTH_SCALAR, BOMBER_HURT_BOX_PERCENT_HEIGHT_SCALAR, hurtBox);
