@@ -19,4 +19,5 @@ public interface Endpoint {
     void dispatchSeed(long randomSeed);
     void dispatchKillPlayer(int pid);
     void dispatchTarget(int eid, int pid);
+    void dispatchKeyPickup(int pid);
 }

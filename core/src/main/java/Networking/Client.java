@@ -159,6 +159,8 @@ public class Client implements Endpoint {
                 this.handleDestroyProjectile(msg);
             } else if (msgType == KILL_PLAYER.getvalue()){
                 this.handleKillPlayer(msg);
+            } else if (msgType == PICKUP_KEY.getvalue()){
+                this.handlePickupKey(msg);
             } else if (msgType == SET_TARGET.getvalue()){
                 this.handleSetTarget(msg);
             }
@@ -229,6 +231,11 @@ public class Client implements Endpoint {
        return;
     }
 
+    @Override
+    public void dispatchKeyPickup(int pid) {
+       return;
+    }
+
 
     /**
      * Communicate to server which keys are pressed down.
@@ -256,6 +263,14 @@ public class Client implements Endpoint {
         this.pid = (int) packet[1];
         RRGame.globals.addClient(this.pid);
         RRGame.globals.setPID(this.pid);
+    }
+
+    public void handlePickupKey(byte[] packet){
+        int playerWhoPickedUpKey = packet[1];
+        Player p = RRGame.globals.players.get(playerWhoPickedUpKey);
+        if (p != null){
+            p.setHoldingKey(true);
+        }
     }
 
     /**

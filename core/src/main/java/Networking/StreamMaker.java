@@ -113,6 +113,13 @@ public class StreamMaker {
       return stream;
    }
 
+   public static byte[] pickupKey(int pid){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.PICKUP_KEY.getvalue();
+      stream[1] = (byte) pid;
+      return stream;
+   }
+
    public static byte[] killPlayer(int pid){
       byte[] stream = new byte[128];
       stream[0] = (byte) PacketType.KILL_PLAYER.getvalue();
