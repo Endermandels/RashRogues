@@ -215,8 +215,10 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
     private void loadRooms() {
         this.rooms = new ArrayList<>();
-        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM1_IMG), 35, 301, 80, 0));
-        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM2_IMG), 35, 301, 120, 10));
+        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM1_IMG),
+                35, 301, 80, 0, game.room1Music));
+        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM2_IMG),
+                35, 301, 120, 10, game.room2Music));
         // other rooms will go below here
     }
 
@@ -232,6 +234,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             return;
         }
         else {
+            currentRoom.stopMusic();
             currentRoom = rooms.get(rooms.indexOf(currentRoom) + 1);
         }
         HashSet<Entity> tempLocalEntities = new HashSet<>();
