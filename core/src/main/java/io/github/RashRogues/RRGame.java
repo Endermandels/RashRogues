@@ -88,7 +88,6 @@ public class RRGame extends Game {
 
     @Override
     public void create() {
-
         FileHandleResolver resolver = new InternalFileHandleResolver();
         am.setLoader(FreeTypeFontGenerator.class, new FreeTypeFontGeneratorLoader(resolver));
         am.setLoader(BitmapFont.class, ".ttf", new FreetypeFontLoader(resolver));
