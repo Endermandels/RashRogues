@@ -1,7 +1,5 @@
 package io.github.RashRogues;
 
-import com.badlogic.gdx.graphics.Texture;
-
 import java.util.HashSet;
 
 public class Archer extends Enemy {
@@ -30,7 +28,7 @@ public class Archer extends Enemy {
     private float attackXDir, attackYDir;
 
     Archer(float x, float y, float size, HashSet<Player> playerSet, boolean hasKey) {
-        super(RRGame.am.get(RRGame.RSC_ARCHER_IMG), x, y, size, hasKey);
+        super(RRGame.am.get(RRGame.RSC_ARCHER_IMG), x, y, size, hasKey, AnimationActor.ARCHER);
         this.stats = new EnemyStats(BASE_ARCHER_HEALTH, BASE_ARCHER_DAMAGE, BASE_ARCHER_ATTACK_SPEED, BASE_ARCHER_MOVE_SPEED, this);
         setBoxPercentSize(ARCHER_HIT_BOX_PERCENT_WIDTH_SCALAR, ARCHER_HIT_BOX_PERCENT_HEIGHT_SCALAR, hitBox);
         setBoxPercentSize(ARCHER_HURT_BOX_PERCENT_WIDTH_SCALAR, ARCHER_HURT_BOX_PERCENT_HEIGHT_SCALAR, hurtBox);
@@ -93,7 +91,8 @@ public class Archer extends Enemy {
     }
 
     private void attack(float delta) {
-        // TODO: Play attack animation
+        // TODO: If you want aim/attack/stow to be different things at different times, that logic goes here
+        // Aim = OPEN, Stow = CLOSE
         attackTimer += delta;
         if (attackTimer > attackTimerMax) {
             // Spawn arrow
@@ -112,6 +111,7 @@ public class Archer extends Enemy {
         if (state == State.WALK){
             move();
         } else if (state == State.ATTACK) {
+            this.setCurrentAnimation(AnimationAction.ATTACK);
             attack(delta);
         }
         super.update(delta);

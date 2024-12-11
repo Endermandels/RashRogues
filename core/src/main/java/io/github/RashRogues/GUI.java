@@ -41,7 +41,7 @@ class HealthBar extends Entity{
 
     public HealthBar(Player player) {
         super(EntityAlignment.UI, RRGame.am.get(RRGame.RSC_HEALTH_BAR), 0, 0,
-        TEXTURE_WIDTH, TEXTURE_HEIGHT, Layer.FOREGROUND, ReplicationType.CLIENTSIDE, player.pid, -1);
+        TEXTURE_WIDTH, TEXTURE_HEIGHT, Layer.FOREGROUND, null, ReplicationType.CLIENTSIDE, player.pid, -1);
 
         // The Health Bar has 9 states in total, from empty to full 8 bars
         shakeY = 0;

@@ -20,7 +20,8 @@ public class PlayerList extends Entity {
     private BitmapFont font = new BitmapFont();
 
     public PlayerList(float x, float y, int width, int height){
-        super(EntityAlignment.BACKGROUND, RRGame.am.get(RRGame.RSC_GAME_LIST),x,y,width,height, Layer.BACKGROUND, ReplicationType.CLIENTSIDE,-1,-1);
+        super(EntityAlignment.BACKGROUND, RRGame.am.get(RRGame.RSC_GAME_LIST),x,y,width,height, Layer.BACKGROUND, null,
+                ReplicationType.CLIENTSIDE,-1,-1);
         this.players         = new HashSet<>();
     }
 

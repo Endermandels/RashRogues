@@ -11,9 +11,11 @@ public abstract class Enemy extends Entity {
     protected HurtBox hurtBox;
     protected boolean hasKey;
     private Sprite keySprite;
+    private float deathTimer = 0f;
 
-    Enemy(Texture texture, float x, float y, float width, float height, boolean hasKey) {
-        super(EntityAlignment.ENEMY, texture, x, y, width, height, Layer.ENEMY, ReplicationType.ENTITY_NUMBER,-1,-1);
+    Enemy(Texture texture, float x, float y, float width, float height, boolean hasKey, AnimationActor animationActor) {
+        super(EntityAlignment.ENEMY, texture, x, y, width, height, Layer.ENEMY, animationActor,
+                ReplicationType.ENTITY_NUMBER,-1,-1);
         hurtBox = new HurtBox(hitBox, this);
         this.hasKey = hasKey;
         this.keySprite = new Sprite(RRGame.am.get(RRGame.RSC_KEY_IMG, Texture.class));
@@ -22,8 +24,8 @@ public abstract class Enemy extends Entity {
         // this will obviously change based on a number of factors later
     }
 
-    Enemy(Texture texture, float x, float y, float size, boolean hasKey) {
-        this(texture, x, y, size, size, hasKey);
+    Enemy(Texture texture, float x, float y, float size, boolean hasKey, AnimationActor animationActor) {
+        this(texture, x, y, size, size, hasKey, animationActor);
     }
 
     /**
@@ -31,16 +33,19 @@ public abstract class Enemy extends Entity {
      * @param delta
      */
     public void update(float delta) {
-        if (stats.isDead()) { dropKey(); this.removeSelf(); return; }
         super.update(delta);
+        if (deathTimer >= RRGame.STANDARD_DEATH_DURATION) { this.dropKey(); this.removeSelf(); return; }
+        if (stats.isDead()) { deathTimer += delta; return; }
         hurtBox.update(delta);
         keySprite.setX(getX()+getWidth()/4);
         keySprite.setY(getY()+getHeight()/4);
     }
 
     public void dropKey(){
-        hasKey = false;
-        new Key(getX(),getY());
+        if (hasKey) {
+            hasKey = false;
+            new Key(getX(),getY());
+        }
     }
 
     /**
@@ -61,12 +66,24 @@ public abstract class Enemy extends Entity {
 
     @Override
     public void onHurt(Entity thingThatHurtMe) {
+        boolean tookDamage = false;
         if (thingThatHurtMe instanceof Projectile && thingThatHurtMe.alignment == EntityAlignment.PLAYER) {
             this.stats.takeDamage(((Projectile) thingThatHurtMe).damage);
+            tookDamage = true;
         }
         else {
             // if an enemy hitBox is what hurt us, then ignore it
             return;
+        }
+
+        if (stats.isDead()) {
+            // sound
+            this.setCurrentAnimation(AnimationAction.DIE);
+            System.out.println("dying");
+        }
+        else if (tookDamage) {
+            // sound
+            this.setCurrentAnimation(AnimationAction.HURT);
         }
     }
 

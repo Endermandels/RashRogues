@@ -12,10 +12,13 @@ public class Door extends Entity {
 
     Door(float x, float y) {
         super(EntityAlignment.BACKGROUND, RRGame.am.get(RRGame.RSC_DOOR_IMG, Texture.class),
-                x, y, RRGame.DOOR_SIZE, RRGame.DOOR_SIZE, Layer.BACKGROUND, ReplicationType.ENTITY_NUMBER,-1,-1);
+                x, y, RRGame.DOOR_SIZE, RRGame.DOOR_SIZE, Layer.BACKGROUND, AnimationActor.DOOR,
+                ReplicationType.ENTITY_NUMBER,-1,-1);
         this.setBoxPercentSize(0.6f, 0.98f, hitBox);
+        hitBox.disableLength = 0f;
         this.locked = true;
         this.playersAtDoor = new HashSet<>();
+        this.toggleAnimations(false);
     }
 
     @Override
@@ -24,11 +27,16 @@ public class Door extends Entity {
         if (!(thingHit instanceof Player)) { return; }
         Player player = (Player) thingHit;
         // if we hit a player and we're locked, then set to unlocked
-        if (player.isHoldingKey() && locked) { locked = false; } // play animation
+        if (player.isHoldingKey() && locked) {
+            locked = false;
+            this.toggleAnimations(true);
+            setCurrentAnimation(AnimationAction.OPEN);
+        }
         if (!locked) {
             playersAtDoor.add(player);
         }
         if (playersAtDoor.size() == RRGame.globals.currentNumPlayers) {
+            setCurrentAnimation(AnimationAction.CLOSE);
             this.removeSelf();
         }
 
