@@ -4,6 +4,9 @@ import Networking.NetViewer;
 import Networking.Network;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.FPSLogger;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -29,8 +32,8 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     private HashSet<Entity> entitiesToRemove;
     private PriorityQueue<Entity> renderQueue;
     private HashMap<Integer, Boolean> inputs;
-    private NetViewer netViewer;
     public static CollisionGrid collisionGrid = new CollisionGrid();
+    private static BitmapFont font = new BitmapFont(Gdx.files.internal("fonts/debug.fnt"),false);
 
     public PlayScreen(RRGame game) {
 
@@ -45,7 +48,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         loadRooms();
         setNextRoom();
         createHUDAndInputs();
-        this.netViewer = new NetViewer();
+        font.getData().setScale(0.15f);
 
         /* Player Creation */
         player = new Player(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, (int) RRGame.PLAYER_SIZE, RRGame.globals.pid);
@@ -54,8 +57,10 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         gui = new GUI(player);
 
         /* Instance Creation */
-        new Swordsman(50, 30, 10, RRGame.globals.playersSet,false);
-        new Swordsman(50, 30, 10, RRGame.globals.playersSet,false);
+        new Swordsman(20, 280, 10, RRGame.globals.playersSet,false);
+        new Archer(45, 275, 10, RRGame.globals.playersSet,false);
+        new Bomber(40, 275, 10, RRGame.globals.playersSet,false);
+        new Swordsman(50, 272, 10, RRGame.globals.playersSet,false);
 //        new Key(30, 280);
 
         /* Camera Setup */
@@ -193,9 +198,32 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                 Enemy enemy = (Enemy) e;
                 drawHurtBox(enemy.hurtBox);
             }
+
         }
         game.shapeRenderer.end();
         Gdx.gl.glDisable(GL20.GL_BLEND);
+
+        Vector3 mouse = new Vector3();
+        mouse.x = Gdx.input.getX();
+        mouse.y = Gdx.input.getY();
+        mouse.z = 0;
+        game.playerCam.unproject(mouse);
+
+        Entity hovered = null;
+        for (Entity e : localEntities){
+            if ((mouse.x > e.hitBox.getX() && mouse.x < e.hitBox.getX() + e.hitBox.getWidth()) && (mouse.y > e.hitBox.getY() && mouse.y < e.hitBox.getY() + e.hitBox.getHeight())){
+                hovered = e;
+                break;
+            }
+        }
+
+        if (hovered != null) {
+            game.debugBatch.setProjectionMatrix(game.playerCam.combined);
+            game.debugBatch.begin();
+            font.draw(game.debugBatch, "Entity: " + hovered.toString(), 5, 5);
+            game.debugBatch.end();
+        }
+
     }
 
     @Override
@@ -293,14 +321,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
             public String help(String[] cmd) {
                 return help;
-            }
-        });
-
-        hud.registerAction("netviewer", new HUDActionCommand() {
-            @Override
-            public String execute(String[] cmd) {
-                netViewer.outputToConsole();
-                return "see console.";
             }
         });
 

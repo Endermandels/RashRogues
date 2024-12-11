@@ -326,9 +326,6 @@ public class ClientListener implements Endpoint {
         if (packet[16] == 1) {
             p.useAbility(pid,frame);
         }
-        if (packet[17] == 1) {
-            p.attack(pid,frame);
-        }
     }
 
     /**

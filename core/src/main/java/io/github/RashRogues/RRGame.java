@@ -21,6 +21,7 @@ public class RRGame extends Game {
     public static AssetManager am = new AssetManager();
     SpriteBatch batch;
     SpriteBatch hudBatch;
+    SpriteBatch debugBatch;
     ShapeRenderer shapeRenderer;
     LaggingCamera playerCam;
 
@@ -121,6 +122,7 @@ public class RRGame extends Game {
 
         batch = new SpriteBatch();
         hudBatch = new SpriteBatch();
+        debugBatch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
 
         Globals.network = new Network();
