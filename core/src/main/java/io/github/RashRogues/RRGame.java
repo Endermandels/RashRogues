@@ -40,12 +40,18 @@ public class RRGame extends Game {
     public static final float KEY_SIZE = 4;
     public static final float ARROW_SIZE = 2;
     public static final float THROWING_KNIFE_SIZE = 2;
-    public static final float BOMB_EXPLOSION_DURATION = 1;
     public static final float SMOKE_BOMB_SIZE = 4;
+    public static final float SMOKE_BOMB_FUSE_DURATION = 2f;
     public static final float SMOKE_BOMB_EXPLOSION_SIZE = 10;
     public static final float SMOKE_BOMB_EXPLOSION_DURATION = 8;
+    public static final float BOMBER_BOMB_SIZE = 4;
+    public static final float BOMBER_BOMB_FUSE_DURATION = 2f;
+    public static final float BOMBER_BOMB_EXPLOSION_SIZE = 8;
+    public static final float BOMBER_BOMB_EXPLOSION_DURATION = 1;
+    public static final float SWORDSMAN_SWING_SIZE = 4;
     public static final float STANDARD_PROJECTILE_SPEED = 20;
     public static final float STANDARD_PROJECTILE_DISTANCE = 40;
+    public static final float STANDARD_MELEE_DURATION = 0.5f;
     public static final int HEALTH_POTION_HEAL_AMOUNT = 50;
 
     public static final String RSC_MONO_FONT_FILE = "Fonts/JetBrainsMono-Regular.ttf";
@@ -60,8 +66,23 @@ public class RRGame extends Game {
     public static final String RSC_THROWING_KNIFE_IMG = "DefaultImages/throwing_knife.png";
     public static final String RSC_SMOKE_BOMB_IMG = "DefaultImages/bomb.png";
     public static final String RSC_SMOKE_BOMB_EXPLOSION_IMG = "DefaultImages/explosion.png";
+    public static final String RSC_SWORDSMAN_SWING_IMG = "DefaultImages/explosion.png";
 
-    // entity animations
+    // entity animation sheets
+    public static final String RSC_ROGUE1_SHEET = "Images/rogue sprite sheet.png";
+    public static final String RSC_ROGUE2_SHEET = "Images/rogue sprite sheet 2.png";
+    public static final String RSC_ROGUE3_SHEET = "Images/rogue sprite sheet 3.png";
+    public static final String RSC_ROGUE4_SHEET = "Images/rogue sprite sheet 4.png";
+    public static final String RSC_ARCHER_SHEET = "Images/archer sprite sheet.png";
+    public static final String RSC_BOMBER_SHEET = "Images/bomber sprite sheet.png";
+    public static final String RSC_SWORDSMAN_SHEET = "Images/swordsman sprite sheet.png";
+    public static final String RSC_DRAGON_SHEET = "Images/dragon sprite sheet.png";
+    public static final String RSC_KING_SHEET = "Images/king sprite sheet.png";
+    public static final String RSC_MERCHANT_SHEET = "Images/merchant sprite sheet.png";
+    public static final String RSC_BOMBER_BOMB_SHEET = "Images/bomberBomb sprite sheet.png";
+    public static final String RSC_BOMBER_EXPLOSION_SHEET = "Images/bomberExplosion sprite sheet.png";
+    public static final String RSC_CHEST_SHEET = "Images/chest sprite sheet.png";
+    public static final String RSC_DOOR_SHEET = "Images/door sprite sheet.png";
 
     // item/background sprites
     public static final String RSC_ROOM1_IMG = "DefaultImages/room1.png";
@@ -104,6 +125,22 @@ public class RRGame extends Game {
         am.load(RSC_THROWING_KNIFE_IMG, Texture.class);
         am.load(RSC_SMOKE_BOMB_IMG, Texture.class);
         am.load(RSC_SMOKE_BOMB_EXPLOSION_IMG, Texture.class);
+        am.load(RSC_SWORDSMAN_SWING_IMG, Texture.class);
+
+        am.load(RSC_ROGUE1_SHEET, Texture.class);
+        am.load(RSC_ROGUE2_SHEET, Texture.class);
+        am.load(RSC_ROGUE3_SHEET, Texture.class);
+        am.load(RSC_ROGUE4_SHEET, Texture.class);
+        am.load(RSC_ARCHER_SHEET, Texture.class);
+        am.load(RSC_BOMBER_SHEET, Texture.class);
+        am.load(RSC_SWORDSMAN_SHEET, Texture.class);
+        am.load(RSC_DRAGON_SHEET, Texture.class);
+        am.load(RSC_KING_SHEET, Texture.class);
+        am.load(RSC_MERCHANT_SHEET, Texture.class);
+        am.load(RSC_CHEST_SHEET, Texture.class);
+        am.load(RSC_DOOR_SHEET, Texture.class);
+        am.load(RSC_BOMBER_BOMB_SHEET, Texture.class);
+        am.load(RSC_BOMBER_EXPLOSION_SHEET, Texture.class);
 
         am.load(RSC_ROOM1_IMG, Texture.class);
         am.load(RSC_ROOM2_IMG, Texture.class);

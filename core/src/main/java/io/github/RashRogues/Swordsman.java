@@ -1,7 +1,5 @@
 package io.github.RashRogues;
 
-import com.badlogic.gdx.graphics.Texture;
-
 import java.util.HashSet;
 
 public class Swordsman extends Enemy {
@@ -29,7 +27,7 @@ public class Swordsman extends Enemy {
     private float attackX, attackY;
 
     Swordsman(float x, float y, float size, HashSet<Player> playerSet, boolean hasKey) {
-        super(RRGame.am.get(RRGame.RSC_SWORDSMAN_IMG), x, y, size, hasKey);
+        super(RRGame.am.get(RRGame.RSC_SWORDSMAN_IMG), x, y, size, hasKey, AnimationActor.SWORDSMAN);
         this.stats = new EnemyStats(BASE_SWORDSMAN_HEALTH, BASE_SWORDSMAN_DAMAGE, BASE_SWORDSMAN_ATTACK_SPEED, BASE_SWORDSMAN_MOVE_SPEED, this);
         setBoxPercentSize(SWORDSMAN_HIT_BOX_PERCENT_SCALAR, SWORDSMAN_HIT_BOX_PERCENT_SCALAR, hitBox);
         setBoxPercentSize(SWORDSMAN_HURT_BOX_PERCENT_SCALAR, SWORDSMAN_HURT_BOX_PERCENT_SCALAR, hurtBox);
@@ -80,15 +78,10 @@ public class Swordsman extends Enemy {
     }
 
     private void attack(float delta) {
-        // TODO: Play attack animation
         attackTimer += delta;
         if (attackTimer > attackTimerMax) {
             // Create melee attack
-            new MeleeAttack(EntityAlignment.ENEMY,
-                    RRGame.am.get(RRGame.RSC_SMOKE_BOMB_EXPLOSION_IMG),
-                    attackX-5, attackY-3,
-                    RRGame.SMOKE_BOMB_EXPLOSION_SIZE, RRGame.SMOKE_BOMB_EXPLOSION_SIZE,
-                    ATTACK_DAMAGE, ATTACK_DURATION);
+            new SwordsmanSwing(attackX-5, attackY-3, ATTACK_DAMAGE);
             attackTimer = 0f;
             state = State.WALK;
         }
@@ -102,6 +95,7 @@ public class Swordsman extends Enemy {
         if (state == State.WALK){
             move();
         } else if (state == State.ATTACK) {
+            this.setCurrentAnimation(AnimationAction.ATTACK);
             attack(delta);
         }
         super.update(delta);

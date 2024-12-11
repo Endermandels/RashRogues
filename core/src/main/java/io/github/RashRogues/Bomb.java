@@ -15,8 +15,10 @@ public class Bomb extends Entity {
     private float speed; // not useful right now, but I've learned my lesson from needing to refactor Projectile
 
     Bomb(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
-         float xDirection, float yDirection, float distance, float fuseDuration, Projectile explosion, float speed) {
-        super(alignment, texture, x, y, width, height, Layer.PROJECTILE, ReplicationType.CLIENTSIDE, -1, -1);
+         float xDirection, float yDirection, float distance, float fuseDuration, Projectile explosion, float speed,
+         AnimationActor animationActor) {
+        super(alignment, texture, x, y, width, height, Layer.PROJECTILE, animationActor,
+                ReplicationType.CLIENTSIDE, -1, -1);
         this.explosion = explosion;
         this.explosion.setPosition(-100, -100); // out of sight out of mind
         Vector2 direction = new Vector2(xDirection, yDirection).nor();
@@ -39,10 +41,10 @@ public class Bomb extends Entity {
             yVelocity = 0;
             if (!fuseLit) {
                 fuseLit = true;
-                // play fuseLit animation for fuseDuration amount of time
             }
         }
         if (fuseLit) {
+            this.setCurrentAnimation(AnimationAction.ATTACK);
             fuseTimer += delta;
             if (fuseTimer >= fuseDuration) {
 
