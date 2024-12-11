@@ -27,7 +27,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     private HashSet<Entity> entitiesToRemove;
     private PriorityQueue<Entity> renderQueue;
     private HashMap<Integer, Boolean> inputs;
-    private NetViewer netViewer;
     public static CollisionGrid collisionGrid = new CollisionGrid();
 
     public PlayScreen(RRGame game) {
@@ -43,7 +42,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         loadRooms();
         setNextRoom();
         createHUDAndInputs();
-        this.netViewer = new NetViewer();
 
         /* Player Creation */
         player = new Player(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, (int) RRGame.PLAYER_SIZE, RRGame.globals.pid);
@@ -296,7 +294,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         hud.registerAction("netviewer", new HUDActionCommand() {
             @Override
             public String execute(String[] cmd) {
-                netViewer.outputToConsole();
                 return "see console.";
             }
         });

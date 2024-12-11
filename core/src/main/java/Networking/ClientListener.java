@@ -43,15 +43,14 @@ public class ClientListener implements Endpoint {
         this.inputQueues = new LinkedHashMap<>();
 
         try {
+            /* Send Welcome Packet To New Client */
             this.dispatchWelcome(this.client_pid);
+
+            /* Send Our Seed To The New Client */
             this.dispatchSeed(RRGame.globals.getRandomSeed());
-            String[] strings = new String[3];
-            strings[0] = "godmode";
-            strings[1] = "ghost";
-            strings[2] = "fly";
-            this.dispatchCommand(strings);
             this.listen(in);
             this.speak(out);
+
         } catch (IOException | InterruptedException e) {
             System.out.println(">>! Connection with client #" + Integer.toString(this.client_pid) + " closed.");
         }
