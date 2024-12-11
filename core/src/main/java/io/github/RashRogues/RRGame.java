@@ -7,6 +7,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.FileHandleResolver;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -100,6 +101,10 @@ public class RRGame extends Game {
     // sounds
 
     // music
+    public static final String RSC_ROOM1_MUSIC = "SFX/on the road to the 80s.mp3";
+    public static final String RSC_ROOM2_MUSIC = "SFX/Stealth Surge.mp3";
+    public Music room1Music;
+    public Music room2Music;
 
     // ui
     public static final String RSC_BTN_HOST = "Buttons/host.png";
@@ -157,6 +162,14 @@ public class RRGame extends Game {
         am.load(RSC_GAME_LIST, Texture.class);
         am.load(RSC_GAME_LIST_ITEM, Texture.class);
         am.load(RSC_HEALTH_BAR, Texture.class);
+
+        room1Music = Gdx.audio.newMusic(Gdx.files.internal(RSC_ROOM1_MUSIC));
+        room1Music.setLooping(true);
+        room1Music.setVolume(0.05f);
+
+        room2Music = Gdx.audio.newMusic(Gdx.files.internal(RSC_ROOM2_MUSIC));
+        room2Music.setLooping(true);
+        room2Music.setVolume(0.05f);
 
         batch = new SpriteBatch();
         hudBatch = new SpriteBatch();

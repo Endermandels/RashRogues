@@ -1,5 +1,6 @@
 package io.github.RashRogues;
 
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 
@@ -14,13 +15,15 @@ public class Room extends Sprite {
 
     protected int numEnemies;
     protected int difficulty;
+    protected Music music;
     // enemies would likely be spawned in here
     // this would include the one that drops the key.
 
-    Room(Texture texture, int doorPositionX, int doorPositionY, int numEnemies, int difficulty) {
+    Room(Texture texture, int doorPositionX, int doorPositionY, int numEnemies, int difficulty, Music music) {
         super(texture);
         this.doorPositionX = doorPositionX;
         this.doorPositionY = doorPositionY;
+        this.music = music;
         /*
         the logic below scales whatever the size of the map is to be 500m wide and
         whatever the proportional height is to that based on the texture.
@@ -64,5 +67,10 @@ public class Room extends Sprite {
                 e.levelUpEnemy();
             }
         }
+        music.play();
+    }
+
+    void stopMusic() {
+        music.stop();
     }
 }
