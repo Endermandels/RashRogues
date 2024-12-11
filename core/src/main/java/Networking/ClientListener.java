@@ -43,10 +43,14 @@ public class ClientListener implements Endpoint {
         this.inputQueues = new LinkedHashMap<>();
 
         try {
+            /* Send Welcome Packet To New Client */
             this.dispatchWelcome(this.client_pid);
+
+            /* Send Our Seed To The New Client */
             this.dispatchSeed(RRGame.globals.getRandomSeed());
             this.listen(in);
             this.speak(out);
+
         } catch (IOException | InterruptedException e) {
             System.out.println(">>! Connection with client #" + Integer.toString(this.client_pid) + " closed.");
         }
@@ -233,6 +237,11 @@ public class ClientListener implements Endpoint {
     @Override
     public void dispatchKillPlayer(int pid) {
        this.outgoingMessages.add(StreamMaker.killPlayer(pid));
+    }
+
+    @Override
+    public void dispatchCommand(String[] cmd) {
+       this.outgoingMessages.add(StreamMaker.command(cmd));
     }
 
     /**

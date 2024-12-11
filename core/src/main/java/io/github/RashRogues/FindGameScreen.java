@@ -83,6 +83,11 @@ public class FindGameScreen extends ScreenAdapter implements RRScreen {
         return;
     }
 
+    @Override
+    public void executeCommand(String[] cmd) {
+       return;
+    }
+
     public void dispose(){
         this.solicitee.dispose();
     }
