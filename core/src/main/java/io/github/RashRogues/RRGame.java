@@ -32,7 +32,7 @@ public class RRGame extends Game {
     // constants
     public static final float WORLD_WIDTH = 80;
     public static final int PLAYER_SPAWN_X = 40;
-    public static final int PLAYER_SPAWN_Y = 30;
+    public static final int PLAYER_SPAWN_Y = 290;
     public static final float CAMERA_SIZE = 30;
     public static final float PLAYER_SIZE = 2;
     public static final float STANDARD_ENEMY_SIZE = 5;
@@ -52,6 +52,7 @@ public class RRGame extends Game {
     public static final float STANDARD_PROJECTILE_SPEED = 20;
     public static final float STANDARD_PROJECTILE_DISTANCE = 40;
     public static final float STANDARD_MELEE_DURATION = 0.5f;
+    public static final float STANDARD_DEATH_DURATION = 0.7f;
     public static final int HEALTH_POTION_HEAL_AMOUNT = 50;
 
     public static final String RSC_MONO_FONT_FILE = "Fonts/JetBrainsMono-Regular.ttf";

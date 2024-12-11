@@ -11,6 +11,7 @@ public abstract class Enemy extends Entity {
     protected HurtBox hurtBox;
     protected boolean hasKey;
     private Sprite keySprite;
+    private float deathTimer = 0f;
 
     Enemy(Texture texture, float x, float y, float width, float height, boolean hasKey, AnimationActor animationActor) {
         super(EntityAlignment.ENEMY, texture, x, y, width, height, Layer.ENEMY, animationActor,
@@ -32,8 +33,9 @@ public abstract class Enemy extends Entity {
      * @param delta
      */
     public void update(float delta) {
-        if (stats.isDead() && this.isAnimationFinished()) { dropKey(); this.removeSelf(); return; }
         super.update(delta);
+        if (deathTimer >= RRGame.STANDARD_DEATH_DURATION) { this.dropKey(); this.removeSelf(); return; }
+        if (stats.isDead()) { deathTimer += delta; return; }
         hurtBox.update(delta);
         keySprite.setX(getX()+getWidth()/4);
         keySprite.setY(getY()+getHeight()/4);
@@ -75,6 +77,7 @@ public abstract class Enemy extends Entity {
         if (stats.isDead()) {
             // sound
             this.setCurrentAnimation(AnimationAction.DIE);
+            System.out.println("dying");
         }
         else if (tookDamage) {
             // sound

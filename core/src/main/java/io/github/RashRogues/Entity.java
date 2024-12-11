@@ -34,6 +34,7 @@ public abstract class Entity extends Sprite {
     private AnimationInfo currentAnimationInfo;
     private AnimationAction currentAnimationAction;
     private float animationTimer;
+    private boolean animationsActive;
 
     // Used For Networking
     public int id     = -1;
@@ -74,6 +75,7 @@ public abstract class Entity extends Sprite {
         this.activeEffects = new HashMap<Effect, Float>();
         this.replicationType = replicationType;
         RRGame.globals.registerEntity(this, replicationType, creatorPID, number);
+        this.toggleAnimations(true);
         if (animationActor == null) {
             // this is redundant but necessary unless we want a whole extra layer of nested if loops!
             this.animations = null;
@@ -109,12 +111,10 @@ public abstract class Entity extends Sprite {
      */
     public void update(float delta) {
 
-
-
         // change animation state if necessary
-        // if an animation wasn't set up or has no default, there will just be the default static sprite image
-        animationTimer += delta;
-        if (animations != null && (this.animations.get(AnimationAction.DEFAULT) != null)) {
+        // if an animation wasn't set up and animations aren't active, there will just be the default static sprite image
+        if (animations != null && animationsActive) {
+            animationTimer += delta;
             if (xVelocity != 0 || yVelocity != 0) {
                 setCurrentAnimation(AnimationAction.MOVE);
             }
@@ -124,16 +124,7 @@ public abstract class Entity extends Sprite {
             setRegion(currentAnimationInfo.getCurrentFrame(animationTimer));
         }
         else {
-            if (currentAnimationInfo != null) {
-                setRegion(currentAnimationInfo.getCurrentFrame(animationTimer));
-                if (currentAnimationInfo.isAnimationFinished(animationTimer)) {
-                    this.animationTimer = 0f;
-                }
-            }
-            else {
-                setTexture(getTexture());
-
-            }
+            setRegion(getTexture());
         }
 
 
@@ -169,8 +160,8 @@ public abstract class Entity extends Sprite {
 
     protected boolean setCurrentAnimation(AnimationAction action) {
         // if somehow we've asked it to do something that doesn't exist, then don't crash
-        if (this.animations == null || !this.animations.containsKey(action)) {
-            //System.out.println("That animation doesn't exist");
+        // additionally, death animations take priority over everything
+        if (this.animations == null || !this.animations.containsKey(action) || this.currentAnimationAction == AnimationAction.DIE) {
             return false;
         }
         // move only has priority over the idle animation, no others
@@ -185,6 +176,10 @@ public abstract class Entity extends Sprite {
             return true;
         }
         return false;
+    }
+
+    protected void toggleAnimations(boolean onOrOff) {
+        this.animationsActive = onOrOff;
     }
 
     protected boolean isAnimationFinished() { return this.currentAnimationInfo.isAnimationFinished(animationTimer); }

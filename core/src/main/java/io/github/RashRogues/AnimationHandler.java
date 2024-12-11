@@ -42,8 +42,10 @@ public class AnimationHandler {
      * All individual entities need to do is call entity's functions for changing the current animation.
      * Every AnimationActor (entity that uses animation) has particular AnimationActions, but not all of them.
      * Every AnimationActor has a Default AnimationAction that is generally assigned to Idle.
-     * Some items, like doors, do not have a Default AnimationAction; it's set to null. This is because Entity will
-     * check if it has a Default AnimationAction-- if not, it will just display the sprite.
+     * Some items, like doors, do not have an Idle AnimationAction; indeed, their 'Idle' might be considered a static image.
+     * In these cases, the Default Animation is set to a single frame. Usually the 'activated' state, so that an animation
+     * can be triggered to open, Default Animation is of the thing opened, and then after the close animation, animations
+     * can be turned off and will revert back to whatever the sprite used to initialize them was.
      * */
 
     AnimationHandler() {
@@ -66,7 +68,7 @@ public class AnimationHandler {
         animations.get(AnimationActor.ARCHER).put(AnimationAction.OPEN, new AnimationInfo(archerFrames, 2, 3, 0.1f));
         animations.get(AnimationActor.ARCHER).put(AnimationAction.ATTACK, new AnimationInfo(archerFrames, 3, 14, 0.7f));
         animations.get(AnimationActor.ARCHER).put(AnimationAction.CLOSE, new AnimationInfo(archerFrames, 4, 3, 0.1f));
-        animations.get(AnimationActor.ARCHER).put(AnimationAction.DIE, new AnimationInfo(archerFrames, 5, 8, 1f));
+        animations.get(AnimationActor.ARCHER).put(AnimationAction.DIE, new AnimationInfo(archerFrames, 5, 8, RRGame.STANDARD_DEATH_DURATION));
         animations.get(AnimationActor.ARCHER).put(AnimationAction.DEFAULT, animations.get(AnimationActor.ARCHER).get(AnimationAction.IDLE));
 
         // bomber
@@ -78,7 +80,7 @@ public class AnimationHandler {
         animations.get(AnimationActor.BOMBER).put(AnimationAction.IDLE, new AnimationInfo(bomberFrames, 0, 8, 0.2f));
         animations.get(AnimationActor.BOMBER).put(AnimationAction.MOVE, new AnimationInfo(bomberFrames, 1, 9, 0.5f));
         animations.get(AnimationActor.BOMBER).put(AnimationAction.ATTACK, new AnimationInfo(bomberFrames, 2, 19, 1.2f));
-        animations.get(AnimationActor.BOMBER).put(AnimationAction.DIE, new AnimationInfo(bomberFrames, 3, 4, 1f));
+        animations.get(AnimationActor.BOMBER).put(AnimationAction.DIE, new AnimationInfo(bomberFrames, 3, 4, RRGame.STANDARD_DEATH_DURATION));
         animations.get(AnimationActor.BOMBER).put(AnimationAction.DEFAULT, animations.get(AnimationActor.BOMBER).get(AnimationAction.IDLE));
 
         // swordsman
@@ -90,7 +92,7 @@ public class AnimationHandler {
         animations.get(AnimationActor.SWORDSMAN).put(AnimationAction.IDLE, new AnimationInfo(swordsmanFrames, 0, 10, 0.2f));
         animations.get(AnimationActor.SWORDSMAN).put(AnimationAction.MOVE, new AnimationInfo(swordsmanFrames, 1, 16, 1f));
         animations.get(AnimationActor.SWORDSMAN).put(AnimationAction.ATTACK, new AnimationInfo(swordsmanFrames, 2, 14, 1f));
-        animations.get(AnimationActor.SWORDSMAN).put(AnimationAction.DIE, new AnimationInfo(swordsmanFrames, 3, 4, 1f));
+        animations.get(AnimationActor.SWORDSMAN).put(AnimationAction.DIE, new AnimationInfo(swordsmanFrames, 3, 4, RRGame.STANDARD_DEATH_DURATION));
         animations.get(AnimationActor.SWORDSMAN).put(AnimationAction.DEFAULT, animations.get(AnimationActor.SWORDSMAN).get(AnimationAction.IDLE));
 
         // dragon
@@ -101,7 +103,7 @@ public class AnimationHandler {
         animations.put(AnimationActor.DRAGON, new HashMap<AnimationAction, AnimationInfo>(DRAGON_NUM_ROWS));
         animations.get(AnimationActor.DRAGON).put(AnimationAction.MOVE, new AnimationInfo(dragonFrames, 0, 4, 0.1f));
         animations.get(AnimationActor.DRAGON).put(AnimationAction.ATTACK, new AnimationInfo(dragonFrames, 1, 13, 0.6f));
-        animations.get(AnimationActor.DRAGON).put(AnimationAction.DIE, new AnimationInfo(dragonFrames, 2, 4, 1f));
+        animations.get(AnimationActor.DRAGON).put(AnimationAction.DIE, new AnimationInfo(dragonFrames, 2, 4, RRGame.STANDARD_DEATH_DURATION));
         animations.get(AnimationActor.DRAGON).put(AnimationAction.DEFAULT, animations.get(AnimationActor.DRAGON).get(AnimationAction.MOVE));
 
 
@@ -114,7 +116,7 @@ public class AnimationHandler {
         animations.get(AnimationActor.KING).put(AnimationAction.CLOSE, new AnimationInfo(kingFrames, 0, 5, 0.1f));
         animations.get(AnimationActor.KING).put(AnimationAction.OPEN, new AnimationInfo(kingFrames, 1, 3, 0.6f));
         animations.get(AnimationActor.KING).put(AnimationAction.IDLE, new AnimationInfo(kingFrames, 2, 4, 1f));
-        animations.get(AnimationActor.KING).put(AnimationAction.DIE, new AnimationInfo(kingFrames, 3, 7, 1f));
+        animations.get(AnimationActor.KING).put(AnimationAction.DIE, new AnimationInfo(kingFrames, 3, 7, RRGame.STANDARD_DEATH_DURATION));
         animations.get(AnimationActor.KING).put(AnimationAction.DEFAULT, animations.get(AnimationActor.KING).get(AnimationAction.IDLE));
 
 
@@ -125,7 +127,7 @@ public class AnimationHandler {
                 bomberBombSheet.getHeight() / BOMBER_BOMB_NUM_ROWS);
         animations.put(AnimationActor.BOMBER_BOMB, new HashMap<AnimationAction, AnimationInfo>(BOMBER_BOMB_NUM_ROWS));
         animations.get(AnimationActor.BOMBER_BOMB).put(AnimationAction.ATTACK, new AnimationInfo(bomberBombFrames, 0, 3, 0.2f));
-        // no default
+        animations.get(AnimationActor.BOMBER_BOMB).put(AnimationAction.DEFAULT, new AnimationInfo(bomberBombFrames, 0, 1, 0.1f));
 
         // bomber explosion
         Texture bomberExplosionSheet = new Texture(RRGame.RSC_BOMBER_EXPLOSION_SHEET);
@@ -134,7 +136,7 @@ public class AnimationHandler {
                 bomberExplosionSheet.getHeight() / BOMBER_EXPLOSION_NUM_ROWS);
         animations.put(AnimationActor.BOMBER_EXPLOSION, new HashMap<AnimationAction, AnimationInfo>(BOMBER_EXPLOSION_NUM_ROWS));
         animations.get(AnimationActor.BOMBER_EXPLOSION).put(AnimationAction.ATTACK, new AnimationInfo(bomberExplosionFrames, 0, 4, RRGame.BOMBER_BOMB_EXPLOSION_DURATION));
-        // no default
+        animations.get(AnimationActor.BOMBER_EXPLOSION).put(AnimationAction.DEFAULT, new AnimationInfo(bomberExplosionFrames, 0, 1, 0.1f));
 
         // chest
         Texture chestSheet = new Texture(RRGame.RSC_CHEST_SHEET);
@@ -142,9 +144,9 @@ public class AnimationHandler {
                 chestSheet.getWidth() / CHEST_NUM_COLS,
                 chestSheet.getHeight() / CHEST_NUM_ROWS);
         animations.put(AnimationActor.CHEST, new HashMap<AnimationAction, AnimationInfo>(CHEST_NUM_ROWS));
-        animations.get(AnimationActor.CHEST).put(AnimationAction.OPEN, new AnimationInfo(chestFrames, 0, 3, 0.2f));
-        animations.get(AnimationActor.CHEST).put(AnimationAction.CLOSE, new AnimationInfo(chestFrames, 0, 3, 0.2f, true));
-        // no default
+        animations.get(AnimationActor.CHEST).put(AnimationAction.OPEN, new AnimationInfo(chestFrames, 0, 5, 0.2f));
+        animations.get(AnimationActor.CHEST).put(AnimationAction.CLOSE, new AnimationInfo(chestFrames, 0, 5, 0.2f, true));
+        animations.get(AnimationActor.CHEST).put(AnimationAction.DEFAULT, new AnimationInfo(chestFrames, 0, 1, 0.2f));
 
         // door
         Texture doorSheet = new Texture(RRGame.RSC_DOOR_SHEET);
@@ -152,9 +154,9 @@ public class AnimationHandler {
                 doorSheet.getWidth() / DOOR_NUM_COLS,
                 doorSheet.getHeight() / DOOR_NUM_ROWS);
         animations.put(AnimationActor.DOOR, new HashMap<AnimationAction, AnimationInfo>(DOOR_NUM_ROWS));
-        animations.get(AnimationActor.DOOR).put(AnimationAction.OPEN, new AnimationInfo(doorFrames, 0, 3, 0.2f));
-        animations.get(AnimationActor.DOOR).put(AnimationAction.CLOSE, new AnimationInfo(doorFrames, 0, 3, 0.2f, true));
-        // no default
+        animations.get(AnimationActor.DOOR).put(AnimationAction.OPEN, new AnimationInfo(doorFrames, 0, 6, 0.8f));
+        animations.get(AnimationActor.DOOR).put(AnimationAction.CLOSE, new AnimationInfo(doorFrames, 0, 6, 0.8f, true));
+        animations.get(AnimationActor.DOOR).put(AnimationAction.DEFAULT, new AnimationInfo(doorFrames, 0, 1, 0.1f, 5));
 
         // merchant
         Texture merchantSheet = new Texture(RRGame.RSC_MERCHANT_SHEET);
@@ -186,7 +188,7 @@ public class AnimationHandler {
         animations.get(playerNum).put(AnimationAction.MOVE, new AnimationInfo(playerFrames, 1, 18, 0.5f));
         animations.get(playerNum).put(AnimationAction.ATTACK, new AnimationInfo(playerFrames, 2, 17, 0.1f));
         animations.get(playerNum).put(AnimationAction.HURT, new AnimationInfo(playerFrames, 3, 4, 0.1f));
-        animations.get(playerNum).put(AnimationAction.DIE, new AnimationInfo(playerFrames, 4, 14, 0.8f));
+        animations.get(playerNum).put(AnimationAction.DIE, new AnimationInfo(playerFrames, 4, 14, RRGame.STANDARD_DEATH_DURATION));
         animations.get(playerNum).put(AnimationAction.DEFAULT, animations.get(playerNum).get(AnimationAction.IDLE));
 
     }
@@ -210,6 +212,11 @@ class AnimationInfo {
         this(totalFrames, row, numFrames, totalTime, false);
     }
 
+    public AnimationInfo(TextureRegion[][] totalFrames, int row, int numFrames, float totalTime, int frameNum) {
+        this.animation = new Animation<TextureRegion>(totalTime/numFrames, setSingleFrameTextureRegion(
+                totalFrames, row, numFrames, frameNum));
+    }
+
     private TextureRegion[] setTextureRegion(TextureRegion[][] totalFrames, int row, int numFramesInRow) {
         TextureRegion[] animationFrames = new TextureRegion[numFramesInRow];
         int index = 0;
@@ -225,6 +232,12 @@ class AnimationInfo {
         for (int i = numFramesInRow-1; i > -1; i--) {
             animationFrames[index++] = totalFrames[row][i];
         }
+        return animationFrames;
+    }
+
+    private TextureRegion[] setSingleFrameTextureRegion(TextureRegion[][] totalFrames, int row, int numFramesInRow, int frameNum) {
+        TextureRegion[] animationFrames = new TextureRegion[numFramesInRow];
+        animationFrames[0] = totalFrames[row][frameNum];
         return animationFrames;
     }
 
