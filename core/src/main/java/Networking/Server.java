@@ -144,6 +144,12 @@ public class Server implements Endpoint{
         }
     }
 
+    public void dispatchTarget(int eid, int pid){
+        for (ClientListener c : clients){
+            c.dispatchTarget(eid,pid);
+        }
+    }
+
     /**
      * Instructs all connections to send farwell messages and close.
      * Effectively ends the multiplayer game.

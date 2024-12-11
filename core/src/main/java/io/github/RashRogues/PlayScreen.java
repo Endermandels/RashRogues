@@ -54,7 +54,8 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         gui = new GUI(player);
 
         /* Instance Creation */
-//        new Swordsman(50, 30, 10, RRGame.globals.playersSet);
+        new Swordsman(50, 30, 10, RRGame.globals.playersSet,false);
+        new Swordsman(50, 30, 10, RRGame.globals.playersSet,false);
 //        new Key(30, 280);
 
         /* Camera Setup */
@@ -215,7 +216,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
     private void loadRooms() {
         this.rooms = new ArrayList<>();
-        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM1_IMG), 35, 301, 80, 0));
+        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM1_IMG), 35, 301, 0, 0));
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM2_IMG), 35, 301, 120, 10));
         // other rooms will go below here
     }

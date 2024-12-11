@@ -4,10 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.net.Socket;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.Queue;
-import io.github.RashRogues.Entity;
-import io.github.RashRogues.PlayScreen;
-import io.github.RashRogues.Player;
-import io.github.RashRogues.RRGame;
+import io.github.RashRogues.*;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -162,6 +159,8 @@ public class Client implements Endpoint {
                 this.handleDestroyProjectile(msg);
             } else if (msgType == KILL_PLAYER.getvalue()){
                 this.handleKillPlayer(msg);
+            } else if (msgType == SET_TARGET.getvalue()){
+                this.handleSetTarget(msg);
             }
         }
 
@@ -225,6 +224,11 @@ public class Client implements Endpoint {
        return;
     }
 
+    @Override
+    public void dispatchTarget(int eid, int pid) {
+       return;
+    }
+
 
     /**
      * Communicate to server which keys are pressed down.
@@ -260,8 +264,30 @@ public class Client implements Endpoint {
      */
     public void handleKillPlayer(byte[] packet){
         int pidToKill = packet[1];
-        Entity playerEntity = (Entity) RRGame.globals.players.get(pidToKill);
-        RRGame.globals.deregisterEntity(playerEntity);
+        Player player = RRGame.globals.players.get(pidToKill);
+        player.stats.kill();
+
+        // todo: In the future we will remove this.
+        // Instead of deregistering it directly, we'll let the death anim play out for this player, and the client
+        // deregister the player entity once the animation is done.
+        // however this cannot be done right now because we need animations merged in first.
+        RRGame.globals.deregisterEntity((Entity) player);
+    }
+
+    public void handleSetTarget(byte[] packet){
+        int pid = packet[1];
+        byte[] eidBytes = new byte[4];
+        System.arraycopy(packet,2,eidBytes,0,4);
+        int eid = StreamMaker.bytesToInt(eidBytes);
+        Entity e = RRGame.globals.deterministicReplicatedEntities.get(eid);
+        Player p = RRGame.globals.players.get(pid);
+
+        if (e != null && e instanceof Enemy){
+            ((Enemy) e).setTarget(p);
+        }else{
+            System.out.println(">>! Warning: Unable to match entity with Server!");
+        }
+
     }
 
     /**

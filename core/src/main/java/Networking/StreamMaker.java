@@ -201,6 +201,28 @@ public class StreamMaker {
       return stream;
    }
 
+   /**
+    * Specify the target for an NPC
+    * @param pid Player whom NPC should target
+    * @param eid ID of NPC
+    * @return
+    */
+   public static byte[] target(int pid, int eid){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.SET_TARGET.getvalue();
+      stream[1] = (byte) pid;
+      byte[] eidBytes = intToBytes(eid);
+      for (int i = 0; i < eidBytes.length; i++){
+         stream[2+i] = eidBytes[i];
+      }
+      return stream;
+   }
+
+   /**
+    * Specify the seed to use for random operations.
+    * @param seed
+    * @return
+    */
    public static byte[] seed(long seed){
       byte[] stream = new byte[128];
       stream[0] = (byte) PacketType.RANDOM_SEED.getvalue();

@@ -228,6 +228,16 @@ public class ClientListener implements Endpoint {
     }
 
     /**
+     * Communicate to the client which player the npc with eid should target.
+     * @param eid
+     * @param pid
+     */
+    @Override
+    public void dispatchTarget(int eid, int pid) {
+       this.outgoingMessages.add(StreamMaker.target(pid,eid));
+    }
+
+    /**
      * Communicate to the client to destroy an entity.
      */
     public void dispatchDestroyEntity(int eid) {
@@ -277,12 +287,15 @@ public class ClientListener implements Endpoint {
     public void handleKeys(byte[] packet){
         this.server.relay(packet,this.client_pid);
 
+        int pid = packet[1];
+        Player p = RRGame.globals.players.get(pid);
+        if (p == null){
+            return;
+        }
+
         byte[] longBytes = new byte[8];
         System.arraycopy(packet,2, longBytes,0,8);
         long frame = StreamMaker.bytesToLong(longBytes);
-
-        int pid = packet[1];
-        Player p = RRGame.globals.players.get(pid);
 
         if (packet[10] == 1) {
             p.moveUp();

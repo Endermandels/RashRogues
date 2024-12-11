@@ -108,6 +108,11 @@ public class Bomber extends Enemy {
         }
     }
 
+    @Override
+    public void setTarget(Player player) {
+       return;
+    }
+
     /**
      * Ran every frame.
      * @param delta

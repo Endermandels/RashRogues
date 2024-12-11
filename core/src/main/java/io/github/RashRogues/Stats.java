@@ -45,4 +45,9 @@ public class Stats {
 
     public boolean isDead() { return this.dead; }
 
+    public void kill(){
+        this.health = 0;
+        this.dead   = true;
+    }
+
 }

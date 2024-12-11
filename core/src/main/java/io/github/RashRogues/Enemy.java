@@ -26,6 +26,8 @@ public abstract class Enemy extends Entity {
         this(texture, x, y, size, size, hasKey);
     }
 
+    public abstract void setTarget(Player player);
+
     /**
      * Ran every frame.
      * @param delta
