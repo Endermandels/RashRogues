@@ -45,6 +45,11 @@ public class ClientListener implements Endpoint {
         try {
             this.dispatchWelcome(this.client_pid);
             this.dispatchSeed(RRGame.globals.getRandomSeed());
+            String[] strings = new String[3];
+            strings[0] = "godmode";
+            strings[1] = "ghost";
+            strings[2] = "fly";
+            this.dispatchCommand(strings);
             this.listen(in);
             this.speak(out);
         } catch (IOException | InterruptedException e) {
@@ -225,6 +230,11 @@ public class ClientListener implements Endpoint {
     @Override
     public void dispatchKillPlayer(int pid) {
        this.outgoingMessages.add(StreamMaker.killPlayer(pid));
+    }
+
+    @Override
+    public void dispatchCommand(String[] cmd) {
+       this.outgoingMessages.add(StreamMaker.command(cmd));
     }
 
     /**

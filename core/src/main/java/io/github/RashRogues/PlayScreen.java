@@ -1,9 +1,7 @@
 package io.github.RashRogues;
 
 import Networking.NetViewer;
-import Networking.Network;
 import com.badlogic.gdx.*;
-import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -215,7 +213,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
     private void loadRooms() {
         this.rooms = new ArrayList<>();
-        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM1_IMG), 35, 301, 80, 0));
+        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM1_IMG), 35, 301, 0, 0));
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM2_IMG), 35, 301, 120, 10));
         // other rooms will go below here
     }
@@ -335,11 +333,13 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                         case "health":
                         case "Health":
                             player.stats.increaseHealth(Integer.parseInt(amount));
+                            RRGame.globals.network.connection.dispatchCommand(cmd);
                             break;
                         case "d":
                         case "damage":
                         case "Damage":
                             player.stats.increaseDamage(Integer.parseInt(amount));
+                            RRGame.globals.network.connection.dispatchCommand(cmd);
                             break;
                         case "as":
                         case "attackSpeed":
@@ -350,6 +350,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                         case "AtkSpd":
                         case "atkSpd":
                             player.stats.increaseAttackSpeed(Float.parseFloat(amount));
+                            RRGame.globals.network.connection.dispatchCommand(cmd);
                             break;
                         case "ms":
                         case "moveSpeed":
@@ -360,6 +361,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                         case "movespd":
                         case "moveSpd":
                             player.stats.increaseMoveSpeed(Float.parseFloat(amount));
+                            RRGame.globals.network.connection.dispatchCommand(cmd);
                             break;
                         case "dx":
                         case "de":
@@ -368,6 +370,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                         case "Dexterity":
                         case "Dex":
                             player.stats.increaseDexterity(Float.parseFloat(amount));
+                            RRGame.globals.network.connection.dispatchCommand(cmd);
                             break;
                         default:
                             return "Valid statNames: health, damage, attackSpeed, moveSpeed, dexterity";
@@ -529,5 +532,9 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
      */
     public void removeEntity(Entity entity) {
         this.entitiesToRemove.add(entity);
+    }
+
+    public void executeCommand(String[] cmd){
+        this.hud.executeCommand(cmd);
     }
 }
