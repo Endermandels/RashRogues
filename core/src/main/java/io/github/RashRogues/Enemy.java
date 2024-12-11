@@ -42,8 +42,10 @@ public abstract class Enemy extends Entity {
     }
 
     public void dropKey(){
-        hasKey = false;
-        new Key(getX(),getY());
+        if (hasKey) {
+            hasKey = false;
+            new Key(getX(),getY());
+        }
     }
 
     /**
