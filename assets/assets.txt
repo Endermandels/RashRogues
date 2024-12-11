@@ -30,6 +30,7 @@ DefaultImages/throwing_knife.png
 Fonts/JetBrainsMono-Regular.ttf
 Fonts/debug.fnt
 Fonts/debug.png
+GUI/health_bar.png
 Images/animations.md
 Images/archer sprite sheet.png
 Images/bomb sprite sheet.png
