@@ -19,4 +19,5 @@ public interface Endpoint {
     public void dispatchSeed(long randomSeed);
     public void dispatchKillPlayer(int pid);
     public void dispatchCommand(String[] cmd);
+    void dispatchKeyPickup(int pid);
 }
