@@ -7,15 +7,17 @@ public class Stats {
     private int damage;
     private float attackSpeed;
     private float moveSpeed;
+    private float retreatSpeed;
     private Entity parent;
     private boolean dead;
 
-    Stats(int health, int damage, float attackSpeed, float moveSpeed, Entity parent) {
+    Stats(int health, int damage, float attackSpeed, float moveSpeed, float retreatSpeed, Entity parent) {
         this.maxHealth = health;
         this.health = health;
         this.damage = damage;
         this.attackSpeed = attackSpeed;
         this.moveSpeed = moveSpeed;
+        this.retreatSpeed = retreatSpeed;
         this.parent = parent;
         this.dead = false;
     }
@@ -27,7 +29,9 @@ public class Stats {
     public float getAttackSpeed() { return attackSpeed; }
     public void increaseAttackSpeed(float amount) { attackSpeed+=amount; }
     public float getMoveSpeed() { return moveSpeed; }
+    public float getRetreatSpeed() { return retreatSpeed; }
     public void increaseMoveSpeed(float amount) { moveSpeed+=amount; parent.setMaxMoveSpeeds(moveSpeed, moveSpeed); }
+    public void increaseRetreatSpeed(float amount) { retreatSpeed+=amount; }
     public int getMaxHealth() { return maxHealth; }
 
     public void takeDamage(int damage) {

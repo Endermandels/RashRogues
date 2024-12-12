@@ -60,9 +60,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         gui = new GUI(player);
 
         /* Instance Creation */
-        new Archer(45, 275, 10, RRGame.globals.playersSet,false);
-        new Archer(35, 275, 10, RRGame.globals.playersSet,false);
-        new Archer(25, 275, 10, RRGame.globals.playersSet,false);
+        new Bomber(45, 275, 4, RRGame.globals.playersSet,false);
 //        new Key(30, 280);
 
         /* Camera Setup */
@@ -500,7 +498,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                 if (keycode == Input.Keys.Q) {
                     inputs.put(Input.Keys.Q, true);
                 }
-
 
                 return true;
             }
