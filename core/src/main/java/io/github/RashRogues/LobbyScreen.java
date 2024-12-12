@@ -3,7 +3,6 @@ package io.github.RashRogues;
 import Networking.Network;
 import Networking.Solicitor;
 import UI.Button;
-import UI.GameList;
 import UI.PlayerList;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -23,7 +22,7 @@ public class LobbyScreen extends ScreenAdapter implements RRScreen {
 
     public LobbyScreen(RRGame game) {
         // this is a bandaid fix
-        RRGame.playerCam.changeWorldSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        RRGame.playerCam.changeWorldSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), 1000, 1000);
         RRGame.globals.currentScreen = this;
         this.solicitor = new Solicitor();
         this.game = game;

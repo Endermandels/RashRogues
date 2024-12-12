@@ -21,7 +21,7 @@ public class FindGameScreen extends ScreenAdapter implements RRScreen {
 
     public FindGameScreen(RRGame game) {
         // this is a bandaid fix
-        RRGame.playerCam.changeWorldSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        RRGame.playerCam.changeWorldSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), 1000, 1000);
         RRGame.globals.currentScreen = this;
         this.solicitee = new Solicitee();
         this.list = new GameList(game, 50,50,400,400, this.solicitee);
