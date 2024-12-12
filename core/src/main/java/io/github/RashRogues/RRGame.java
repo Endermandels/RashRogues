@@ -1,7 +1,6 @@
 package io.github.RashRogues;
 
 import Networking.Network;
-import Networking.StreamMaker;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
@@ -100,7 +99,8 @@ public class RRGame extends Game {
     // item animations
 
     // sounds
-    public static final String RSC_HIT_SFX = "SFX/sounds/hitHurt.wav";
+    public static final String RSC_HURT_SFX = "SFX/sounds/hitHurt.wav";
+    public static final String RSC_HURT_ENEMY_SFX = "SFX/sounds/hitHurtEnemy.wav";
     public static final String RSC_SHOOT_SFX = "SFX/sounds/shoot.wav";
     public static final String RSC_EXPLOSION_SFX = "SFX/sounds/explosion.wav";
     public static final String RSC_DOOR_OPEN_SFX = "SFX/sounds/doorOpen.wav";
@@ -172,10 +172,11 @@ public class RRGame extends Game {
 
         am.load(RSC_SWORD_SWIPE_SFX, Sound.class);
         am.load(RSC_PICK_UP_KEY_SFX, Sound.class);
+        am.load(RSC_HURT_ENEMY_SFX, Sound.class);
         am.load(RSC_EXPLOSION_SFX, Sound.class);
         am.load(RSC_DOOR_OPEN_SFX, Sound.class);
         am.load(RSC_SHOOT_SFX, Sound.class);
-        am.load(RSC_HIT_SFX, Sound.class);
+        am.load(RSC_HURT_SFX, Sound.class);
 
         room1Music = Gdx.audio.newMusic(Gdx.files.internal(RSC_ROOM1_MUSIC));
         room1Music.setLooping(true);

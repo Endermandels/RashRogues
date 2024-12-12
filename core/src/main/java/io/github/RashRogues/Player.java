@@ -40,8 +40,9 @@ public class Player extends Entity {
     private int healthPotionsHeld;
     private float deathTimer = 0f;
 
-    private Sound pickupKeySFX;
     private Random rnd;
+    private Sound pickupKeySFX;
+    private Sound hurtSFX;
 
     public Player(Texture texture, float x, float y, float width, float height, int pid) {
         super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER, AnimationActor.PLAYER1,
@@ -64,8 +65,9 @@ public class Player extends Entity {
         setBoxPercentSize(PLAYER_HIT_BOX_PERCENT_SCALAR, PLAYER_HIT_BOX_PERCENT_SCALAR, hitBox);
         setBoxPercentSize(PLAYER_HURT_BOX_WIDTH_PERCENT_SCALAR, PLAYER_HURT_BOX_HEIGHT_PERCENT_SCALAR, hurtBox);
         this.associatedPID = pid;
-        pickupKeySFX = RRGame.am.get(RRGame.RSC_PICK_UP_KEY_SFX);
         rnd = RRGame.globals.getRandom();
+        pickupKeySFX = RRGame.am.get(RRGame.RSC_PICK_UP_KEY_SFX);
+        hurtSFX = RRGame.am.get(RRGame.RSC_HURT_SFX);
         // this will obviously change based on a number of factors later
     }
 
@@ -274,10 +276,12 @@ public class Player extends Entity {
         else if (thingThatHurtMe instanceof Projectile && thingThatHurtMe.alignment == EntityAlignment.ENEMY) {
             this.stats.takeDamage(((Projectile) thingThatHurtMe).damage);
             tookDamage = true;
+            hurtSFX.play(0.5f, rnd.nextFloat(0.5f, 2f), 0);
         }
         else if (thingThatHurtMe instanceof Enemy) {
             this.stats.takeDamage(((Enemy) thingThatHurtMe).stats.getDamage());
             tookDamage = true;
+            hurtSFX.play(0.5f, rnd.nextFloat(0.5f, 2f), 0);
         }
         else if (thingThatHurtMe instanceof Key) {
             this.grabKey();
