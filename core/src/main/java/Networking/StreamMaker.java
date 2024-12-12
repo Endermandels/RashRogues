@@ -7,9 +7,9 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 public class StreamMaker {
-   private static ByteBuffer longbuffer = ByteBuffer.allocate(Long.BYTES);
-   private static ByteBuffer intbuffer = ByteBuffer.allocate(Integer.BYTES);
-
+   private static ByteBuffer longbuffer;
+   private static ByteBuffer intbuffer;
+   private static ByteBuffer floatbuffer;
 
    public static byte[] farewell(){
       byte[] stream = new byte[128];
@@ -281,6 +281,35 @@ public class StreamMaker {
    }
 
    /**
+    * Tell the client to create a key at X and Y
+    * @param x
+    * @param y
+    * @return
+    */
+   public static byte[] dropKey(float x, float y){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.DROP_KEY.getvalue();
+      byte[] xBytes = StreamMaker.floatToBytes(x);
+      floatbuffer = ByteBuffer.allocate(Float.BYTES);
+      byte[] yBytes = StreamMaker.floatToBytes(y);
+
+      stream[1] = xBytes[0];
+      stream[2] = xBytes[1];
+      stream[3] = xBytes[2];
+      stream[4] = xBytes[3];
+
+      stream[5] = yBytes[0];
+      stream[6] = yBytes[1];
+      stream[7] = yBytes[2];
+      stream[8] = yBytes[3];
+
+      float X = StreamMaker.bytesToFloat(xBytes);
+      float Y = StreamMaker.bytesToFloat(yBytes);
+
+      return stream;
+   }
+
+   /**
     * Specify the seed to use for random operations.
     * @param seed
     * @return
@@ -301,30 +330,41 @@ public class StreamMaker {
    }
 
    public static byte[] intToBytes(int i){
-      intbuffer.clear();
+      intbuffer = ByteBuffer.allocate(Integer.BYTES);
       intbuffer.putInt(i);
       return intbuffer.array();
    }
 
    public static int bytesToInt(byte[] bytes){
-      intbuffer.clear();
+      intbuffer = ByteBuffer.allocate(Integer.BYTES);
       intbuffer.put(bytes, 0, bytes.length);
       intbuffer.flip();
       return intbuffer.getInt();
    }
 
    public static byte[] longToBytes(long l){
-      longbuffer.clear();
+      longbuffer = ByteBuffer.allocate(Long.BYTES);
       longbuffer.putLong(0, l);
       return longbuffer.array();
    }
 
    public static long bytesToLong(byte[] bytes){
-      longbuffer.clear();
+      longbuffer = ByteBuffer.allocate(Long.BYTES);
       longbuffer.put(bytes, 0, bytes.length);
       longbuffer.flip();
       return longbuffer.getLong();
    }
 
+   public static float bytesToFloat(byte[] bytes){
+      floatbuffer = ByteBuffer.allocate(Float.BYTES);
+      floatbuffer.put(bytes,0,bytes.length);
+      floatbuffer.flip();
+      return floatbuffer.getFloat();
+   }
 
+   public static byte[] floatToBytes(float f){
+      floatbuffer = ByteBuffer.allocate(Float.BYTES);
+      floatbuffer.putFloat(0,f);
+      return floatbuffer.array();
+   }
 }

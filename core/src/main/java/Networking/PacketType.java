@@ -22,7 +22,8 @@ public enum PacketType {
     SET_TARGET(39),
     PICKUP_KEY(40),
     DESTROY4(41),
-    COMMAND(42);
+    COMMAND(42),
+    DROP_KEY(43);
 
     private final int value;
     PacketType(int value){

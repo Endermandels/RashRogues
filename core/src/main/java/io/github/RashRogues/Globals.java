@@ -105,6 +105,11 @@ public class Globals {
             Player p = (Player) e;
             this.players.remove(p.associatedPID);
             this.playersSet.remove(p);
+
+            if (this.pid == 0){
+                Globals.network.connection.dispatchDestroyPlayer(p.associatedPID);
+            }
+
         }
 
         //This is a deterministic replicated entity

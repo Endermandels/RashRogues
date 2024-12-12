@@ -166,6 +166,8 @@ public class Client implements Endpoint {
                 this.handlePickupKey(msg);
             } else if (msgType == SET_TARGET.getvalue()){
                 this.handleSetTarget(msg);
+            } else if (msgType == DROP_KEY.getvalue()){
+                this.handleDropKey(msg);
             }
         }
 
@@ -194,6 +196,11 @@ public class Client implements Endpoint {
      */
     public void dispatchCreatePlayer(Player player) {
         this.outgoingMessages.add(StreamMaker.createPlayer(this.pid, (int) player.getX(), (int) player.getY()));
+    }
+
+    @Override
+    public void dispatchDestroyPlayer(int pid) {
+       return;
     }
 
     /**
@@ -244,6 +251,11 @@ public class Client implements Endpoint {
        return;
     }
 
+    @Override
+    public void dispatchKeyDrop(float x, float y) {
+        return;
+    }
+
 
     /**
      * Communicate to server which keys are pressed down.
@@ -280,7 +292,7 @@ public class Client implements Endpoint {
     public void handlePickupKey(byte[] packet){
         int playerWhoPickedUpKey = packet[1];
         byte[] keyIDBytes = new byte[4];
-        System.arraycopy(packet,3,keyIDBytes,0,4);
+        System.arraycopy(packet,2,keyIDBytes,0,4);
         int keyID = StreamMaker.bytesToInt(keyIDBytes);
 
         Entity key = RRGame.globals.getKey(keyID);
@@ -292,6 +304,26 @@ public class Client implements Endpoint {
 
         RRGame.globals.deregisterEntity(key);
         p.setHoldingKey(true);
+    }
+
+    public void handleDropKey(byte[] packet){
+        System.out.println("DROPPING KEY");
+        byte[] xBytes = new byte[4];
+        byte[] yBytes = new byte[4];
+
+        xBytes[0] = packet[1];
+        xBytes[1] = packet[2];
+        xBytes[2] = packet[3];
+        xBytes[3] = packet[4];
+
+        yBytes[0] = packet[5];
+        yBytes[1] = packet[6];
+        yBytes[2] = packet[7];
+        yBytes[3] = packet[8];
+
+        float x = StreamMaker.bytesToFloat(xBytes);
+        float y = StreamMaker.bytesToFloat(yBytes);
+        new Key(x,y);
     }
 
     /**
@@ -312,7 +344,6 @@ public class Client implements Endpoint {
         int pid = packet[1];
         Player p = RRGame.globals.players.get(pid);
         RRGame.globals.removePlayer(pid);
-        RRGame.globals.removeClient(pid);
         RRGame.globals.deregisterEntity(p);
     }
 

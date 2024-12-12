@@ -144,6 +144,13 @@ public class Server implements Endpoint{
         }
     }
 
+    @Override
+    public void dispatchDestroyPlayer(int pid) {
+       for (ClientListener c : clients){
+           c.dispatchDestroyPlayer(pid);
+       }
+    }
+
     public void dispatchTarget(int eid, int pid){
         for (ClientListener c : clients){
             c.dispatchTarget(eid,pid);
@@ -214,6 +221,12 @@ public class Server implements Endpoint{
     public void dispatchCommand(String[] cmd) {
         for (ClientListener c : clients){
             c.dispatchCommand(cmd);
+        }
+    }
+
+    public void dispatchKeyDrop(float x, float y){
+        for (ClientListener c : clients){
+            c.dispatchKeyDrop(x,y);
         }
     }
 

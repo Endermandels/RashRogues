@@ -219,6 +219,10 @@ public class ClientListener implements Endpoint {
         this.outgoingMessages.add(StreamMaker.pickupKey(pid, keyID));
     }
 
+    public void dispatchKeyDrop(float x, float y){
+        this.outgoingMessages.add(StreamMaker.dropKey(x, y));
+    }
+
     /**
      * Communicate to the client to create the server's player
      */

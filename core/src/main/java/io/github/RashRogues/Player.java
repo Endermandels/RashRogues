@@ -15,7 +15,7 @@ import static java.lang.Math.abs;
 
 public class Player extends Entity {
 
-    private final int BASE_PLAYER_HEALTH = 10000000;
+    private final int BASE_PLAYER_HEALTH = 1;
     private final int BASE_PLAYER_DAMAGE = 10000;
     private final float BASE_PLAYER_ATTACK_SPEED = 0.5f;
     private final float ACCELERATION = 50.0f;
@@ -98,6 +98,7 @@ public class Player extends Entity {
         if (deathTimer >= RRGame.STANDARD_DEATH_DURATION) { this.removeSelf(); return; }
         if (stats.isDead() && RRGame.globals.pid == 0) {
             this.dropKey();
+            RRGame.globals.network.connection.dispatchKeyDrop(this.getX(), this.getY());
             this.removeSelf();
         }
         hurtBox.update(delta);
@@ -209,6 +210,7 @@ public class Player extends Entity {
 
     public void grabKey(int keyID){
         if (RRGame.globals.getKey(keyID) == null){
+            System.out.println(">>! Warning: key wasn't registered properly!");
             return;
         }
 

@@ -9,6 +9,7 @@ public interface Endpoint {
     public void processMessages();
     public void dispatchStartGame();
     public void dispatchCreatePlayer(Player player);
+    public void dispatchDestroyPlayer(int pid);
     public void dispatchKeys(byte[] keyMask, long keys);
     public void dispatchHeartbeat();
     public void forward(byte[] packet);
@@ -22,4 +23,5 @@ public interface Endpoint {
     void dispatchTarget(int eid, int pid);
     public void dispatchCommand(String[] cmd);
     void dispatchKeyPickup(int pid, int keyID);
+    void dispatchKeyDrop(float x, float y);
 }
