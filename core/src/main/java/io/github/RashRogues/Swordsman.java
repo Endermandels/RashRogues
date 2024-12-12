@@ -79,7 +79,7 @@ public class Swordsman extends Enemy {
 
         if (attackTimer > ATTACK_TIME_MAX) {
             // Create melee attack
-            new SwordsmanSwing(attackX-5, attackY-3, ATTACK_DAMAGE);
+            new SwordsmanSwing(attackX, attackY, ATTACK_DAMAGE);
             attackTimer = 0f;
             swipeSFX.play(0.2f,rnd.nextFloat(0.5f, 2.0f),0);
 
