@@ -1,8 +1,11 @@
 package io.github.RashRogues;
 
 import Networking.ReplicationType;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
+
+import java.util.Random;
 
 public class Bomb extends Entity {
 
@@ -13,6 +16,9 @@ public class Bomb extends Entity {
     private float fuseDuration;
     private float fuseTimer;
     private float speed; // not useful right now, but I've learned my lesson from needing to refactor Projectile
+
+    private Random rnd;
+    private Sound explosionSFX;
 
     Bomb(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
          float xDirection, float yDirection, float distance, float fuseDuration, Projectile explosion, float speed,
@@ -30,6 +36,9 @@ public class Bomb extends Entity {
         this.fuseLit = false;
         this.fuseDuration = fuseDuration;
         this.fuseTimer = 0f;
+
+        rnd = RRGame.globals.getRandom();
+        explosionSFX = RRGame.am.get(RRGame.RSC_EXPLOSION_SFX);
     }
 
     @Override
@@ -50,6 +59,7 @@ public class Bomb extends Entity {
 
                 // stop fuseLitAnimation
                 fuseLit = false;
+                explosionSFX.play(0.2f, rnd.nextFloat(0.7f, 1.3f), 0);
                 explosion = explosion.makeProjectile(true, true);
                 explosion.setPosition(this.getX()+this.getWidth()/2-explosion.getWidth()/2, this.getY()+this.getHeight()/2-explosion.getHeight()/2);
                 this.removeSelf();

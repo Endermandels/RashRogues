@@ -1,6 +1,7 @@
 package io.github.RashRogues;
 
 import Networking.ReplicationType;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 
 import java.util.HashSet;
@@ -9,6 +10,8 @@ public class Door extends Entity {
 
     private boolean locked;
     private HashSet<Player> playersAtDoor;
+
+    private Sound openSFX;
 
     Door(float x, float y) {
         super(EntityAlignment.BACKGROUND, RRGame.am.get(RRGame.RSC_DOOR_IMG, Texture.class),
@@ -19,6 +22,7 @@ public class Door extends Entity {
         this.locked = true;
         this.playersAtDoor = new HashSet<>();
         this.toggleAnimations(false);
+        openSFX = RRGame.am.get(RRGame.RSC_DOOR_OPEN_SFX);
     }
 
     @Override
@@ -31,6 +35,7 @@ public class Door extends Entity {
             locked = false;
             this.toggleAnimations(true);
             setCurrentAnimation(AnimationAction.OPEN);
+            openSFX.play(0.2f);
         }
         if (!locked) {
             playersAtDoor.add(player);

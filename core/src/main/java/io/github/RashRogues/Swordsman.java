@@ -1,6 +1,9 @@
 package io.github.RashRogues;
 
+import com.badlogic.gdx.audio.Sound;
+
 import java.util.HashSet;
+import java.util.Random;
 
 public class Swordsman extends Enemy {
 
@@ -26,6 +29,9 @@ public class Swordsman extends Enemy {
     private float attackTimer;
     private float attackX, attackY;
 
+    private Random rnd;
+    private Sound swipeSFX;
+
     Swordsman(float x, float y, float size, HashSet<Player> playerSet, boolean hasKey) {
         super(RRGame.am.get(RRGame.RSC_SWORDSMAN_IMG), x, y, size, hasKey, AnimationActor.SWORDSMAN);
         this.stats = new EnemyStats(BASE_SWORDSMAN_HEALTH, BASE_SWORDSMAN_DAMAGE, BASE_SWORDSMAN_ATTACK_SPEED, BASE_SWORDSMAN_MOVE_SPEED, this);
@@ -35,6 +41,8 @@ public class Swordsman extends Enemy {
         this.playerSet = playerSet;
         state = State.WALK;
         attackTimer = 0f;
+        swipeSFX = RRGame.am.get(RRGame.RSC_SWORD_SWIPE_SFX);
+        rnd = RRGame.globals.getRandom();
     }
 
     private void move() {
@@ -83,6 +91,7 @@ public class Swordsman extends Enemy {
             // Create melee attack
             new SwordsmanSwing(attackX-5, attackY-3, ATTACK_DAMAGE);
             attackTimer = 0f;
+            swipeSFX.play(0.2f,rnd.nextFloat(0.5f, 2.0f),0);
             state = State.WALK;
         }
     }

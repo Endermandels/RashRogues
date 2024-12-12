@@ -1,9 +1,12 @@
 package io.github.RashRogues;
 
 import Networking.ReplicationType;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+
+import java.util.Random;
 
 public abstract class Enemy extends Entity {
 
@@ -12,6 +15,8 @@ public abstract class Enemy extends Entity {
     protected boolean hasKey;
     private Sprite keySprite;
     private float deathTimer = 0f;
+    private Random rnd;
+    private Sound hurtSFX;
 
     Enemy(Texture texture, float x, float y, float width, float height, boolean hasKey, AnimationActor animationActor) {
         super(EntityAlignment.ENEMY, texture, x, y, width, height, Layer.ENEMY, animationActor,
@@ -21,6 +26,8 @@ public abstract class Enemy extends Entity {
         this.keySprite = new Sprite(RRGame.am.get(RRGame.RSC_KEY_IMG, Texture.class));
         this.keySprite.setSize(width/2, height/2);
         this.keySprite.setOrigin(width/4, height/4);
+        rnd = RRGame.globals.getRandom();
+        hurtSFX = RRGame.am.get(RRGame.RSC_HURT_ENEMY_SFX);
         // this will obviously change based on a number of factors later
     }
 
@@ -70,6 +77,7 @@ public abstract class Enemy extends Entity {
         if (thingThatHurtMe instanceof Projectile && thingThatHurtMe.alignment == EntityAlignment.PLAYER) {
             this.stats.takeDamage(((Projectile) thingThatHurtMe).damage);
             tookDamage = true;
+            hurtSFX.play(0.8f, rnd.nextFloat(0.5f, 1f), 0);
         }
         else {
             // if an enemy hitBox is what hurt us, then ignore it

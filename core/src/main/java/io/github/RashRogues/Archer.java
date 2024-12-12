@@ -1,5 +1,7 @@
 package io.github.RashRogues;
 
+import com.badlogic.gdx.audio.Sound;
+
 import java.util.HashSet;
 import java.util.Random;
 
@@ -29,6 +31,7 @@ public class Archer extends Enemy {
     private float attackXDir, attackYDir;
 
     private Random rnd;
+    private Sound shootSFX;
 
     Archer(float x, float y, float size, HashSet<Player> playerSet, boolean hasKey) {
         super(RRGame.am.get(RRGame.RSC_ARCHER_IMG), x, y, size, hasKey, AnimationActor.ARCHER);
@@ -40,6 +43,7 @@ public class Archer extends Enemy {
         this.playerSet = playerSet;
         attackTimer = 0f;
         rnd = RRGame.globals.getRandom();
+        shootSFX = RRGame.am.get(RRGame.RSC_SHOOT_SFX);
     }
 
 
@@ -75,7 +79,7 @@ public class Archer extends Enemy {
             flipped = xVelocity < 0f;
         } else if (magnitude < 20f) {
             // Start shooting
-            float predictConst = 40f; // adjust this to tweak how much the archer aims ahead
+            float predictConst = 4f; // adjust this to tweak how much the archer aims ahead
             xVelocity = 0f;
             yVelocity = 0f;
             xDist += predictConst * (p.xVelocity / p.maxXVelocity);
@@ -107,6 +111,7 @@ public class Archer extends Enemy {
             float xOff = rnd.nextFloat(-0.2f, 0.2f);
             float yOff = rnd.nextFloat(-0.2f, 0.2f);
 
+            shootSFX.play(0.1f, rnd.nextFloat(0.5f, 2f), 0);
             new Arrow(getX()+getWidth()/2, getY()+getHeight()/2, attackXDir+xOff, attackYDir+yOff,
                     ARROW_DAMAGE, RRGame.STANDARD_PROJECTILE_SPEED);
             attackTimer = 0f;
