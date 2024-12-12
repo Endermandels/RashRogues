@@ -190,7 +190,7 @@ public abstract class Entity extends Sprite {
         hitBox.update(delta);
     }
 
-    private void setUpAnimations(AnimationActor animationActor) {
+    protected void setUpAnimations(AnimationActor animationActor) {
         this.animationTimer = 0f;
         if (Entity.ah.animations.get(animationActor) == null) return;
         this.animations = Entity.ah.animations.get(animationActor);
@@ -216,14 +216,6 @@ public abstract class Entity extends Sprite {
             return true;
         }
         return false;
-    }
-
-    /**
-     * Basically only used by HealthBar!
-     * */
-    protected boolean setCurrentAnimation(AnimationAction action, AnimationActor changedActor) {
-        setUpAnimations(changedActor);
-        return setCurrentAnimation(action);
     }
 
     protected void toggleAnimations(boolean onOrOff) {

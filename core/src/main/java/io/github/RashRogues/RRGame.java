@@ -57,7 +57,7 @@ public class RRGame extends Game {
     public static final float STANDARD_PROJECTILE_DISTANCE = 40;
     public static final float STANDARD_MELEE_DURATION = 0.5f;
     public static final float STANDARD_DEATH_DURATION = 0.7f;
-    public static final int HEALTH_POTION_HEAL_AMOUNT = 50;
+    public static final int HEALTH_POTION_HEAL_AMOUNT = 300;
 
     public static final String RSC_MONO_FONT_FILE = "Fonts/JetBrainsMono-Regular.ttf";
     public static final String RSC_MONO_FONT = "JBM.ttf";
