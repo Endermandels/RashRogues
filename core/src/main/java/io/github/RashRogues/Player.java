@@ -184,13 +184,13 @@ public class Player extends Entity {
         if (abilityTimer < abilityCooldown) { return; }
         // good spot for a sound effect
         abilityTimer = 0f;
-        float bombXDir = Math.signum(xVelocity);
-        float bombYDir = Math.signum(yVelocity);
-        if (bombXDir == 0 && bombYDir == 0) {
-            if (flipped) bombXDir = -1;
-            else bombXDir = 1;
-        }
-        new SmokeBomb(getX(), getY(), bombXDir, bombYDir, SMOKE_BOMB_THROW_DISTANCE, RRGame.STANDARD_PROJECTILE_SPEED);
+        float x = Gdx.input.getX();
+        float y = Gdx.input.getY();
+        Vector3 mouseLocation = RRGame.playerCam.unproject(new Vector3(x, y, 0));
+        float xCenter = this.getX() + this.getWidth()/2;
+        float yCenter = this.getY() + this.getHeight()/2;
+        Vector3 bombDir = new Vector3(mouseLocation.x-xCenter, mouseLocation.y-yCenter, 0);
+        new SmokeBomb(getX(), getY(), bombDir.x, bombDir.y, SMOKE_BOMB_THROW_DISTANCE, RRGame.STANDARD_PROJECTILE_SPEED);
     }
 
     public void setHoldingKey(boolean holdingKey){
