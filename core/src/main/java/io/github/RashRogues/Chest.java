@@ -11,7 +11,7 @@ public class Chest extends Entity {
     private final float AMOUNT_NEEDED_TO_OPEN = 50f;
     private float currentAmount;
     private final int BASE_MAX_AMOUNT_OF_COIN = 20;
-    private final int MAX_DROP_DISTANCE = 10;
+    private final int MAX_DROP_DISTANCE = 11;
 
     private Sound openSFX;
 
