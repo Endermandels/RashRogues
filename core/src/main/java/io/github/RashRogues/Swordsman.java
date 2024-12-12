@@ -8,6 +8,7 @@ public class Swordsman extends Enemy {
         IDLE,
         WALK,
         ATTACK,
+        RETREAT,
         DIE
     };
 

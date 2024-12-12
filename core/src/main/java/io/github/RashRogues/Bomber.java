@@ -1,7 +1,5 @@
 package io.github.RashRogues;
 
-import com.badlogic.gdx.graphics.Texture;
-
 import java.util.HashSet;
 
 public class Bomber extends Enemy {
@@ -17,8 +15,8 @@ public class Bomber extends Enemy {
     private final int BASE_BOMBER_HEALTH = 200;
     private final int BASE_BOMBER_DAMAGE = 30;
     private final float BASE_BOMBER_ATTACK_SPEED = 0.1f;
-    private final float BASE_BOMBER_MOVE_SPEED = 2f;
-    private final float BASE_BOMBER_RETREAT_SPEED = 4f;
+    private final float BASE_BOMBER_MOVE_SPEED = 1f;
+    private final float BASE_BOMBER_RETREAT_SPEED = 2f;
     private final float BOMBER_HIT_BOX_PERCENT_WIDTH_SCALAR = 0.4f;
     private final float BOMBER_HIT_BOX_PERCENT_HEIGHT_SCALAR = 0.4f;
     private final float BOMBER_HURT_BOX_PERCENT_WIDTH_SCALAR = 0.55f;
@@ -38,7 +36,6 @@ public class Bomber extends Enemy {
 
     private float attackTimer;
     private float attentionTimer;
-
 
     private Player target;
 
@@ -264,18 +261,7 @@ public class Bomber extends Enemy {
             case DIE:
 
                 break;
-
         }
-
-
-
-
-
-//        if (state == State.WALK){
-//            move();
-//        } else if (state == State.ATTACK) {
-//            attack(delta);
-//        }
         super.update(delta);
     }
 
