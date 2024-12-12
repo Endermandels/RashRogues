@@ -4,7 +4,6 @@ import Networking.ReplicationType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 import static java.lang.Math.max;
 
@@ -47,13 +46,17 @@ class GUIElement extends Entity {
 }
 
 class SpecialAttack extends GUIElement {
-    private static final float X = 150f;
-    private static final float Y = -50f;
+    private static final float PERCENT_DIST_FROM_LEFT_SIDE = 0.25f;
+    private static final float PERCENT_DIST_FROM_BOTTOM = 0.025f;
+    private static final float BASE_NUM_PIXELS_TO_BOTTOM_OF_BOMB = 12f;
+
+    private float xOffset = Gdx.graphics.getWidth()*PERCENT_DIST_FROM_LEFT_SIDE;
+    private float yOffset = Gdx.graphics.getHeight()*PERCENT_DIST_FROM_BOTTOM;
     private float imgWidth;
     private float imgHeight;
 
     public SpecialAttack(Player player) {
-        super(player, RRGame.am.get(RRGame.RSC_SMOKE_BOMB_IMG), X, Y,
+        super(player, RRGame.am.get(RRGame.RSC_SMOKE_BOMB_IMG), Gdx.graphics.getWidth()*PERCENT_DIST_FROM_LEFT_SIDE, Gdx.graphics.getHeight()*PERCENT_DIST_FROM_BOTTOM,
                 RRGame.SMOKE_BOMB_SIZE, RRGame.SMOKE_BOMB_SIZE, null);
         imgWidth = Gdx.graphics.getWidth() * 0.25f;
         imgHeight = imgWidth;
@@ -64,21 +67,26 @@ class SpecialAttack extends GUIElement {
     }
 
     public void resize(int width, int height) {
-        imgWidth = Gdx.graphics.getWidth() * 0.25f;
+        imgWidth = width * 0.25f;
         imgHeight = imgWidth;
+        xOffset = width*PERCENT_DIST_FROM_LEFT_SIDE;
+        // this complicated thing is only needed for this bc its so small compared to its px size of 32x32
+        yOffset = height*PERCENT_DIST_FROM_BOTTOM-(imgHeight/32f * BASE_NUM_PIXELS_TO_BOTTOM_OF_BOMB);
     }
 
     @Override
     public void draw(Batch batch) {
-        batch.draw(getTexture(), X, Y, imgWidth, imgHeight);
+        batch.draw(getTexture(), xOffset, yOffset, imgWidth, imgHeight);
     }
 }
 
 class HealthBar extends GUIElement {
 
     private final long FREQUENCY = 50L;
-    private static final float X = 10f;
-    private static final float Y = 10f;
+    private static final float PERCENT_DIST_FROM_LEFT_SCREEN = 0.02f;
+    private static final float PERCENT_DIST_FROM_BOTTOM = 0.02f;
+    private float xOffset = Gdx.graphics.getWidth()*PERCENT_DIST_FROM_LEFT_SCREEN;
+    private float yOffset = Gdx.graphics.getHeight()*PERCENT_DIST_FROM_BOTTOM;
     private float barWidth = Gdx.graphics.getWidth() * 0.25f;
     private float barHeight = barWidth / 4f;
 
@@ -88,7 +96,7 @@ class HealthBar extends GUIElement {
     private int bars; // Number of bars to show (from 0 to 8)
 
     public HealthBar(Player player) {
-        super(player, RRGame.am.get(RRGame.RSC_HEALTH_BAR), X, Y,
+        super(player, RRGame.am.get(RRGame.RSC_HEALTH_BAR),  Gdx.graphics.getWidth()*PERCENT_DIST_FROM_LEFT_SCREEN, Gdx.graphics.getHeight()*PERCENT_DIST_FROM_BOTTOM,
             64f, 16f, AnimationActor.HEALTH_BAR_8);
 
         // The Health Bar has 9 states in total, from empty to full 8 bars
@@ -149,8 +157,10 @@ class HealthBar extends GUIElement {
     }
 
     public void resize(int width, int height) {
-        barWidth = Gdx.graphics.getWidth() * 0.25f;
+        barWidth = width * 0.25f;
         barHeight = barWidth / 4f;
+        xOffset = width*PERCENT_DIST_FROM_LEFT_SCREEN;
+        yOffset = height*PERCENT_DIST_FROM_BOTTOM;
     }
 
     public void shake() {
@@ -159,6 +169,6 @@ class HealthBar extends GUIElement {
 
     @Override
     public void draw(Batch batch) {
-        batch.draw(this.getCurrentAnimationFrame(), X, Y+shakeY, barWidth, barHeight);
+        batch.draw(this.getCurrentAnimationFrame(), xOffset, yOffset+shakeY, barWidth, barHeight);
     }
 }
