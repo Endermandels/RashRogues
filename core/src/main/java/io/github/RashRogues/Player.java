@@ -241,6 +241,10 @@ public class Player extends Entity {
         numCoins--;
     }
 
+    public int getNumCoins() {
+        return numCoins;
+    }
+
     public void useConsumable(int pid, long frame) {
         // this is currently only healthPotions; this could be changed to consumablesHeld and diff consumables
         // but that is currently out of scope
