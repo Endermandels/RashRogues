@@ -4,6 +4,7 @@ import Networking.ReplicationType;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 
 import java.util.HashMap;
@@ -178,9 +179,20 @@ public abstract class Entity extends Sprite {
         return false;
     }
 
+    /**
+     * Basically only used by HealthBar!
+     * */
+    protected boolean setCurrentAnimation(AnimationAction action, AnimationActor changedActor) {
+        setUpAnimations(changedActor);
+        return setCurrentAnimation(action);
+    }
+
     protected void toggleAnimations(boolean onOrOff) {
         this.animationsActive = onOrOff;
     }
+
+    // this should only be used as a last resort (health bar bc its outside of entity drawing)
+    protected TextureRegion getCurrentAnimationFrame() { return currentAnimationInfo.getCurrentFrame(animationTimer); }
 
     protected boolean isAnimationFinished() { return this.currentAnimationInfo.isAnimationFinished(animationTimer); }
 
