@@ -79,7 +79,7 @@ public class Archer extends Enemy {
             flipped = xVelocity < 0f;
         } else if (magnitude < 20f) {
             // Start shooting
-            float predictConst = 40f; // adjust this to tweak how much the archer aims ahead
+            float predictConst = 4f; // adjust this to tweak how much the archer aims ahead
             xVelocity = 0f;
             yVelocity = 0f;
             xDist += predictConst * (p.xVelocity / p.maxXVelocity);
