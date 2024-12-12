@@ -50,7 +50,6 @@ class GUIElement extends Entity {
     }
 }
 
-
 class CoinCount extends GUIElement {
     private static final float X = -48f;
     private static final float Y = Gdx.graphics.getHeight() - 130f;
