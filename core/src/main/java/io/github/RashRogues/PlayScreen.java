@@ -242,7 +242,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                 tempLocalEntities.add(e);
             }
         }
-        currentRoom.spawnInitialEnemies();
+        currentRoom.spawnInitialEntities();
         localEntities = tempLocalEntities;
         currentDoor = new Door(currentRoom.doorPositionX, currentRoom.doorPositionY);
         game.playerCam.changeWorldSize(currentRoom.roomWidth, currentRoom.roomHeight, currentRoom.doorPositionX, currentRoom.doorPositionY);

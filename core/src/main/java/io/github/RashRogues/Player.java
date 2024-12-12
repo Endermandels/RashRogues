@@ -41,6 +41,7 @@ public class Player extends Entity {
     private Sprite keySprite;
     private int healthPotionsHeld;
     private float deathTimer = 0f;
+    private int numCoins;
 
     private Random rnd;
     private Sound pickupKeySFX;
@@ -72,6 +73,7 @@ public class Player extends Entity {
         pickupKeySFX = RRGame.am.get(RRGame.RSC_PICK_UP_KEY_SFX);
         hurtSFX = RRGame.am.get(RRGame.RSC_HURT_SFX);
         shootSFX = RRGame.am.get(RRGame.RSC_SHOOT_SFX);
+        this.numCoins = 0;
         // this will obviously change based on a number of factors later
     }
 
@@ -211,9 +213,24 @@ public class Player extends Entity {
         }
     }
 
-
     public boolean isHoldingKey(){
         return holdingKey;
+    }
+
+    public void grabCoin() {
+        //Players on server pick up coins directly, and tell clients that a player picked up a coin.
+        // slight desync is fine bc coins should be common enough its ok if two players pick up the same one
+        if (RRGame.globals.pid == 0){
+            numCoins++;
+            //RRGame.globals.network.connection.dispatchCoinPickup(this.associatedPID);
+            pickupKeySFX.play(0.1f);
+        }
+        System.out.println("Current coins " + numCoins);
+    }
+
+    public void spendCoins(int amount) {
+        // idk how this will work for merchant but i'm adding the function here
+        numCoins--;
     }
 
     public void useConsumable(int pid, long frame) {
@@ -292,8 +309,11 @@ public class Player extends Entity {
         else if (thingThatHurtMe instanceof Key) {
             this.grabKey();
         }
-        else if (thingThatHurtMe instanceof Door) {
-            // actually don't need this
+        else if (thingThatHurtMe instanceof Coin) {
+            this.grabCoin();
+        }
+        else if (thingThatHurtMe instanceof Door || thingThatHurtMe instanceof Chest) {
+            // just catch the things we know of that don't do anything
         }
         else {
             System.out.println("This shouldn't ever happen...");
