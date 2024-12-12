@@ -268,6 +268,8 @@ public class Player extends Entity {
         healthPotionsHeld++;
     }
 
+    public int getHealthPotionCount() { return healthPotionsHeld; }
+
     public void adjustVelocity() {
         // normalize diagonal movement
         Vector2 direction = new Vector2(xVelocity, yVelocity).nor();

@@ -5,7 +5,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 import static java.lang.Math.max;
 
@@ -14,11 +13,13 @@ public class GUI {
     private HealthBar hb;
     private SpecialAttack sa;
     private CoinCount cc;
+    private HealthPotionCount hpc;
 
     public GUI(Player player) {
         hb = new HealthBar(player);
         sa = new SpecialAttack(player);
         cc = new CoinCount(player);
+        hpc = new HealthPotionCount(player);
     }
 
     public void update() {
@@ -29,12 +30,14 @@ public class GUI {
         hb.draw(batch);
         sa.draw(batch);
         cc.draw(batch);
+        hpc.draw(batch);
     }
 
     public void resize(int width, int height) {
         hb.resize(width, height);
         sa.resize(width, height);
         cc.resize(width, height);
+        hpc.resize(width, height);
     }
 }
 
@@ -50,8 +53,37 @@ class GUIElement extends Entity {
     }
 }
 
+
+class HealthPotionCount extends GUIElement {
+    private static final float X = -40f;
+    private static final float Y = Gdx.graphics.getHeight() - 190f;
+    private float imgWidth;
+    private float imgHeight;
+    private BitmapFont font;
+
+    public HealthPotionCount(Player player) {
+        super(player, RRGame.am.get(RRGame.RSC_HEALTH_POTION_IMG), X, Y,
+                RRGame.KEY_SIZE, RRGame.KEY_SIZE, null);
+        imgWidth = Gdx.graphics.getWidth() * 0.2f;
+        imgHeight = imgWidth;
+        font = RRGame.am.get(RRGame.RSC_MONO_FONT_LARGE);
+        font.setColor(0,0,0,1);
+    }
+
+    public void resize(int width, int height) {
+        imgWidth = Gdx.graphics.getWidth() * 0.2f;
+        imgHeight = imgWidth;
+    }
+
+    @Override
+    public void draw(Batch batch) {
+        batch.draw(getTexture(), X, Y, imgWidth, imgHeight);
+        font.draw(batch, Integer.toString(player.getHealthPotionCount()), X+imgWidth/2+20, Y+imgHeight/2+10);
+    }
+}
+
 class CoinCount extends GUIElement {
-    private static final float X = -48f;
+    private static final float X = -40f;
     private static final float Y = Gdx.graphics.getHeight() - 130f;
     private float imgWidth;
     private float imgHeight;
