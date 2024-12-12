@@ -22,6 +22,8 @@ public class LobbyScreen extends ScreenAdapter implements RRScreen {
     private PlayerList playerList;
 
     public LobbyScreen(RRGame game) {
+        // this is a bandaid fix
+        RRGame.playerCam.changeWorldSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         RRGame.globals.currentScreen = this;
         this.solicitor = new Solicitor();
         this.game = game;

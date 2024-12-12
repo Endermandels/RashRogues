@@ -147,6 +147,14 @@ public abstract class Entity extends Sprite {
         setX(x + delta * xVelocity);
         setY(y + delta * yVelocity);
 
+        // apply room limits on all entities. camera is also bound this way so hud and other things won't be ruined by this.
+        x = getX();
+        y = getY();
+        if (x < 0) { setX(0); }
+        else if (x+getWidth() > RRGame.playerCam.roomWidth) { setX(RRGame.playerCam.roomWidth-getWidth()); }
+        if (y < 0) { setY(0); }
+        else if (y+getHeight() > RRGame.playerCam.roomHeight) { setY(RRGame.playerCam.roomHeight-getHeight()); }
+
         hitBox.update(delta);
     }
 
