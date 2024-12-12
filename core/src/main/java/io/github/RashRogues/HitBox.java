@@ -33,7 +33,10 @@ public class HitBox extends Rectangle {
 
     public void hitHurtBox(HurtBox hurtBox) {
         if ((hurtBox.parent.equals(this.parent)) || (hurtBox.parent.alignment.equals(this.parent.alignment))
-                || (disableTimer < disableLength) || (this.parent instanceof Bomb)) { return; }
+                || (disableTimer < disableLength) || (this.parent instanceof Bomb)
+                || (this.parent.alignment == EntityAlignment.BACKGROUND && hurtBox.parent.alignment == EntityAlignment.ENEMY))
+        { return; }
+
         disableTimer = 0f;
         // keep in mind that an entity should only deal with itself; hit/hurt boxes will notify the entities, but
         // the entities should only be reading from each other, NOT writing each other's variables!
@@ -43,7 +46,7 @@ public class HitBox extends Rectangle {
         // On the other hand, the player's onHurt function is called. The player calls takeDamage on itself, using
         // the value from the arrow.
         hurtBox.hurtByHitBox(this);
-        System.out.println(parent + " just hit " + hurtBox.parent);
+        //System.out.println(parent + " just hit " + hurtBox.parent);
         parent.onHit(hurtBox.parent);
     }
 }

@@ -1,17 +1,22 @@
 package io.github.RashRogues;
 
 import Networking.ReplicationType;
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
+
+import java.util.Random;
 
 import static java.lang.Math.abs;
 
 public class Player extends Entity {
 
-    private final int BASE_PLAYER_HEALTH = 100;
-    private final int BASE_PLAYER_DAMAGE = 10;
+    private final int BASE_PLAYER_HEALTH = 500;
+    private final int BASE_PLAYER_DAMAGE = 10000;
     private final float BASE_PLAYER_ATTACK_SPEED = 0.5f;
     private final float ACCELERATION = 50.0f;
     private final float FRICTION = 25.0f;
@@ -35,9 +40,17 @@ public class Player extends Entity {
     private boolean holdingKey;
     private Sprite keySprite;
     private int healthPotionsHeld;
+    private float deathTimer = 0f;
+    private int numCoins;
+
+    private Random rnd;
+    private Sound pickupKeySFX;
+    private Sound hurtSFX;
+    private Sound shootSFX;
 
     public Player(Texture texture, float x, float y, float width, float height, int pid) {
-        super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER, ReplicationType.PLAYER, -1, -1);
+        super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER, AnimationActor.PLAYER1,
+                ReplicationType.PLAYER, -1, -1);
         RRGame.globals.currentNumPlayers++;
         this.maxXVelocity = BASE_PLAYER_MOVE_SPEED;
         this.maxYVelocity = BASE_PLAYER_MOVE_SPEED;
@@ -56,6 +69,11 @@ public class Player extends Entity {
         setBoxPercentSize(PLAYER_HIT_BOX_PERCENT_SCALAR, PLAYER_HIT_BOX_PERCENT_SCALAR, hitBox);
         setBoxPercentSize(PLAYER_HURT_BOX_WIDTH_PERCENT_SCALAR, PLAYER_HURT_BOX_HEIGHT_PERCENT_SCALAR, hurtBox);
         this.associatedPID = pid;
+        rnd = RRGame.globals.getRandom();
+        pickupKeySFX = RRGame.am.get(RRGame.RSC_PICK_UP_KEY_SFX);
+        hurtSFX = RRGame.am.get(RRGame.RSC_HURT_SFX);
+        shootSFX = RRGame.am.get(RRGame.RSC_SHOOT_SFX);
+        this.numCoins = 0;
         // this will obviously change based on a number of factors later
     }
 
@@ -76,10 +94,11 @@ public class Player extends Entity {
         dashTimer += delta;
         abilityTimer += delta;
         consumableTimer += delta;
-        // we likely want some resurrection sort of ability or even just a ghost camera you can move
-        if (stats.isDead()) { this.dropKey(); this.removeSelf(); return; }
         adjustVelocity();
         super.update(delta);
+        // we likely want some resurrection sort of ability or even just a ghost camera you can move
+        if (deathTimer >= RRGame.STANDARD_DEATH_DURATION) { this.removeSelf(); return; }
+        if (stats.isDead()) { this.dropKey(); deathTimer += delta; return; }
         hurtBox.update(delta);
         keySprite.setX(getX()-getWidth()/2);
         keySprite.setY(getY()+getHeight()/2);
@@ -111,6 +130,14 @@ public class Player extends Entity {
     }
 
     /**
+     *
+     * @return percentage of ability time left
+     */
+    public float getAbilityTimeLeft() {
+        return Math.min(abilityTimer / abilityCooldown, 1);
+    }
+
+    /**
      * Attack, tie any projectiles to a frame/pid
      * @param pid
      * @param frame
@@ -118,14 +145,17 @@ public class Player extends Entity {
      */
     public boolean attack(int pid, long frame) {
         // good spot for a sound effect
-        float throwingKnifeXDir = Math.signum(xVelocity);
-        float throwingKnifeYDir = Math.signum(yVelocity);
-        if (throwingKnifeXDir == 0 && throwingKnifeYDir == 0) {
-            if (flipped) throwingKnifeXDir = -1;
-            else throwingKnifeXDir = 1;
-        }
-        new ThrowingKnife(getX(), getY(), throwingKnifeXDir, throwingKnifeYDir, stats.getDamage(),
+        //this converts a Vector3 position of pixels to a Vector3 position of units
+        float x = Gdx.input.getX();
+        float y = Gdx.input.getY();
+        Vector3 mouseLocation = RRGame.playerCam.unproject(new Vector3(x, y, 0));
+        float xCenter = this.getX() + this.getWidth()/2;
+        float yCenter = this.getY() + this.getHeight()/2;
+        Vector3 throwingKnifeDir = new Vector3(mouseLocation.x-xCenter, mouseLocation.y-yCenter, 0);
+        new ThrowingKnife(getX(), getY(), throwingKnifeDir.x, throwingKnifeDir.y, stats.getDamage(),
                 RRGame.STANDARD_PROJECTILE_SPEED, pid, frame);
+        shootSFX.play(0.5f, rnd.nextFloat(0.5f, 2f), 0);
+        this.setCurrentAnimation(AnimationAction.ATTACK);
         return true;
     }
 
@@ -162,26 +192,53 @@ public class Player extends Entity {
         if (abilityTimer < abilityCooldown) { return; }
         // good spot for a sound effect
         abilityTimer = 0f;
-        float bombXDir = Math.signum(xVelocity);
-        float bombYDir = Math.signum(yVelocity);
-        if (bombXDir == 0 && bombYDir == 0) {
-            if (flipped) bombXDir = -1;
-            else bombXDir = 1;
-        }
-        new SmokeBomb(getX(), getY(), bombXDir, bombYDir, SMOKE_BOMB_THROW_DISTANCE, RRGame.STANDARD_PROJECTILE_SPEED);
+        float x = Gdx.input.getX();
+        float y = Gdx.input.getY();
+        Vector3 mouseLocation = RRGame.playerCam.unproject(new Vector3(x, y, 0));
+        float xCenter = this.getX() + this.getWidth()/2;
+        float yCenter = this.getY() + this.getHeight()/2;
+        Vector3 bombDir = new Vector3(mouseLocation.x-xCenter, mouseLocation.y-yCenter, 0);
+        new SmokeBomb(getX(), getY(), bombDir.x, bombDir.y, SMOKE_BOMB_THROW_DISTANCE, RRGame.STANDARD_PROJECTILE_SPEED);
+    }
+
+    public void setHoldingKey(boolean holdingKey){
+        this.holdingKey = holdingKey;
     }
 
     public void dropKey(){
-        holdingKey = false;
-        new Key(getX(),getY());
+        if (holdingKey){
+            setHoldingKey(false);
+            new Key(getX(),getY());
+        }
     }
 
     public void grabKey(){
-        holdingKey = true;
+        //Players on server pick up keys directly, and tell clients that a player picked up a key.
+        if (RRGame.globals.pid == 0){
+            setHoldingKey(true);
+            RRGame.globals.network.connection.dispatchKeyPickup(this.associatedPID);
+            pickupKeySFX.play(0.2f);
+        }
     }
 
     public boolean isHoldingKey(){
         return holdingKey;
+    }
+
+    public void grabCoin() {
+        //Players on server pick up coins directly, and tell clients that a player picked up a coin.
+        // slight desync is fine bc coins should be common enough its ok if two players pick up the same one
+        if (RRGame.globals.pid == 0){
+            numCoins++;
+            //RRGame.globals.network.connection.dispatchCoinPickup(this.associatedPID);
+            pickupKeySFX.play(0.1f);
+        }
+        System.out.println("Current coins " + numCoins);
+    }
+
+    public void spendCoins(int amount) {
+        // idk how this will work for merchant but i'm adding the function here
+        numCoins--;
     }
 
     public void useConsumable(int pid, long frame) {
@@ -245,21 +302,38 @@ public class Player extends Entity {
 
     @Override
     public void onHurt(Entity thingThatHurtMe) {
+        boolean tookDamage = false;
         if (thingThatHurtMe.alignment == EntityAlignment.PLAYER) { return; }
         else if (thingThatHurtMe instanceof Projectile && thingThatHurtMe.alignment == EntityAlignment.ENEMY) {
             this.stats.takeDamage(((Projectile) thingThatHurtMe).damage);
+            tookDamage = true;
+            hurtSFX.play(0.5f, rnd.nextFloat(0.5f, 2f), 0);
         }
         else if (thingThatHurtMe instanceof Enemy) {
             this.stats.takeDamage(((Enemy) thingThatHurtMe).stats.getDamage());
+            tookDamage = true;
+            hurtSFX.play(0.5f, rnd.nextFloat(0.5f, 2f), 0);
         }
         else if (thingThatHurtMe instanceof Key) {
             this.grabKey();
         }
-        else if (thingThatHurtMe instanceof Door) {
-            // actually don't need this
+        else if (thingThatHurtMe instanceof Coin) {
+            this.grabCoin();
+        }
+        else if (thingThatHurtMe instanceof Door || thingThatHurtMe instanceof Chest) {
+            // just catch the things we know of that don't do anything
         }
         else {
             System.out.println("This shouldn't ever happen...");
+        }
+
+        if (stats.isDead()) {
+            // sound
+            this.setCurrentAnimation(AnimationAction.DIE);
+        }
+        else if (tookDamage) {
+            // sound
+            this.setCurrentAnimation(AnimationAction.HURT);
         }
     }
 

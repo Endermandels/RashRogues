@@ -1,9 +1,6 @@
 package io.github.RashRogues;
 
-import Networking.NetViewer;
-import Networking.Network;
 import com.badlogic.gdx.*;
-import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -29,7 +26,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     private HashSet<Entity> entitiesToRemove;
     private PriorityQueue<Entity> renderQueue;
     private HashMap<Integer, Boolean> inputs;
-    private NetViewer netViewer;
     public static CollisionGrid collisionGrid = new CollisionGrid();
 
     public PlayScreen(RRGame game) {
@@ -45,7 +41,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         loadRooms();
         setNextRoom();
         createHUDAndInputs();
-        this.netViewer = new NetViewer();
 
         /* Player Creation */
         player = new Player(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, (int) RRGame.PLAYER_SIZE, RRGame.globals.pid);
@@ -141,6 +136,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
          the door kill itself when it's ready to move on, so we just need to check:
         */
         if (!localEntities.contains(currentDoor)) { setNextRoom(); }
+        currentRoom.update(delta);
 
         gui.update();
     }
@@ -154,7 +150,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         currentRoom.draw(game.batch);
         while (!renderQueue.isEmpty()){
             Entity e = renderQueue.poll();
-            if (!(e instanceof HealthBar)) e.draw(game.batch);
+            if (!(e instanceof GUIElement)) e.draw(game.batch);
         }
         game.batch.end();
 
@@ -200,6 +196,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     @Override
     public void resize(int width, int height) {
         hud.resize(width, height, game);
+        gui.resize(width, height);
     }
 
     private void initInputs(){
@@ -215,8 +212,11 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
     private void loadRooms() {
         this.rooms = new ArrayList<>();
-        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM1_IMG), 35, 301, 80, 0));
-        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM2_IMG), 35, 301, 120, 10));
+        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM1_IMG),
+                35, 301, 80, 0, game.room1Music));
+        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM2_IMG),
+                35, 301, 120, 10, game.room2Music));
+
         // other rooms will go below here
     }
 
@@ -232,6 +232,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             return;
         }
         else {
+            currentRoom.stopMusic();
             currentRoom = rooms.get(rooms.indexOf(currentRoom) + 1);
         }
         HashSet<Entity> tempLocalEntities = new HashSet<>();
@@ -242,10 +243,10 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                 tempLocalEntities.add(e);
             }
         }
-        currentRoom.spawnInitialEnemies();
+        currentRoom.spawnInitialEntities();
         localEntities = tempLocalEntities;
         currentDoor = new Door(currentRoom.doorPositionX, currentRoom.doorPositionY);
-        game.playerCam.changeWorldSize(currentRoom.roomWidth, currentRoom.roomHeight);
+        game.playerCam.changeWorldSize(currentRoom.roomWidth, currentRoom.roomHeight, currentRoom.doorPositionX, currentRoom.doorPositionY);
         collisionGrid.updateCollisionGridRoomValues(currentRoom.roomWidth, currentRoom.roomHeight);
     }
 
@@ -275,15 +276,28 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         });
 
         hud.registerAction("tp", new HUDActionCommand() {
-            static final String help = "Teleport to a specific location. Usage: tp <x> <y> ";
+            static final String help = "Teleport to a specific location. Usage: tp <pid> <x> <y> ";
             @Override
             public String execute(String[] cmd) {
                 try {
-                    int x = Integer.parseInt(cmd[1]);
-                    int y = Integer.parseInt(cmd[2]);
-                    if (x < 0 || x > currentRoom.roomWidth-player.getWidth() || y < 0 ||
-                            y > currentRoom.roomHeight-player.getHeight()) return "Cannot tp out of bounds";
-                    player.setPosition(x, y);
+                    if (cmd.length != 4){
+                        return help;
+                    }
+
+                    int pid     = Integer.parseInt(cmd[1]);
+                    int x       = Integer.parseInt(cmd[2]);
+                    int y       = Integer.parseInt(cmd[3]);
+
+                    Player p    = RRGame.globals.players.get(pid);
+
+                    if (p == null){
+                        return "Player with id " + Integer.toString(pid) + " does not exist.";
+                    }
+
+                    if (x < 0 || x > currentRoom.roomWidth-p.getWidth() || y < 0 ||
+                            y > currentRoom.roomHeight-p.getHeight()) return "Cannot teleport out of bounds.";
+
+                    p.setPosition(x, y);
                     return "ok!";
                 } catch (Exception e) {
                     return help;
@@ -298,7 +312,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         hud.registerAction("netviewer", new HUDActionCommand() {
             @Override
             public String execute(String[] cmd) {
-                netViewer.outputToConsole();
                 return "see console.";
             }
         });
@@ -335,11 +348,13 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                         case "health":
                         case "Health":
                             player.stats.increaseHealth(Integer.parseInt(amount));
+                            RRGame.globals.network.connection.dispatchCommand(cmd);
                             break;
                         case "d":
                         case "damage":
                         case "Damage":
                             player.stats.increaseDamage(Integer.parseInt(amount));
+                            RRGame.globals.network.connection.dispatchCommand(cmd);
                             break;
                         case "as":
                         case "attackSpeed":
@@ -350,6 +365,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                         case "AtkSpd":
                         case "atkSpd":
                             player.stats.increaseAttackSpeed(Float.parseFloat(amount));
+                            RRGame.globals.network.connection.dispatchCommand(cmd);
                             break;
                         case "ms":
                         case "moveSpeed":
@@ -360,6 +376,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                         case "movespd":
                         case "moveSpd":
                             player.stats.increaseMoveSpeed(Float.parseFloat(amount));
+                            RRGame.globals.network.connection.dispatchCommand(cmd);
                             break;
                         case "dx":
                         case "de":
@@ -368,6 +385,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                         case "Dexterity":
                         case "Dex":
                             player.stats.increaseDexterity(Float.parseFloat(amount));
+                            RRGame.globals.network.connection.dispatchCommand(cmd);
                             break;
                         default:
                             return "Valid statNames: health, damage, attackSpeed, moveSpeed, dexterity";
@@ -529,5 +547,9 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
      */
     public void removeEntity(Entity entity) {
         this.entitiesToRemove.add(entity);
+    }
+
+    public void executeCommand(String[] cmd){
+        this.hud.executeCommand(cmd);
     }
 }

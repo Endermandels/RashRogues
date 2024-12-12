@@ -45,4 +45,9 @@ public class LoadScreen extends ScreenAdapter implements RRScreen {
     public void removeEntity(Entity entity) {
         return;
     }
+
+    @Override
+    public void executeCommand(String[] cmd) {
+       return;
+    }
 }

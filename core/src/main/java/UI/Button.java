@@ -44,7 +44,8 @@ public class Button extends Entity {
      * @param action  Action to perform on-click
      */
     public Button(RRGame game, Texture texture, float x, float y, ButtonActions action) {
-        super(EntityAlignment.UI, texture, x, y, 128, 64, Layer.FOREGROUND, ReplicationType.CLIENTSIDE,-1,-1);
+        super(EntityAlignment.UI, texture, x, y, 128, 64, Layer.FOREGROUND, null,
+                ReplicationType.CLIENTSIDE,-1,-1);
         this.dependents = new ArrayList<>();
         this.exclusives = new ArrayList<>();
         this.setPosition(x, y);

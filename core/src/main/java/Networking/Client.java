@@ -11,6 +11,7 @@ import io.github.RashRogues.RRGame;
 
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -162,6 +163,10 @@ public class Client implements Endpoint {
                 this.handleDestroyProjectile(msg);
             } else if (msgType == KILL_PLAYER.getvalue()){
                 this.handleKillPlayer(msg);
+            } else if (msgType == COMMAND.getvalue()){
+                this.handleCommand(msg);
+            } else if (msgType == PICKUP_KEY.getvalue()){
+                this.handlePickupKey(msg);
             }
         }
 
@@ -225,6 +230,16 @@ public class Client implements Endpoint {
        return;
     }
 
+    @Override
+    public void dispatchCommand(String[] cmd) {
+       return;
+    }
+
+    @Override
+    public void dispatchKeyPickup(int pid) {
+       return;
+    }
+
 
     /**
      * Communicate to server which keys are pressed down.
@@ -254,6 +269,14 @@ public class Client implements Endpoint {
         RRGame.globals.setPID(this.pid);
     }
 
+    public void handlePickupKey(byte[] packet){
+        int playerWhoPickedUpKey = packet[1];
+        Player p = RRGame.globals.players.get(playerWhoPickedUpKey);
+        if (p != null){
+            p.setHoldingKey(true);
+        }
+    }
+
     /**
      * We received the instruction to kill a player.
      * @param packet
@@ -262,6 +285,34 @@ public class Client implements Endpoint {
         int pidToKill = packet[1];
         Entity playerEntity = (Entity) RRGame.globals.players.get(pidToKill);
         RRGame.globals.deregisterEntity(playerEntity);
+    }
+
+    /**
+     * We receieved a command from the server. Enact it.
+     * @param packet
+     */
+    public void handleCommand(byte[] packet){
+        ArrayList<String> commands = new ArrayList<>();
+        StringBuilder strBuilder = new StringBuilder();
+
+        for (int i = 1; i < packet.length; i++){
+            //encountered cmdlet delimiter - add cmdlet to list and clear current cmdlet.
+            if (packet[i] == '#'){
+                commands.add(strBuilder.toString());
+                strBuilder = new StringBuilder();
+            //encountered a char - add to current cmdlet
+            }else{
+                strBuilder.append((char) packet[i]);
+            }
+        }
+
+        //convert arraylist to array.
+        String[] finalCommand = new String[commands.size()];
+        for (int i = 0; i < commands.size(); i++){
+            finalCommand[i] = commands.get(i);
+        }
+
+        RRGame.globals.executeCommandOnCurrentScreen(finalCommand);
     }
 
     /**

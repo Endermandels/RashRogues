@@ -7,8 +7,10 @@ public class Key extends Entity {
 
     Key(float x, float y) {
         super(EntityAlignment.BACKGROUND, RRGame.am.get(RRGame.RSC_KEY_IMG, Texture.class),
-                x, y, RRGame.KEY_SIZE, RRGame.KEY_SIZE, Layer.BACKGROUND, ReplicationType.CLIENTSIDE,-1,-1);
-        this.setBoxPercentSize(1f, 1f, hitBox);
+                x, y, RRGame.KEY_SIZE, RRGame.KEY_SIZE, Layer.BACKGROUND, null,
+                ReplicationType.ENTITY_NUMBER, -1, -1);
+        this.setBoxPercentSize(0.42f, 0.28f, hitBox);
+        hitBox.disableLength = 0f;
     }
 
     @Override

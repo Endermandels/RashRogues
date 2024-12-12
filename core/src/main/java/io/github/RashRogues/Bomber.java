@@ -1,7 +1,5 @@
 package io.github.RashRogues;
 
-import com.badlogic.gdx.graphics.Texture;
-
 import java.util.HashSet;
 
 public class Bomber extends Enemy {
@@ -30,11 +28,13 @@ public class Bomber extends Enemy {
     private State state;
 
     private final float attackTimerMax = 1.2f;
+    private final float windupTime = attackTimerMax * 11 / 18;
+    private boolean coolingDown = false;
     private float attackTimer;
     private float attackXDir, attackYDir;
 
     Bomber(float x, float y, float size, HashSet<Player> playerSet, boolean hasKey) {
-        super(RRGame.am.get(RRGame.RSC_BOMBER_IMG), x, y, size, hasKey);
+        super(RRGame.am.get(RRGame.RSC_BOMBER_IMG), x, y, size, hasKey, AnimationActor.BOMBER);
         this.stats = new EnemyStats(BASE_BOMBER_HEALTH, BASE_BOMBER_DAMAGE, BASE_BOMBER_ATTACK_SPEED, BASE_BOMBER_MOVE_SPEED, this);
         setBoxPercentSize(BOMBER_HIT_BOX_PERCENT_WIDTH_SCALAR, BOMBER_HIT_BOX_PERCENT_HEIGHT_SCALAR, hitBox);
         setBoxPercentSize(BOMBER_HURT_BOX_PERCENT_WIDTH_SCALAR, BOMBER_HURT_BOX_PERCENT_HEIGHT_SCALAR, hurtBox);
@@ -96,14 +96,17 @@ public class Bomber extends Enemy {
     }
 
     private void attack(float delta) {
-        // TODO: Play attack animation
         attackTimer += delta;
+        // again this will need to be changed when we use stats, whenever we level up we need to
+        // recalculate the windup time bc it's just 11/18 of whatever the attack speed is
+        if (attackTimer > windupTime && !coolingDown) {
+            // Spawn bomb
+            new BomberBomb(getX(), getY(), attackXDir, attackYDir, BOMB_DISTANCE, BOMB_SPEED, BOMB_DAMAGE);
+            coolingDown = true;
+        }
         if (attackTimer > attackTimerMax) {
-            // Spawn arrow
-            new Bomb(EntityAlignment.ENEMY, RRGame.am.get(RRGame.RSC_SMOKE_BOMB_IMG), getX(), getY(), RRGame.SMOKE_BOMB_SIZE,
-                    RRGame.SMOKE_BOMB_SIZE, attackXDir, attackYDir, BOMB_DISTANCE, BOMB_FUSE_DURATION,
-                    new BombExplosion(EntityAlignment.ENEMY, getX(), getY(), BOMB_DAMAGE), BOMB_SPEED);
             attackTimer = 0f;
+            coolingDown = false;
             state = State.WALK;
         }
     }
@@ -116,6 +119,7 @@ public class Bomber extends Enemy {
         if (state == State.WALK){
             move();
         } else if (state == State.ATTACK) {
+            this.setCurrentAnimation(AnimationAction.ATTACK);
             attack(delta);
         }
         super.update(delta);

@@ -24,5 +24,11 @@ public interface RRScreen {
      */
     public void removeEntity(Entity entity);
 
+    /**
+     * Executes a console command on this screen.
+     * @param cmd CMD to execute.
+     */
+    public void executeCommand(String[] cmd);
+
     void dispose();
 }

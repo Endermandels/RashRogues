@@ -3,6 +3,7 @@ package io.github.RashRogues;
 import Networking.Network;
 import Networking.Solicitee;
 import UI.GameList;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.utils.GdxRuntimeException;
@@ -19,6 +20,8 @@ public class FindGameScreen extends ScreenAdapter implements RRScreen {
     private GameList list;
 
     public FindGameScreen(RRGame game) {
+        // this is a bandaid fix
+        RRGame.playerCam.changeWorldSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), 1000, 1000);
         RRGame.globals.currentScreen = this;
         this.solicitee = new Solicitee();
         this.list = new GameList(game, 50,50,400,400, this.solicitee);
@@ -81,6 +84,11 @@ public class FindGameScreen extends ScreenAdapter implements RRScreen {
     public void removeEntity(Entity entity) {
         this.localEntities.remove(entity);
         return;
+    }
+
+    @Override
+    public void executeCommand(String[] cmd) {
+       return;
     }
 
     public void dispose(){
