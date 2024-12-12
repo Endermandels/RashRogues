@@ -8,6 +8,7 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.FileHandleResolver;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -99,10 +100,16 @@ public class RRGame extends Game {
     // item animations
 
     // sounds
+    public static final String RSC_HIT_SFX = "SFX/sounds/hitHurt.wav";
+    public static final String RSC_SHOOT_SFX = "SFX/sounds/shoot.wav";
+    public static final String RSC_EXPLOSION_SFX = "SFX/sounds/explosion.wav";
+    public static final String RSC_DOOR_OPEN_SFX = "SFX/sounds/doorOpen.wav";
+    public static final String RSC_PICK_UP_KEY_SFX = "SFX/sounds/pickupKey.wav";
+    public static final String RSC_SWORD_SWIPE_SFX = "SFX/sounds/swordSwipe.wav";
 
     // music
-    public static final String RSC_ROOM1_MUSIC = "SFX/on the road to the 80s.mp3";
-    public static final String RSC_ROOM2_MUSIC = "SFX/Stealth Surge.mp3";
+    public static final String RSC_ROOM1_MUSIC = "SFX/music/on the road to the 80s.mp3";
+    public static final String RSC_ROOM2_MUSIC = "SFX/music/Stealth Surge.mp3";
     public Music room1Music;
     public Music room2Music;
 
@@ -156,12 +163,19 @@ public class RRGame extends Game {
 
         am.load(RSC_NET_VIEWER, Texture.class);
 
+        am.load(RSC_GAME_LIST_ITEM, Texture.class);
+        am.load(RSC_BTN_START_GAME, Texture.class);
+        am.load(RSC_HEALTH_BAR, Texture.class);
+        am.load(RSC_GAME_LIST, Texture.class);
         am.load(RSC_BTN_HOST, Texture.class);
         am.load(RSC_BTN_JOIN, Texture.class);
-        am.load(RSC_BTN_START_GAME, Texture.class);
-        am.load(RSC_GAME_LIST, Texture.class);
-        am.load(RSC_GAME_LIST_ITEM, Texture.class);
-        am.load(RSC_HEALTH_BAR, Texture.class);
+
+        am.load(RSC_SWORD_SWIPE_SFX, Sound.class);
+        am.load(RSC_PICK_UP_KEY_SFX, Sound.class);
+        am.load(RSC_EXPLOSION_SFX, Sound.class);
+        am.load(RSC_DOOR_OPEN_SFX, Sound.class);
+        am.load(RSC_SHOOT_SFX, Sound.class);
+        am.load(RSC_HIT_SFX, Sound.class);
 
         room1Music = Gdx.audio.newMusic(Gdx.files.internal(RSC_ROOM1_MUSIC));
         room1Music.setLooping(true);

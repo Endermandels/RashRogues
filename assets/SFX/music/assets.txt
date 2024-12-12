@@ -53,17 +53,10 @@ Images/swordsman sprite sheet.png
 Menu/game_list_background.png
 Menu/game_list_item.png
 Menu/net_viewer.png
-SFX/music/Rogue Rush v2.mp3
-SFX/music/Rogue Rush.mp3
-SFX/music/Stealth Surge.mp3
-SFX/music/Upbeat Beating.mp3
-SFX/music/a hero of the 80s.mp3
-SFX/music/assets.txt
-SFX/music/on the road to the 80s.mp3
-SFX/sounds/doorOpen.wav
-SFX/sounds/explosion.wav
-SFX/sounds/hitHurt.wav
-SFX/sounds/pickupKey.wav
-SFX/sounds/shoot.wav
-SFX/sounds/swordSwipe.wav
+SFX/Rogue Rush v2.mp3
+SFX/Rogue Rush.mp3
+SFX/Stealth Surge.mp3
+SFX/Upbeat Beating.mp3
+SFX/a hero of the 80s.mp3
+SFX/on the road to the 80s.mp3
 credits.txt
