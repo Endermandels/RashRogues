@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 import static java.lang.Math.max;
@@ -53,14 +54,22 @@ class GUIElement extends Entity {
 }
 
 class CoinCount extends GUIElement {
-    private static final float X = -48f;
-    private static final float Y = Gdx.graphics.getHeight() - 130f;
+    private static final float PERCENT_DIST_FROM_LEFT_SIDE = 0.02f;
+    private static final float PERCENT_DIST_FROM_BOTTOM = 0.8f;
+    private static final float BASE_NUM_PIXELS_TO_SIDE_OF_COIN = 12f;
+    private static final float BASE_NUM_PIXELS_TO_BOTTOM_OF_COIN = 13f;
+    private float xOffset = Gdx.graphics.getWidth()*PERCENT_DIST_FROM_LEFT_SIDE;
+    private float yOffset = Gdx.graphics.getHeight()*PERCENT_DIST_FROM_BOTTOM;
+    private float textX = 0f;
+    private float textY = 0f;
+    private float pixelsToSideOfCoin = BASE_NUM_PIXELS_TO_SIDE_OF_COIN;
+    private float pixelsToBottomOfCoin = BASE_NUM_PIXELS_TO_BOTTOM_OF_COIN;
     private float imgWidth;
     private float imgHeight;
     private BitmapFont font;
 
     public CoinCount(Player player) {
-        super(player, RRGame.am.get(RRGame.RSC_COIN_IMG), X, Y,
+        super(player, RRGame.am.get(RRGame.RSC_COIN_IMG), Gdx.graphics.getWidth()*PERCENT_DIST_FROM_LEFT_SIDE, Gdx.graphics.getHeight()*PERCENT_DIST_FROM_BOTTOM,
                 RRGame.KEY_SIZE, RRGame.KEY_SIZE, null);
         imgWidth = Gdx.graphics.getWidth() * 0.2f;
         imgHeight = imgWidth;
@@ -71,12 +80,20 @@ class CoinCount extends GUIElement {
     public void resize(int width, int height) {
         imgWidth = Gdx.graphics.getWidth() * 0.2f;
         imgHeight = imgWidth;
+        // this complicated thing is only needed for this bc its so small compared to its px size of 32x32
+        pixelsToSideOfCoin = imgWidth * BASE_NUM_PIXELS_TO_SIDE_OF_COIN / 32f;
+        xOffset = width*PERCENT_DIST_FROM_LEFT_SIDE-pixelsToSideOfCoin;
+        textX = xOffset+imgWidth-pixelsToSideOfCoin;
+        pixelsToBottomOfCoin = imgHeight * BASE_NUM_PIXELS_TO_BOTTOM_OF_COIN / 32f;
+        yOffset = height*PERCENT_DIST_FROM_BOTTOM-pixelsToBottomOfCoin;
+        float pixelsThroughHalfOfCoin = imgHeight * (16-BASE_NUM_PIXELS_TO_BOTTOM_OF_COIN) / 32f;
+        textY = yOffset+pixelsToBottomOfCoin+pixelsThroughHalfOfCoin+font.getCapHeight()/2;
     }
 
     @Override
     public void draw(Batch batch) {
-        batch.draw(getTexture(), X, Y, imgWidth, imgHeight);
-        font.draw(batch, Integer.toString(player.getNumCoins()), X+imgWidth/2+20, Y+imgHeight/2+10);
+        batch.draw(getTexture(), xOffset, yOffset, imgWidth, imgHeight);
+        font.draw(batch, Integer.toString(player.getNumCoins()), textX, textY);
     }
 }
 
