@@ -24,6 +24,10 @@ public class Client implements Endpoint {
     private Thread speakingThread;
     private int pid;
 
+    private Queue<byte[]> deferQueue = new Queue<>();
+    private HashMap<Integer,Integer> tgtPktDeferCount = new HashMap<>();
+    private int tgtPktDeferMax = 3;
+
     public ConcurrentLinkedQueue<byte[]> incomingMessages = new ConcurrentLinkedQueue<>();
     public ConcurrentLinkedQueue<byte[]> outgoingMessages = new ConcurrentLinkedQueue<>();
     public volatile boolean listening = true;
@@ -124,6 +128,11 @@ public class Client implements Endpoint {
      * sure we don't cluster multiple player inputs on one frame.
      */
     public void processMessages() {
+
+        // Check deferred packets from last frame.
+        while (!this.deferQueue.isEmpty()){
+            this.incomingMessages.add(deferQueue.removeFirst());
+        }
 
         //READ MESSAGES FROM LISTENER THREAD
         while (!this.incomingMessages.isEmpty()) {
@@ -358,10 +367,20 @@ public class Client implements Endpoint {
 
         if (e != null && e instanceof Enemy){
             ((Enemy) e).setTarget(p);
-        }else{
-            System.out.println("EID: " + eid);
-            System.out.println("E: " + e);
-            System.out.println(">>! Warning: Unable to match entity with Server!");
+
+        //try again next frame.
+        } else {
+            if (tgtPktDeferCount.containsKey(eid) == false) {
+                tgtPktDeferCount.put(eid, 0);
+            }
+
+            if (tgtPktDeferCount.get(eid) >= tgtPktDeferMax){
+                System.out.println(">>! Unable to set target for Entity #" + eid + " after " + tgtPktDeferMax + " tries.");
+                return;
+            }
+
+            tgtPktDeferCount.put(eid, tgtPktDeferCount.get(eid) + 1);
+            this.deferQueue.addLast(packet);
         }
     }
 

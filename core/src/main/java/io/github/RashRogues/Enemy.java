@@ -51,7 +51,7 @@ public abstract class Enemy extends Entity {
     }
 
     public void dropKey(){
-        if (hasKey) {
+        if ((hasKey) && (RRGame.globals.pid == 0)) {
             hasKey = false;
             RRGame.globals.network.connection.dispatchKeyDrop(getX(),getY());
             new Key(getX(),getY());

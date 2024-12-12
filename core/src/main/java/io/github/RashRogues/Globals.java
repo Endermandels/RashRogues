@@ -79,6 +79,7 @@ public class Globals {
 
         // This entity is matched with another entity based on creation order.
         } else if (type == ReplicationType.ENTITY_NUMBER){
+             System.out.println(e.toString() + " - " + this.eid);
             deterministicReplicatedEntities.put(this.eid, e);
             e.id = this.eid;
             deterministicReplicatedEntitiesSet.add(e);
