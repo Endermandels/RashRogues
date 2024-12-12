@@ -97,8 +97,8 @@ public class Player extends Entity {
         // we likely want some resurrection sort of ability or even just a ghost camera you can move
         if (deathTimer >= RRGame.STANDARD_DEATH_DURATION) { this.removeSelf(); return; }
         if (stats.isDead() && RRGame.globals.pid == 0) {
+            System.out.println("DROPPING AND DISPATCHING");
             this.dropKey();
-            RRGame.globals.network.connection.dispatchKeyDrop(this.getX(), this.getY());
             this.removeSelf();
         }
         hurtBox.update(delta);
@@ -203,6 +203,7 @@ public class Player extends Entity {
 
     public void dropKey(){
         if (holdingKey){
+            RRGame.globals.network.connection.dispatchKeyDrop(this.getX(), this.getY());
             setHoldingKey(false);
             new Key(getX(),getY());
         }
