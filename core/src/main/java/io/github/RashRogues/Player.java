@@ -2,10 +2,12 @@ package io.github.RashRogues;
 
 import Networking.ReplicationType;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 
 import java.util.Random;
 
@@ -14,7 +16,7 @@ import static java.lang.Math.abs;
 public class Player extends Entity {
 
     private final int BASE_PLAYER_HEALTH = 10000000;
-    private final int BASE_PLAYER_DAMAGE = 10;
+    private final int BASE_PLAYER_DAMAGE = 10000;
     private final float BASE_PLAYER_ATTACK_SPEED = 0.5f;
     private final float ACCELERATION = 50.0f;
     private final float FRICTION = 25.0f;
@@ -133,13 +135,14 @@ public class Player extends Entity {
      */
     public boolean attack(int pid, long frame) {
         // good spot for a sound effect
-        float throwingKnifeXDir = Math.signum(xVelocity);
-        float throwingKnifeYDir = Math.signum(yVelocity);
-        if (throwingKnifeXDir == 0 && throwingKnifeYDir == 0) {
-            if (flipped) throwingKnifeXDir = -1;
-            else throwingKnifeXDir = 1;
-        }
-        new ThrowingKnife(getX(), getY(), throwingKnifeXDir, throwingKnifeYDir, stats.getDamage(),
+        //this converts a Vector3 position of pixels to a Vector3 position of units
+        float x = Gdx.input.getX();
+        float y = Gdx.input.getY();
+        Vector3 mouseLocation = RRGame.playerCam.unproject(new Vector3(x, y, 0));
+        float xCenter = this.getX() + this.getWidth()/2;
+        float yCenter = this.getY() + this.getHeight()/2;
+        Vector3 throwingKnifeDir = new Vector3(mouseLocation.x-xCenter, mouseLocation.y-yCenter, 0);
+        new ThrowingKnife(getX(), getY(), throwingKnifeDir.x, throwingKnifeDir.y, stats.getDamage(),
                 RRGame.STANDARD_PROJECTILE_SPEED, pid, frame);
         shootSFX.play(0.5f, rnd.nextFloat(0.5f, 2f), 0);
         this.setCurrentAnimation(AnimationAction.ATTACK);
