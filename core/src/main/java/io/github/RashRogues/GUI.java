@@ -41,6 +41,7 @@ class GUIElement extends Entity {
         super(EntityAlignment.UI, texture, x, y,
             width, height, Layer.FOREGROUND, animationActor,
             ReplicationType.CLIENTSIDE, player.pid, -1);
+        // TODO: the part above might need to be player.associatedPID, question for Cade
         this.player = player;
     }
 }
@@ -94,7 +95,9 @@ class HealthBar extends GUIElement {
         shakeY = 0;
         lastShaked = -1L;
         lastHP = player.stats.getHealth();
-        bars = 8;
+        bars = max(0, (int) (8f * ((float)lastHP/(float)player.stats.getMaxHealth())));
+        changeHealthBarActor();
+//        System.out.println("health: " + lastHP + "/" + player.stats.getMaxHealth() + "  bars: " + bars);
     }
 
     public void update() {
@@ -106,37 +109,42 @@ class HealthBar extends GUIElement {
         if (player.stats.getHealth() != lastHP) {
             lastHP = player.stats.getHealth();
             bars = max(0, (int) (8f * ((float)lastHP/(float)player.stats.getMaxHealth())));
-            System.out.println("health: " + lastHP + "/" + player.stats.getMaxHealth() + "  bars: " + bars);
-            switch (bars) {
-                case 0:
-                    this.setCurrentAnimation(AnimationAction.HURT, AnimationActor.HEALTH_BAR_0);
-                    break;
-                case 1:
-                    this.setCurrentAnimation(AnimationAction.HURT, AnimationActor.HEALTH_BAR_1);
-                    break;
-                case 2:
-                    this.setCurrentAnimation(AnimationAction.HURT, AnimationActor.HEALTH_BAR_2);
-                    break;
-                case 3:
-                    this.setCurrentAnimation(AnimationAction.HURT, AnimationActor.HEALTH_BAR_3);
-                    break;
-                case 4:
-                    this.setCurrentAnimation(AnimationAction.HURT, AnimationActor.HEALTH_BAR_4);
-                    break;
-                case 5:
-                    this.setCurrentAnimation(AnimationAction.HURT, AnimationActor.HEALTH_BAR_5);
-                    break;
-                case 6:
-                    this.setCurrentAnimation(AnimationAction.HURT, AnimationActor.HEALTH_BAR_6);
-                    break;
-                case 7:
-                    this.setCurrentAnimation(AnimationAction.HURT, AnimationActor.HEALTH_BAR_7);
-                    break;
-                default:
-                    this.setCurrentAnimation(AnimationAction.HURT, AnimationActor.HEALTH_BAR_8);
-                    break;
-            }
+//            System.out.println("health: " + lastHP + "/" + player.stats.getMaxHealth() + "  bars: " + bars);
+            changeHealthBarActor();
+            setCurrentAnimation(AnimationAction.HURT);
             shake();
+        }
+    }
+
+    public void changeHealthBarActor() {
+        switch (bars) {
+            case 0:
+                this.setUpAnimations(AnimationActor.HEALTH_BAR_0);
+                break;
+            case 1:
+                this.setUpAnimations(AnimationActor.HEALTH_BAR_1);
+                break;
+            case 2:
+                this.setUpAnimations(AnimationActor.HEALTH_BAR_2);
+                break;
+            case 3:
+                this.setUpAnimations(AnimationActor.HEALTH_BAR_3);
+                break;
+            case 4:
+                this.setUpAnimations(AnimationActor.HEALTH_BAR_4);
+                break;
+            case 5:
+                this.setUpAnimations(AnimationActor.HEALTH_BAR_5);
+                break;
+            case 6:
+                this.setUpAnimations(AnimationActor.HEALTH_BAR_6);
+                break;
+            case 7:
+                this.setUpAnimations(AnimationActor.HEALTH_BAR_7);
+                break;
+            default:
+                this.setUpAnimations(AnimationActor.HEALTH_BAR_8);
+                break;
         }
     }
 

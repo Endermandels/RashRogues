@@ -39,14 +39,13 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         this.renderQueue    = new PriorityQueue<>(new EntityComparator());
         initInputs();
         loadRooms();
-        setNextRoom();
         createHUDAndInputs();
 
         /* Player Creation */
         player = new Player(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, (int) RRGame.PLAYER_SIZE, RRGame.globals.pid);
         RRGame.globals.addPlayer(RRGame.globals.pid,player);
         this.game.network.connection.dispatchCreatePlayer(player);
-        gui = new GUI(player);
+        setNextRoom();
 
         /* Instance Creation */
 //        new Swordsman(50, 30, 10, RRGame.globals.playersSet);
@@ -248,6 +247,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         currentDoor = new Door(currentRoom.doorPositionX, currentRoom.doorPositionY);
         game.playerCam.changeWorldSize(currentRoom.roomWidth, currentRoom.roomHeight, currentRoom.doorPositionX, currentRoom.doorPositionY);
         collisionGrid.updateCollisionGridRoomValues(currentRoom.roomWidth, currentRoom.roomHeight);
+        gui = new GUI(RRGame.globals.players.get(RRGame.globals.pid));
     }
 
     public void createHUDAndInputs() {
