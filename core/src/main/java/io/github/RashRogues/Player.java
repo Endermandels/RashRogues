@@ -130,6 +130,14 @@ public class Player extends Entity {
     }
 
     /**
+     *
+     * @return percentage of ability time left
+     */
+    public float getAbilityTimeLeft() {
+        return Math.min(abilityTimer / abilityCooldown, 1);
+    }
+
+    /**
      * Attack, tie any projectiles to a frame/pid
      * @param pid
      * @param frame
