@@ -59,9 +59,9 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         gui = new GUI(player);
 
         /* Instance Creation */
-        new Archer(45, 275, 4, RRGame.globals.playersSet,true);
+//        new Archer(45, 275, 4, RRGame.globals.playersSet,true);
         new Bomber(35, 275, 4, RRGame.globals.playersSet,true);
-        new Swordsman(25, 275, 4, RRGame.globals.playersSet,true);
+//        new Swordsman(25, 275, 4, RRGame.globals.playersSet,true);
         new Key(25,275);
         new Key(25,280);
         new Key(25,290);

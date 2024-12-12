@@ -8,6 +8,8 @@ public class Bomber extends Enemy {
         IDLE,
         WALK,
         ATTACK,
+        WINDUP,
+        COOLDOWN,
         RETREAT,
         DIE
     };
@@ -16,7 +18,7 @@ public class Bomber extends Enemy {
     private final int BASE_BOMBER_DAMAGE = 30;
     private final float BASE_BOMBER_ATTACK_SPEED = 0.1f;
     private final float BASE_BOMBER_MOVE_SPEED = 1f;
-    private final float BASE_BOMBER_RETREAT_SPEED = 2f;
+    private final float BASE_BOMBER_RETREAT_SPEED = 3.5f;
     private final float BOMBER_HIT_BOX_PERCENT_WIDTH_SCALAR = 0.4f;
     private final float BOMBER_HIT_BOX_PERCENT_HEIGHT_SCALAR = 0.4f;
     private final float BOMBER_HURT_BOX_PERCENT_WIDTH_SCALAR = 0.55f;
@@ -26,19 +28,18 @@ public class Bomber extends Enemy {
     private final float BOMB_SPEED = 10f;
     private final float BOMB_FUSE_DURATION = 1f;
     private final int ATTENTION_SPAN = 60;
-    private final float ATTACK_TIME_MAX = 1.2f;
-    private float STRIKING_DISTANCE = 8f;
-    private float RETREAT_DISTANCE = 7f;
-    private float RETREAT_THRESHOLD = 4f;
+    private final float WINDUP_TIME = 0.9f;
+    private final float COOLDOWN_TIME = 1.0f;
+    private float STRIKING_DISTANCE = 10f;
+    private float RETREAT_DISTANCE = 9f;
+    private float RETREAT_THRESHOLD = 5f;
 
     private HashSet<Player> playerSet;
     private State state;
 
-    private final float attackTimerMax = 1.2f;
-    private final float windupTime = attackTimerMax * 11 / 18;
-    private boolean coolingDown = false;
-    private float attackTimer;
     private float attentionTimer;
+    private float windupTimer;
+    private float cooldownTimer;
 
     private Player target;
 
@@ -50,8 +51,9 @@ public class Bomber extends Enemy {
 
         state = State.IDLE;
         this.playerSet = playerSet;
-        attackTimer = 0f;
         attentionTimer = 0f;
+        windupTimer    = 0f;
+        cooldownTimer    = 0f;
     }
 
 
@@ -88,27 +90,12 @@ public class Bomber extends Enemy {
         flipped = xVelocity < 0f;
     }
 
-    private void attack(float delta) {
-        attackTimer += delta;
-
-        if (attackTimer > ATTACK_TIME_MAX) {
-
+    private void attack() {
             float xDist = target.getX()+target.getWidth()/2 - this.getX()-this.getWidth()/2;
             float yDist = target.getY()+target.getHeight()/2 - this.getY()-this.getHeight()/2;
             float attackXDir = xDist / (float) Math.sqrt(Math.pow(xDist,2)+Math.pow(yDist,2));
             float attackYDir = yDist / (float) Math.sqrt(Math.pow(xDist,2)+Math.pow(yDist,2));
-
-            if (Math.signum(attackXDir) == 1){
-                this.flipped = false;
-            }else{
-                this.flipped = true;
-            }
-            new BomberBomb(getX(), getY(), attackXDir, attackYDir, BOMB_DISTANCE, BOMB_SPEED,BOMB_DAMAGE);
-            attackTimer = 0f;
-
-            //update the target after we attack
-            this.findTarget();
-        }
+            new BomberBomb(getX(), getY(), attackXDir, attackYDir, BOMB_DISTANCE, BOMB_SPEED, BOMB_DAMAGE);
     }
 
     private float distanceTo(Player p) {
@@ -175,20 +162,17 @@ public class Bomber extends Enemy {
 
         switch (state){
             case WALK:
-
+               setCurrentAnimation(AnimationAction.MOVE);
+               attentionTimer++;
                 // Choose Target
-                if (attentionTimer >= ATTENTION_SPAN){
+                if (attentionTimer >= ATTENTION_SPAN) {
                     attentionTimer = 0;
-
                     findTarget();
-
                     // No Players Nearby -> Go idle
-                    if (this.target == null){
+                    if (this.target == null) {
                         this.state = State.IDLE;
                         break;
                     }
-                }else{
-                    attentionTimer++;
                 }
 
                 // Too Close -> Retreat
@@ -203,7 +187,17 @@ public class Bomber extends Enemy {
                     attentionTimer = 0;
                     xVelocity      = 0f;
                     yVelocity      = 0f;
-                    state          = State.ATTACK;
+
+                    // Turn towards player.
+                    float xDist = target.getX()+target.getWidth()/2 - this.getX()-this.getWidth()/2;
+                    if (Math.signum(xDist) == 1){
+                        this.flipped = false;
+                    }else{
+                        this.flipped = true;
+                    }
+
+                    // Start Winding Up
+                    state = State.WINDUP;
                     break;
                 }
 
@@ -212,6 +206,7 @@ public class Bomber extends Enemy {
                 break;
 
             case RETREAT:
+                setCurrentAnimation(AnimationAction.MOVE);
 
                 float dist = distanceTo(target);
 
@@ -220,7 +215,7 @@ public class Bomber extends Enemy {
                     attentionTimer = 0;
                     xVelocity      = 0f;
                     yVelocity      = 0f;
-                    state = State.ATTACK;
+                    state          = State.COOLDOWN;
                     break;
                 }
 
@@ -229,35 +224,57 @@ public class Bomber extends Enemy {
                 break;
 
             case IDLE:
+                setCurrentAnimation(AnimationAction.IDLE);
+
+                windupTimer    = 0;
+                cooldownTimer  = 0;
+                attentionTimer = 0;
+
                 findTarget();
                 if (this.target != null){
                     this.state = State.WALK;
                 }
                 break;
 
+            case WINDUP:
+                setCurrentAnimation(AnimationAction.ATTACK);
+                windupTimer += delta;
+                if (windupTimer >= WINDUP_TIME){
+                    this.state = State.ATTACK;
+                    break;
+                }
+                break;
+
+            case COOLDOWN:
+                setCurrentAnimation(AnimationAction.IDLE);
+                cooldownTimer += delta;
+
+                // Done Cooling Down -> Go Idle
+                if (cooldownTimer >= COOLDOWN_TIME){
+                    this.state = State.IDLE;
+                    break;
+                }
+
+                float d = distanceTo(target);
+
+                // Too Close -> Retreat
+                if (d < RETREAT_DISTANCE){
+                    state = State.RETREAT;
+                    break;
+                }
+
+                break;
+
             case ATTACK:
-                this.setCurrentAnimation(AnimationAction.ATTACK);
-                // Target Player Dead -> go idle
+                // Target Player Dead Or No Target -> go idle
                 if (target == null || target.stats.isDead()){
                     state = State.IDLE;
                     break;
                 }
 
-                // Too Close -> Retreat
-                if (distanceTo(target) < RETREAT_DISTANCE){
-                    attentionTimer = 0;
-                    state = State.RETREAT;
-                    break;
-                }
+                attack();
 
-                // Too Far -> Advance
-                if (distanceTo(target) >= STRIKING_DISTANCE){
-                    state = State.WALK;
-                    attackTimer = 0;
-                    break;
-                }
-
-                attack(delta);
+                state = State.COOLDOWN;
 
                 break;
 

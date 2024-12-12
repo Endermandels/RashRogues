@@ -165,7 +165,7 @@ public abstract class Entity extends Sprite {
             return false;
         }
         // move only has priority over the idle animation, no others
-        if (action == AnimationAction.MOVE && this.currentAnimationAction != AnimationAction.DEFAULT) {
+        if (action == AnimationAction.MOVE && this.currentAnimationAction != AnimationAction.IDLE &&this.currentAnimationAction != AnimationAction.DEFAULT) {
             return false;
         }
         this.currentAnimationInfo = this.animations.get(action);

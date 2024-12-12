@@ -77,9 +77,9 @@ public class AnimationHandler {
                 bomberSheet.getWidth() / BOMBER_NUM_COLS,
                 bomberSheet.getHeight() / BOMBER_NUM_ROWS);
         animations.put(AnimationActor.BOMBER, new HashMap<AnimationAction, AnimationInfo>(BOMBER_NUM_ROWS));
-        animations.get(AnimationActor.BOMBER).put(AnimationAction.IDLE, new AnimationInfo(bomberFrames, 0, 8, 0.2f));
+        animations.get(AnimationActor.BOMBER).put(AnimationAction.IDLE, new AnimationInfo(bomberFrames, 0, 8, 0.9f));
         animations.get(AnimationActor.BOMBER).put(AnimationAction.MOVE, new AnimationInfo(bomberFrames, 1, 9, 0.5f));
-        animations.get(AnimationActor.BOMBER).put(AnimationAction.ATTACK, new AnimationInfo(bomberFrames, 2, 19, 1.2f));
+        animations.get(AnimationActor.BOMBER).put(AnimationAction.ATTACK, new AnimationInfo(bomberFrames, 2, 19, 0.8f));
         animations.get(AnimationActor.BOMBER).put(AnimationAction.DIE, new AnimationInfo(bomberFrames, 3, 4, RRGame.STANDARD_DEATH_DURATION));
         animations.get(AnimationActor.BOMBER).put(AnimationAction.DEFAULT, animations.get(AnimationActor.BOMBER).get(AnimationAction.IDLE));
 

@@ -147,6 +147,7 @@ public class Swordsman extends Enemy {
 
         switch (state){
             case WALK:
+                this.setCurrentAnimation(AnimationAction.MOVE);
 
                 // If Attention Span Is Up -> Choose Target
                 if (attentionTimer >= ATTENTION_SPAN){
