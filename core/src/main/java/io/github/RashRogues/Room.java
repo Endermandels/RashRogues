@@ -86,7 +86,7 @@ public class Room extends Sprite {
             spawnEnemy(x, y, numKeys-- > 0);
         }
         for (int ii = 0; ii < numChests; ii++) {
-            float x = rnd.nextFloat(10, doorPositionY-10);
+            float x = rnd.nextFloat(10, roomWidth-10);
             float y = rnd.nextFloat(10, doorPositionY-10);
             new Chest(x, y);
         }

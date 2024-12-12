@@ -45,7 +45,7 @@ public class Chest extends Entity {
             for (int ii = 0; ii < numCoin; ii++) {
                 float x = RRGame.globals.getRandomInteger(MAX_DROP_DISTANCE) - 5;
                 float y = RRGame.globals.getRandomInteger(MAX_DROP_DISTANCE) - 5;
-                new Coin(getX() + getWidth() + x, getY() + getHeight() + y);
+                new Coin(getX() + x, getY() + y);
             }
         }
     }
