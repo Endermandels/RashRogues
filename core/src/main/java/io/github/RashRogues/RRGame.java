@@ -39,6 +39,7 @@ public class RRGame extends Game {
     public static final float PLAYER_SIZE = 2;
     public static final float STANDARD_ENEMY_SIZE = 5;
     public static final float DOOR_SIZE = 10;
+    public static final float CHEST_SIZE = 4;
     public static final float KEY_SIZE = 4;
     public static final float ARROW_SIZE = 2;
     public static final float THROWING_KNIFE_SIZE = 2;
@@ -92,6 +93,8 @@ public class RRGame extends Game {
     public static final String RSC_ROOM2_IMG = "DefaultImages/room2.png";
     public static final String RSC_KEY_IMG = "DefaultImages/key.png";
     public static final String RSC_DOOR_IMG = "DefaultImages/door.png";
+    public static final String RSC_CHEST_IMG = "DefaultImages/chest.png";
+    public static final String RSC_COIN_IMG = "DefaultImages/coin.png";
 
     //debug tools
     public static final String RSC_NET_VIEWER = "Menu/net_viewer.png";
@@ -160,6 +163,8 @@ public class RRGame extends Game {
         am.load(RSC_ROOM2_IMG, Texture.class);
         am.load(RSC_KEY_IMG, Texture.class);
         am.load(RSC_DOOR_IMG, Texture.class);
+        am.load(RSC_CHEST_IMG, Texture.class);
+        am.load(RSC_COIN_IMG, Texture.class);
 
         am.load(RSC_NET_VIEWER, Texture.class);
 

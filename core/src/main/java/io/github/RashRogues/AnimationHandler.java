@@ -146,7 +146,7 @@ public class AnimationHandler {
         animations.put(AnimationActor.CHEST, new HashMap<AnimationAction, AnimationInfo>(CHEST_NUM_ROWS));
         animations.get(AnimationActor.CHEST).put(AnimationAction.OPEN, new AnimationInfo(chestFrames, 0, 5, 0.2f));
         animations.get(AnimationActor.CHEST).put(AnimationAction.CLOSE, new AnimationInfo(chestFrames, 0, 5, 0.2f, true));
-        animations.get(AnimationActor.CHEST).put(AnimationAction.DEFAULT, new AnimationInfo(chestFrames, 0, 1, 0.2f));
+        animations.get(AnimationActor.CHEST).put(AnimationAction.DEFAULT, new AnimationInfo(chestFrames, 0, 1, 0.1f, 4));
 
         // door
         Texture doorSheet = new Texture(RRGame.RSC_DOOR_SHEET);
