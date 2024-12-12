@@ -41,20 +41,27 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         loadRooms();
         setNextRoom();
         createHUDAndInputs();
+        initPlayer();
+    }
 
-        /* Player Creation */
-        player = new Player(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, (int) RRGame.PLAYER_SIZE, RRGame.globals.pid);
+    private void initPlayer(){
+
+        player = new Player(1,1, (int) RRGame.PLAYER_SIZE, RRGame.globals.pid);
+
+        if (this.currentRoom.getRoomType() == RoomType.BATTLE){
+            player.setPosition(RRGame.PLAYER_SPAWN_X,RRGame.PLAYER_SPAWN_Y);
+        }
+
+        if (this.currentRoom.getRoomType() == RoomType.MERCHANT){
+            player.setPosition(RRGame.PLAYER_SPAWN_MERCHANT_X,RRGame.PLAYER_SPAWN_MERCHANT_Y);
+        }
+
         RRGame.globals.addPlayer(RRGame.globals.pid,player);
         this.game.network.connection.dispatchCreatePlayer(player);
+
         gui = new GUI(player);
-
-        /* Instance Creation */
-//        new Swordsman(50, 30, 10, RRGame.globals.playersSet);
-//        new Key(30, 280);
-
-        /* Camera Setup */
-        game.playerCam.bind(player);
         game.playerCam.center();
+        game.playerCam.bind(player);
 
     }
 
@@ -212,10 +219,12 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
     private void loadRooms() {
         this.rooms = new ArrayList<>();
+        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM_MERCHANT_IMG),
+                10, 19, 0, 0, game.room2Music, RoomType.MERCHANT));
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM1_IMG),
-                35, 301, 80, 0, game.room1Music));
+                35, 301, 80, 0, game.room1Music, RoomType.BATTLE));
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM2_IMG),
-                35, 301, 120, 10, game.room2Music));
+                35, 301, 120, 10, game.room2Music, RoomType.BATTLE));
 
         // other rooms will go below here
     }
@@ -239,13 +248,13 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         for (Entity e : localEntities) {
             if (e instanceof Player) {
                 Player player = (Player) e;
-                player.resetForNewRoom();
+                player.resetForNewRoom(currentRoom.getRoomType());
                 tempLocalEntities.add(e);
             }
         }
         currentRoom.spawnInitialEntities();
         localEntities = tempLocalEntities;
-        currentDoor = new Door(currentRoom.doorPositionX, currentRoom.doorPositionY);
+        currentDoor = new Door(currentRoom.doorPositionX, currentRoom.doorPositionY, currentRoom.doorUnlockedByDefault);
         game.playerCam.changeWorldSize(currentRoom.roomWidth, currentRoom.roomHeight, currentRoom.doorPositionX, currentRoom.doorPositionY);
         collisionGrid.updateCollisionGridRoomValues(currentRoom.roomWidth, currentRoom.roomHeight);
     }

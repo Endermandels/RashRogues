@@ -18,8 +18,8 @@ DefaultImages/hole.png
 DefaultImages/key.png
 DefaultImages/king.png
 DefaultImages/ladder.png
-DefaultImages/merchant room.png
 DefaultImages/merchant.png
+DefaultImages/merchant_room.png
 DefaultImages/particle_large.png
 DefaultImages/particle_medium.png
 DefaultImages/particle_small.png
@@ -54,6 +54,7 @@ Images/swordsman sprite sheet.png
 Menu/game_list_background.png
 Menu/game_list_item.png
 Menu/net_viewer.png
+Menu/shop_detailed_view.png
 SFX/music/Rogue Rush v2.mp3
 SFX/music/Rogue Rush.mp3
 SFX/music/Stealth Surge.mp3

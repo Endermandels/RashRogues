@@ -159,32 +159,32 @@ public abstract class Entity extends Sprite {
             if (y < 0) { setY(0); }
             else if (y+getHeight() > RRGame.playerCam.roomHeight) { setY(RRGame.playerCam.roomHeight-getHeight()); }
 
-            float leftSideXRightDoorWall = RRGame.playerCam.doorPositionX;
-            float rightSideXLeftDoorWall = RRGame.playerCam.doorPositionX+10.1f;
-            float actualDoorBottom = RRGame.playerCam.doorPositionY+1;
-
-            if (y+getHeight() > actualDoorBottom && x < leftSideXRightDoorWall) {
-                // shunt us to the closest wall
-                // if the distance between the entity's head and the doorHeight is less than the distance between
-                // the entity's left side and the door's left side, then push us down; otherwise, push right
-                if (abs(y+getHeight() - actualDoorBottom) < abs(x - leftSideXRightDoorWall)) {
-                    setY(actualDoorBottom-getHeight());
-                }
-                else {
-                    setX(leftSideXRightDoorWall);
-                }
-            }
-            else if (y+getHeight() > actualDoorBottom && x+getWidth() > rightSideXLeftDoorWall) {
-                // shunt us to the closest wall
-                // if the distance between the entity's head and the doorHeight is less than the distance between
-                // the entity's right side and the door's right side, then push us down; otherwise, push left
-                if (abs(y+getHeight() - actualDoorBottom) < abs(x+getWidth() - rightSideXLeftDoorWall)) {
-                    setY(actualDoorBottom-getHeight());
-                }
-                else {
-                    setX(rightSideXLeftDoorWall-getWidth());
-                }
-            }
+//            float leftSideXRightDoorWall = RRGame.playerCam.doorPositionX;
+//            float rightSideXLeftDoorWall = RRGame.playerCam.doorPositionX+10.1f;
+//            float actualDoorBottom = RRGame.playerCam.doorPositionY+1;
+//
+//            if (y+getHeight() > actualDoorBottom && x < leftSideXRightDoorWall) {
+//                // shunt us to the closest wall
+//                // if the distance between the entity's head and the doorHeight is less than the distance between
+//                // the entity's left side and the door's left side, then push us down; otherwise, push right
+//                if (abs(y+getHeight() - actualDoorBottom) < abs(x - leftSideXRightDoorWall)) {
+//                    setY(actualDoorBottom-getHeight());
+//                }
+//                else {
+//                    setX(leftSideXRightDoorWall);
+//                }
+//            }
+//            else if (y+getHeight() > actualDoorBottom && x+getWidth() > rightSideXLeftDoorWall) {
+//                // shunt us to the closest wall
+//                // if the distance between the entity's head and the doorHeight is less than the distance between
+//                // the entity's right side and the door's right side, then push us down; otherwise, push left
+//                if (abs(y+getHeight() - actualDoorBottom) < abs(x+getWidth() - rightSideXLeftDoorWall)) {
+//                    setY(actualDoorBottom-getHeight());
+//                }
+//                else {
+//                    setX(rightSideXLeftDoorWall-getWidth());
+//                }
+//            }
         }
 
         hitBox.update(delta);

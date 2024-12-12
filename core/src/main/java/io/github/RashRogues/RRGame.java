@@ -33,10 +33,16 @@ public class RRGame extends Game {
 
     // constants
     public static final float WORLD_WIDTH = 80;
+    public static final float MERCHANT_ROOM_WIDTH = 30;
     public static final int PLAYER_SPAWN_X = 40;
     public static final int PLAYER_SPAWN_Y = 290;
+    public static final int MERCHANT_SPAWN_X = 12;
+    public static final int MERCHANT_SPAWN_Y = 8;
+    public static final int PLAYER_SPAWN_MERCHANT_X = 14;
+    public static final int PLAYER_SPAWN_MERCHANT_Y = 3;
     public static final float CAMERA_SIZE = 30;
     public static final float PLAYER_SIZE = 2;
+    public static final float MERCHANT_SIZE = 7;
     public static final float STANDARD_ENEMY_SIZE = 5;
     public static final float DOOR_SIZE = 10;
     public static final float CHEST_SIZE = 4;
@@ -92,6 +98,7 @@ public class RRGame extends Game {
     // item/background sprites
     public static final String RSC_ROOM1_IMG = "DefaultImages/room1.png";
     public static final String RSC_ROOM2_IMG = "DefaultImages/room2.png";
+    public static final String RSC_ROOM_MERCHANT_IMG = "DefaultImages/merchant_room.png";
     public static final String RSC_KEY_IMG = "DefaultImages/key.png";
     public static final String RSC_DOOR_IMG = "DefaultImages/door.png";
     public static final String RSC_CHEST_IMG = "DefaultImages/chest.png";
@@ -163,6 +170,7 @@ public class RRGame extends Game {
 
         am.load(RSC_ROOM1_IMG, Texture.class);
         am.load(RSC_ROOM2_IMG, Texture.class);
+        am.load(RSC_ROOM_MERCHANT_IMG, Texture.class);
         am.load(RSC_KEY_IMG, Texture.class);
         am.load(RSC_DOOR_IMG, Texture.class);
         am.load(RSC_CHEST_IMG, Texture.class);

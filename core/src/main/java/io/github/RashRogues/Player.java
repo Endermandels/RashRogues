@@ -337,13 +337,29 @@ public class Player extends Entity {
         }
     }
 
-    public void resetForNewRoom() {
-        this.setPosition(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y);
-        this.holdingKey = false;
-        this.attackTimer = 0f;
-        this.dashTimer = 0f;
-        this.abilityTimer = 0f;
-        this.consumableTimer = 0f;
+    public void resetForNewRoom(RoomType roomType) {
+
+        switch (roomType){
+
+            case BATTLE:
+                this.setPosition(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y);
+                this.holdingKey = false;
+                this.attackTimer = 0f;
+                this.dashTimer = 0f;
+                this.abilityTimer = 0f;
+                this.consumableTimer = 0f;
+            break;
+
+            case MERCHANT:
+                this.setPosition(RRGame.PLAYER_SPAWN_MERCHANT_X, RRGame.PLAYER_SPAWN_MERCHANT_Y);
+                this.holdingKey = false;
+                this.attackTimer = 0f;
+                this.dashTimer = 0f;
+                this.abilityTimer = 0f;
+                this.consumableTimer = 0f;
+            break;
+
+        }
     }
 
     @Override
