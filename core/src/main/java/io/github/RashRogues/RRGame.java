@@ -24,7 +24,7 @@ public class RRGame extends Game {
     SpriteBatch batch;
     SpriteBatch hudBatch;
     ShapeRenderer shapeRenderer;
-    LaggingCamera playerCam;
+    static LaggingCamera playerCam;
 
     public Network network;
     public HashSet<Entity> globalEntities;
