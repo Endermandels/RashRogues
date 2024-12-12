@@ -43,6 +43,7 @@ public class Player extends Entity {
     private Random rnd;
     private Sound pickupKeySFX;
     private Sound hurtSFX;
+    private Sound shootSFX;
 
     public Player(Texture texture, float x, float y, float width, float height, int pid) {
         super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER, AnimationActor.PLAYER1,
@@ -68,6 +69,7 @@ public class Player extends Entity {
         rnd = RRGame.globals.getRandom();
         pickupKeySFX = RRGame.am.get(RRGame.RSC_PICK_UP_KEY_SFX);
         hurtSFX = RRGame.am.get(RRGame.RSC_HURT_SFX);
+        shootSFX = RRGame.am.get(RRGame.RSC_SHOOT_SFX);
         // this will obviously change based on a number of factors later
     }
 
@@ -139,6 +141,7 @@ public class Player extends Entity {
         }
         new ThrowingKnife(getX(), getY(), throwingKnifeXDir, throwingKnifeYDir, stats.getDamage(),
                 RRGame.STANDARD_PROJECTILE_SPEED, pid, frame);
+        shootSFX.play(0.5f, rnd.nextFloat(0.5f, 2f), 0);
         this.setCurrentAnimation(AnimationAction.ATTACK);
         return true;
     }
