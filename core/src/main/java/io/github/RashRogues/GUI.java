@@ -16,10 +16,10 @@ public class GUI {
     private HealthPotionCount hpc;
 
     public GUI(Player player) {
-        hb = new HealthBar(player);
-        sa = new SpecialAttack(player);
-        cc = new CoinCount(player);
-        hpc = new HealthPotionCount(player);
+        hb = new HealthBar(player, 10f, 10f);
+        sa = new SpecialAttack(player, 150f, -50f);
+        cc = new CoinCount(player, -40f, Gdx.graphics.getHeight() - 130f);
+        hpc = new HealthPotionCount(player, -40f, Gdx.graphics.getHeight() - 190f);
     }
 
     public void update() {
@@ -42,6 +42,8 @@ public class GUI {
 }
 
 class GUIElement extends Entity {
+    protected float x, y;
+
     protected Player player;
 
     public GUIElement(Player player, Texture texture, float x, float y,
@@ -49,20 +51,20 @@ class GUIElement extends Entity {
         super(EntityAlignment.UI, texture, x, y,
             width, height, Layer.FOREGROUND, animationActor,
             ReplicationType.CLIENTSIDE, player.pid, -1);
+        this.x = x;
+        this.y = y;
         this.player = player;
     }
 }
 
 
 class HealthPotionCount extends GUIElement {
-    private static final float X = -40f;
-    private static final float Y = Gdx.graphics.getHeight() - 190f;
     private float imgWidth;
     private float imgHeight;
     private BitmapFont font;
 
-    public HealthPotionCount(Player player) {
-        super(player, RRGame.am.get(RRGame.RSC_HEALTH_POTION_IMG), X, Y,
+    public HealthPotionCount(Player player, float x, float y) {
+        super(player, RRGame.am.get(RRGame.RSC_HEALTH_POTION_IMG), x, y,
                 RRGame.KEY_SIZE, RRGame.KEY_SIZE, null);
         imgWidth = Gdx.graphics.getWidth() * 0.2f;
         imgHeight = imgWidth;
@@ -77,20 +79,18 @@ class HealthPotionCount extends GUIElement {
 
     @Override
     public void draw(Batch batch) {
-        batch.draw(getTexture(), X, Y, imgWidth, imgHeight);
-        font.draw(batch, Integer.toString(player.getHealthPotionCount()), X+imgWidth/2+20, Y+imgHeight/2+10);
+        batch.draw(getTexture(), x, y, imgWidth, imgHeight);
+        font.draw(batch, Integer.toString(player.getHealthPotionCount()), x+imgWidth/2+20, y+imgHeight/2+10);
     }
 }
 
 class CoinCount extends GUIElement {
-    private static final float X = -40f;
-    private static final float Y = Gdx.graphics.getHeight() - 130f;
     private float imgWidth;
     private float imgHeight;
     private BitmapFont font;
 
-    public CoinCount(Player player) {
-        super(player, RRGame.am.get(RRGame.RSC_COIN_IMG), X, Y,
+    public CoinCount(Player player, float x, float y) {
+        super(player, RRGame.am.get(RRGame.RSC_COIN_IMG), x, y,
                 RRGame.KEY_SIZE, RRGame.KEY_SIZE, null);
         imgWidth = Gdx.graphics.getWidth() * 0.2f;
         imgHeight = imgWidth;
@@ -105,19 +105,17 @@ class CoinCount extends GUIElement {
 
     @Override
     public void draw(Batch batch) {
-        batch.draw(getTexture(), X, Y, imgWidth, imgHeight);
-        font.draw(batch, Integer.toString(player.getNumCoins()), X+imgWidth/2+20, Y+imgHeight/2+10);
+        batch.draw(getTexture(), x, y, imgWidth, imgHeight);
+        font.draw(batch, Integer.toString(player.getNumCoins()), x+imgWidth/2+20, y+imgHeight/2+10);
     }
 }
 
 class SpecialAttack extends GUIElement {
-    private static final float X = 150f;
-    private static final float Y = -50f;
     private float imgWidth;
     private float imgHeight;
 
-    public SpecialAttack(Player player) {
-        super(player, RRGame.am.get(RRGame.RSC_SMOKE_BOMB_IMG), X, Y,
+    public SpecialAttack(Player player, float x, float y) {
+        super(player, RRGame.am.get(RRGame.RSC_SMOKE_BOMB_IMG), x, y,
                 RRGame.SMOKE_BOMB_SIZE, RRGame.SMOKE_BOMB_SIZE, null);
         imgWidth = Gdx.graphics.getWidth() * 0.25f;
         imgHeight = imgWidth;
@@ -134,15 +132,13 @@ class SpecialAttack extends GUIElement {
 
     @Override
     public void draw(Batch batch) {
-        batch.draw(getTexture(), X, Y, imgWidth, imgHeight);
+        batch.draw(getTexture(), x, y, imgWidth, imgHeight);
     }
 }
 
 class HealthBar extends GUIElement {
 
     private final long FREQUENCY = 50L;
-    private static final float X = 10f;
-    private static final float Y = 10f;
     private float barWidth = Gdx.graphics.getWidth() * 0.25f;
     private float barHeight = barWidth / 4f;
 
@@ -151,8 +147,8 @@ class HealthBar extends GUIElement {
     private int shakeY;
     private int bars; // Number of bars to show (from 0 to 8)
 
-    public HealthBar(Player player) {
-        super(player, RRGame.am.get(RRGame.RSC_HEALTH_BAR), X, Y,
+    public HealthBar(Player player, float x, float y) {
+        super(player, RRGame.am.get(RRGame.RSC_HEALTH_BAR), x, y,
             64f, 16f, AnimationActor.HEALTH_BAR_8);
 
         // The Health Bar has 9 states in total, from empty to full 8 bars
@@ -216,6 +212,6 @@ class HealthBar extends GUIElement {
 
     @Override
     public void draw(Batch batch) {
-        batch.draw(this.getCurrentAnimationFrame(), X, Y+shakeY, barWidth, barHeight);
+        batch.draw(this.getCurrentAnimationFrame(), x, y+shakeY, barWidth, barHeight);
     }
 }

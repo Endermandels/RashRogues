@@ -248,7 +248,8 @@ public class Player extends Entity {
     public void useConsumable(int pid, long frame) {
         // this is currently only healthPotions; this could be changed to consumablesHeld and diff consumables
         // but that is currently out of scope
-        if (consumableTimer < CONSUMABLE_COOLDOWN || healthPotionsHeld <= 0) { return; }
+        if (consumableTimer < CONSUMABLE_COOLDOWN || healthPotionsHeld <= 0
+                || stats.getHealth() == stats.getMaxHealth()) { return; }
         // good spot for a sound effect
         consumableTimer = 0f;
         healthPotionsHeld--;
