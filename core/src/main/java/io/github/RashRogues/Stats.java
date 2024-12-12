@@ -32,10 +32,19 @@ public class Stats {
 
     public void takeDamage(int damage) {
         this.health -= damage;
-        System.out.println("Yeouch! Just took " + damage + " damage!");
-        if (this.health <= 0) {
+
+        // Only The Server Has The Authority to kill.
+        // Server communicate these deaths to clients.
+        if (this.health <= 0 && RRGame.globals.pid == 0) {
             this.dead = true;
-            System.out.println("I'm dead...");
+
+            //Dispatch Kill Player Command To Clients
+            if (this.parent instanceof Player){
+               RRGame.globals.network.connection.dispatchKillPlayer(((Player) this.parent).associatedPID);
+            }
+
+            //todo: communicate other entities deaths
+
         }
     }
 

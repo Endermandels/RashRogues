@@ -163,6 +163,8 @@ public class Client implements Endpoint {
                 this.handlePickupKey(msg);
             } else if (msgType == SET_TARGET.getvalue()){
                 this.handleSetTarget(msg);
+            } else if (msgType == DESTROY4.getvalue()){
+                this.handleDestroyEnemyProjectile(msg);
             }
         }
 
@@ -281,13 +283,20 @@ public class Client implements Endpoint {
         int pidToKill = packet[1];
         Player player = RRGame.globals.players.get(pidToKill);
         player.stats.kill();
-
-        // todo: In the future we will remove this.
-        // Instead of deregistering it directly, we'll let the death anim play out for this player, and the client
-        // deregister the player entity once the animation is done.
-        // however this cannot be done right now because we need animations merged in first.
-        RRGame.globals.deregisterEntity((Entity) player);
     }
+
+    /**
+     * We received the instruction to destroy a player entity.
+     * @param packet
+     */
+    public void handleDestroyPlayer(byte[] packet){
+        int pid = packet[1];
+        Player p = RRGame.globals.players.get(pid);
+        RRGame.globals.removePlayer(pid);
+        RRGame.globals.removeClient(pid);
+        RRGame.globals.deregisterEntity(p);
+    }
+
 
     public void handleSetTarget(byte[] packet){
         int pid = packet[1];
@@ -302,7 +311,32 @@ public class Client implements Endpoint {
         }else{
             System.out.println(">>! Warning: Unable to match entity with Server!");
         }
+    }
 
+    /**
+     * Server has instructed us to destroy a projectile.
+     * This projectile belongs to entity 'eid' and is the 'number'th projectile produced by this entity.
+     * @param packet
+     */
+    public void handleDestroyEnemyProjectile(byte[] packet){
+        byte[] eidBytes = new byte[4];
+        System.arraycopy(packet,1,eidBytes,0,4);
+        int eid = StreamMaker.bytesToInt(eidBytes);
+
+        byte[] numberBytes = new byte[8];
+        System.arraycopy(packet,5, numberBytes,0,8);
+        long number = StreamMaker.bytesToLong(numberBytes);
+
+        System.out.println("Destroying projectile from " + Integer.toString(eid));
+
+        Entity e = RRGame.globals.findNondeterministicEnemyProjectile(eid,number);
+        System.out.flush();
+        if (e != null){
+            RRGame.globals.deregisterEntity(e);
+        }else{
+            System.out.println(">>! Warning: Unable to match entity with Server!");
+
+        }
     }
 
     /**
@@ -367,14 +401,6 @@ public class Client implements Endpoint {
         Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG), x, y, RRGame.PLAYER_SIZE, new_pid);
         this.inputQueues.put((int) packet[1],new Queue<byte[]>());
         RRGame.globals.addPlayer(new_pid,player);
-    }
-
-    public void handleDestroyPlayer(byte[] packet){
-        int pid = packet[1];
-        Player p = RRGame.globals.players.get(pid);
-        RRGame.globals.removePlayer(pid);
-        RRGame.globals.removeClient(pid);
-        RRGame.globals.deregisterEntity(p);
     }
 
     public void handleDestroyProjectile(byte[] packet){
@@ -500,6 +526,11 @@ public class Client implements Endpoint {
 
     @Override
     public void dispatchDestroyEntity2(int pid, long frame) {
+       return;
+    }
+
+    @Override
+    public void dispatchDestroyEntity3(int eid, long number) {
        return;
     }
 

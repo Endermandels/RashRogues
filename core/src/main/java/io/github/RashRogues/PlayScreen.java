@@ -60,10 +60,9 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         gui = new GUI(player);
 
         /* Instance Creation */
-        new Swordsman(20, 280, 10, RRGame.globals.playersSet,false);
         new Archer(45, 275, 10, RRGame.globals.playersSet,false);
-        new Bomber(40, 275, 10, RRGame.globals.playersSet,false);
-        new Swordsman(50, 272, 10, RRGame.globals.playersSet,false);
+        new Archer(35, 275, 10, RRGame.globals.playersSet,false);
+        new Archer(25, 275, 10, RRGame.globals.playersSet,false);
 //        new Key(30, 280);
 
         /* Camera Setup */
@@ -226,7 +225,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             font.draw(game.hudBatch, "Repl. Type: " + debugEntity.replicationType, 5, Gdx.graphics.getHeight()-60);
             font.getData().setScale(2.5f);
             font.draw(game.hudBatch, "ID: " + debugEntity.id, 5, Gdx.graphics.getHeight() - 90);
-            font.draw(game.hudBatch, "Number: " + debugEntity.frame, 5, Gdx.graphics.getHeight() - 110);
+            font.draw(game.hudBatch, "Number: " + debugEntity.number, 5, Gdx.graphics.getHeight() - 110);
             font.draw(game.hudBatch, "Creator: " + debugEntity.pid, 5, Gdx.graphics.getHeight() - 130);
             game.hudBatch.end();
         }

@@ -230,9 +230,21 @@ public class ClientListener implements Endpoint {
         this.outgoingMessages.add(StreamMaker.seed(seed));
     }
 
+    /**
+     * Kill the player
+     * @param pid
+     */
     @Override
     public void dispatchKillPlayer(int pid) {
        this.outgoingMessages.add(StreamMaker.killPlayer(pid));
+    }
+
+    /**
+     * Remove the player's entity.
+     * @param pid
+     */
+    public void dispatchDestroyPlayer(int pid){
+        this.outgoingMessages.add(StreamMaker.destroyPlayer(pid));
     }
 
     /**
@@ -255,6 +267,11 @@ public class ClientListener implements Endpoint {
     @Override
     public void dispatchDestroyEntity2(int pid, long frame) {
         this.outgoingMessages.add(StreamMaker.destroyEntity2(pid,frame));
+    }
+
+    @Override
+    public void dispatchDestroyEntity3(int eid, long number) {
+       this.outgoingMessages.add(StreamMaker.destroyEntity3(eid,number));
     }
 
     /**

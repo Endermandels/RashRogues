@@ -43,7 +43,6 @@ public class HitBox extends Rectangle {
         // On the other hand, the player's onHurt function is called. The player calls takeDamage on itself, using
         // the value from the arrow.
         hurtBox.hurtByHitBox(this);
-        System.out.println(parent + " just hit " + hurtBox.parent);
         parent.onHit(hurtBox.parent);
     }
 }

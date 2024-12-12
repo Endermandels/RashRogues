@@ -58,9 +58,7 @@ public class StreamMaker {
    public  static byte[] destroyEntity(int eid){
       byte[] stream = new byte[128];
       stream[0] = (byte) PacketType.DESTROY.getvalue();
-
       byte[] eidBytes = intToBytes(eid);
-
       stream[1] = eidBytes[0];
       stream[2] = eidBytes[1];
       stream[3] = eidBytes[2];
@@ -90,6 +88,36 @@ public class StreamMaker {
       stream[9] = (byte) (frame);
 
       return stream;
+   }
+
+   /**
+    * Destroy projectile # 'number' from entity 'eid'
+    * @param eid
+    * @param number
+    * @return
+    */
+   public static byte[] destroyEntity3(int eid, long number){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.DESTROY4.getvalue();
+
+      byte[] eidBytes = intToBytes(eid);
+      stream[1] = eidBytes[0];
+      stream[2] = eidBytes[1];
+      stream[3] = eidBytes[2];
+      stream[4] = eidBytes[3];
+
+      byte[] numberBytes = longToBytes(number);
+      stream[5] = numberBytes[0];
+      stream[6] = numberBytes[1];
+      stream[7] = numberBytes[2];
+      stream[8] = numberBytes[3];
+      stream[9] = numberBytes[4];
+      stream[10] = numberBytes[5];
+      stream[11] = numberBytes[6];
+      stream[12] = numberBytes[7];
+
+      return stream;
+
    }
 
    /**

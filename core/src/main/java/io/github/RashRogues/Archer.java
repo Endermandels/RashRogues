@@ -98,7 +98,7 @@ public class Archer extends Enemy {
         if (attackTimer > attackTimerMax) {
             // Spawn arrow
             new Arrow(getX(), getY(), attackXDir, attackYDir, ARROW_DAMAGE,
-                    RRGame.STANDARD_PROJECTILE_SPEED);
+                    RRGame.STANDARD_PROJECTILE_SPEED, this.id);
             attackTimer = 0f;
             state = State.WALK;
         }

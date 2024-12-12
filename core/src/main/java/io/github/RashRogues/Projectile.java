@@ -60,7 +60,7 @@ public class Projectile extends Entity {
 
     /**
      * Explosion or Melee Projectile (duration based)
-     * Duration based projectiles do not need synced.
+     * Duration based projectiles do not need synced because they destroy themselves.
      * @param alignment
      * @param texture
      * @param x
@@ -97,7 +97,7 @@ public class Projectile extends Entity {
      * @param explosionOrMelee should be true if an explosion or a melee projectile (unmoving).
      * @return A copy of this projectile
      */
-    public Projectile makeProjectile(boolean explosionOrMelee, boolean clientside) {
+    public Projectile makeProjectile(boolean explosionOrMelee) {
         Projectile returnProjectile;
         if (!explosionOrMelee) {
             Vector2 direction = new Vector2(xVelocity, yVelocity);

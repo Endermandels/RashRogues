@@ -177,6 +177,14 @@ public class Server implements Endpoint{
     }
 
     @Override
+    public void dispatchDestroyEntity3(int eid, long number) {
+        for (ClientListener c : clients){
+            c.dispatchDestroyEntity3(eid, number);
+        }
+
+    }
+
+    @Override
     public void dispatchKeys(byte[] keymask, long frame) {
         for (ClientListener c : clients){
             c.dispatchKeys(keymask, frame);
