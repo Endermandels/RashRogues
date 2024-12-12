@@ -13,6 +13,9 @@ public class Room extends Sprite {
     protected int doorPositionX;
     protected int doorPositionY;
 
+    private final int BASE_NUM_CHESTS = 20;
+    private int numChests;
+
     protected int numEnemies;
     protected int difficulty;
     protected Music music;
@@ -43,8 +46,11 @@ public class Room extends Sprite {
         setSize(roomWidth, roomHeight);
         setPosition(0, 0);
 
+        // current thinking is that a diff constructor can be used for boss and merchant rooms, or maybe subclasses,
+        // which will then set numEnemies and numChests things to 0 and would have diff spawning rules
         this.numEnemies = numEnemies;
         this.difficulty = difficulty;
+        this.numChests = BASE_NUM_CHESTS-(difficulty / 10);
         spawnTimer = 0;
         rnd = RRGame.globals.getRandom();
     }
@@ -68,16 +74,21 @@ public class Room extends Sprite {
         }
     }
 
-    void spawnInitialEnemies() {
+    void spawnInitialEntities() {
         int numKeys = 5;
         for (int i = 0; i < numEnemies; i++) {
             float x = rnd.nextFloat(10, roomWidth-10);
-            float y = rnd.nextFloat(10, roomHeight);
+            float y = rnd.nextFloat(10, doorPositionY-10);
             if (numKeys > 0) {
                 // Key enemies should be up towards the door
-                y = rnd.nextFloat(roomHeight-10, roomHeight);
+                y = rnd.nextFloat(doorPositionY-30, doorPositionY-10);
             }
             spawnEnemy(x, y, numKeys-- > 0);
+        }
+        for (int ii = 0; ii < numChests; ii++) {
+            float x = rnd.nextFloat(10, roomWidth-10);
+            float y = rnd.nextFloat(10, doorPositionY-10);
+            new Chest(x, y);
         }
         music.play();
     }

@@ -1,6 +1,5 @@
 package io.github.RashRogues;
 
-import Networking.NetViewer;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -164,7 +163,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         currentRoom.draw(game.batch);
         while (!renderQueue.isEmpty()){
             Entity e = renderQueue.poll();
-            if (!(e instanceof HealthBar)) e.draw(game.batch);
+            if (!(e instanceof GUIElement)) e.draw(game.batch);
         }
         game.batch.end();
 
@@ -237,6 +236,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     @Override
     public void resize(int width, int height) {
         hud.resize(width, height, game);
+        gui.resize(width, height);
     }
 
     private void initInputs(){
@@ -283,10 +283,10 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                 tempLocalEntities.add(e);
             }
         }
-        currentRoom.spawnInitialEnemies();
+        currentRoom.spawnInitialEntities();
         localEntities = tempLocalEntities;
         currentDoor = new Door(currentRoom.doorPositionX, currentRoom.doorPositionY);
-        game.playerCam.changeWorldSize(currentRoom.roomWidth, currentRoom.roomHeight);
+        game.playerCam.changeWorldSize(currentRoom.roomWidth, currentRoom.roomHeight, currentRoom.doorPositionX, currentRoom.doorPositionY);
         collisionGrid.updateCollisionGridRoomValues(currentRoom.roomWidth, currentRoom.roomHeight);
     }
 

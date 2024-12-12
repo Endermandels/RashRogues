@@ -10,7 +10,10 @@ import java.util.Random;
 
 public abstract class Enemy extends Entity {
 
+    private final int MAX_DROP_DISTANCE = 3;
+
     protected EnemyStats stats;
+    private int enemyLevel;
     protected HurtBox hurtBox;
     protected boolean hasKey;
     private Sprite keySprite;
@@ -21,6 +24,7 @@ public abstract class Enemy extends Entity {
     Enemy(Texture texture, float x, float y, float width, float height, boolean hasKey, AnimationActor animationActor) {
         super(EntityAlignment.ENEMY, texture, x, y, width, height, Layer.ENEMY, animationActor,
                 ReplicationType.ENTITY_NUMBER,-1,-1);
+        this.enemyLevel = 1;
         hurtBox = new HurtBox(hitBox, this);
         this.hasKey = hasKey;
         this.keySprite = new Sprite(RRGame.am.get(RRGame.RSC_KEY_IMG, Texture.class));
@@ -43,7 +47,7 @@ public abstract class Enemy extends Entity {
      */
     public void update(float delta) {
         super.update(delta);
-        if (deathTimer >= RRGame.STANDARD_DEATH_DURATION) { this.dropKey(); this.removeSelf(); return; }
+        if (deathTimer >= RRGame.STANDARD_DEATH_DURATION) { this.dropCoins(); this.dropKey(); this.removeSelf(); return; }
         if (stats.isDead()) { deathTimer += delta; return; }
         hurtBox.update(delta);
         keySprite.setX(getX()+getWidth()/4);
@@ -59,6 +63,18 @@ public abstract class Enemy extends Entity {
     }
 
     /**
+     * Drop coins of an amount equal to or less than twice this Enemy's level
+     */
+    public void dropCoins() {
+        int numCoin = RRGame.globals.getRandomInteger(2*(enemyLevel+1));
+        for (int ii = 0; ii < numCoin; ii++) {
+            float x = (RRGame.globals.getRandomInteger(MAX_DROP_DISTANCE) - 1) / 2;
+            float y = (RRGame.globals.getRandomInteger(MAX_DROP_DISTANCE) - 1) / 2;
+            new Coin(getX() + x, getY() + y);
+        }
+    }
+
+    /**
      * Make this enemy stronger
      */
     public void levelUpEnemy() {
@@ -66,6 +82,7 @@ public abstract class Enemy extends Entity {
         stats.increaseDamage(3);
         stats.increaseAttackSpeed(0.2f);
         stats.increaseMoveSpeed(0.2f);
+        this.enemyLevel++;
     }
 
     @Override
@@ -90,6 +107,7 @@ public abstract class Enemy extends Entity {
         if (stats.isDead()) {
             // sound
             this.setCurrentAnimation(AnimationAction.DIE);
+            System.out.println("dying");
         }
         else if (tookDamage) {
             // sound

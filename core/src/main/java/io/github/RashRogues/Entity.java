@@ -4,10 +4,13 @@ import Networking.ReplicationType;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static java.lang.Math.abs;
 
 public abstract class Entity extends Sprite {
 
@@ -138,14 +141,51 @@ public abstract class Entity extends Sprite {
         float x = getX();
         float y = getY();
         if (flipped) {
-            this.setScale(-Math.abs(getScaleX()), getScaleY());
+            this.setScale(-abs(getScaleX()), getScaleY());
         }
         else {
-            this.setScale(Math.abs(getScaleX()), getScaleY());
+            this.setScale(abs(getScaleX()), getScaleY());
         }
 
         setX(x + delta * xVelocity);
         setY(y + delta * yVelocity);
+
+        // apply room limits on all entities. camera is also bound this way so hud and other things won't be ruined by this.
+        if (!(this instanceof Projectile)) {
+            x = getX();
+            y = getY();
+            if (x < 0) { setX(0); }
+            else if (x+getWidth() > RRGame.playerCam.roomWidth) { setX(RRGame.playerCam.roomWidth-getWidth()); }
+            if (y < 0) { setY(0); }
+            else if (y+getHeight() > RRGame.playerCam.roomHeight) { setY(RRGame.playerCam.roomHeight-getHeight()); }
+
+            float leftSideXRightDoorWall = RRGame.playerCam.doorPositionX;
+            float rightSideXLeftDoorWall = RRGame.playerCam.doorPositionX+10.1f;
+            float actualDoorBottom = RRGame.playerCam.doorPositionY+1;
+
+            if (y+getHeight() > actualDoorBottom && x < leftSideXRightDoorWall) {
+                // shunt us to the closest wall
+                // if the distance between the entity's head and the doorHeight is less than the distance between
+                // the entity's left side and the door's left side, then push us down; otherwise, push right
+                if (abs(y+getHeight() - actualDoorBottom) < abs(x - leftSideXRightDoorWall)) {
+                    setY(actualDoorBottom-getHeight());
+                }
+                else {
+                    setX(leftSideXRightDoorWall);
+                }
+            }
+            else if (y+getHeight() > actualDoorBottom && x+getWidth() > rightSideXLeftDoorWall) {
+                // shunt us to the closest wall
+                // if the distance between the entity's head and the doorHeight is less than the distance between
+                // the entity's right side and the door's right side, then push us down; otherwise, push left
+                if (abs(y+getHeight() - actualDoorBottom) < abs(x+getWidth() - rightSideXLeftDoorWall)) {
+                    setY(actualDoorBottom-getHeight());
+                }
+                else {
+                    setX(rightSideXLeftDoorWall-getWidth());
+                }
+            }
+        }
 
         hitBox.update(delta);
     }
@@ -178,9 +218,20 @@ public abstract class Entity extends Sprite {
         return false;
     }
 
+    /**
+     * Basically only used by HealthBar!
+     * */
+    protected boolean setCurrentAnimation(AnimationAction action, AnimationActor changedActor) {
+        setUpAnimations(changedActor);
+        return setCurrentAnimation(action);
+    }
+
     protected void toggleAnimations(boolean onOrOff) {
         this.animationsActive = onOrOff;
     }
+
+    // this should only be used as a last resort (health bar bc its outside of entity drawing)
+    protected TextureRegion getCurrentAnimationFrame() { return currentAnimationInfo.getCurrentFrame(animationTimer); }
 
     protected boolean isAnimationFinished() { return this.currentAnimationInfo.isAnimationFinished(animationTimer); }
 
@@ -206,12 +257,12 @@ public abstract class Entity extends Sprite {
 
     // meant to be overridden
     public void onHit(Entity thingHit) {
-        System.out.println("No defined behavior; add this function to the Entity");
+        System.out.println("No defined behavior; add this function to the Entity: " + this);
     }
 
     // meant to be overridden by entities with hurtBox
     public void onHurt(Entity thingThatHurtMe) {
-        System.out.println("No defined behavior; add this function to the Entity");
+        System.out.println("No defined behavior; add this function to the Entity: " + this);
     }
 
     /**

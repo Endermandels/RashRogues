@@ -37,6 +37,7 @@ Fonts/debug.png
 GUI/health_bar.png
 Images/animations.md
 Images/archer sprite sheet.png
+Images/bomb GUI sprite sheet.png
 Images/bomber sprite sheet.png
 Images/bomberBomb sprite sheet.png
 Images/bomberExplosion sprite sheet.png

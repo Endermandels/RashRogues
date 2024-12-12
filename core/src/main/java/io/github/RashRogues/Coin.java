@@ -3,13 +3,13 @@ package io.github.RashRogues;
 import Networking.ReplicationType;
 import com.badlogic.gdx.graphics.Texture;
 
-public class Key extends Entity {
+public class Coin extends Entity {
 
-    public Key(float x, float y) {
-        super(EntityAlignment.BACKGROUND, RRGame.am.get(RRGame.RSC_KEY_IMG, Texture.class),
+    Coin(float x, float y) {
+        super(EntityAlignment.BACKGROUND, RRGame.am.get(RRGame.RSC_COIN_IMG, Texture.class),
                 x, y, RRGame.KEY_SIZE, RRGame.KEY_SIZE, Layer.BACKGROUND, null,
-                ReplicationType.KEY, -1, -1);
-        this.setBoxPercentSize(0.42f, 0.28f, hitBox);
+                ReplicationType.ENTITY_NUMBER, -1, -1);
+        this.setBoxPercentSize(0.25f, 0.25f, hitBox);
         hitBox.disableLength = 0f;
     }
 

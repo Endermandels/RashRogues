@@ -15,7 +15,7 @@ import static java.lang.Math.abs;
 
 public class Player extends Entity {
 
-    private final int BASE_PLAYER_HEALTH = 100;
+    private final int BASE_PLAYER_HEALTH = 500;
     private final int BASE_PLAYER_DAMAGE = 10000;
     private final float BASE_PLAYER_ATTACK_SPEED = 0.5f;
     private final float ACCELERATION = 50.0f;
@@ -41,6 +41,7 @@ public class Player extends Entity {
     private Sprite keySprite;
     private int healthPotionsHeld;
     private float deathTimer = 0f;
+    private int numCoins;
 
     private Random rnd;
     private Sound pickupKeySFX;
@@ -72,6 +73,7 @@ public class Player extends Entity {
         pickupKeySFX = RRGame.am.get(RRGame.RSC_PICK_UP_KEY_SFX);
         hurtSFX = RRGame.am.get(RRGame.RSC_HURT_SFX);
         shootSFX = RRGame.am.get(RRGame.RSC_SHOOT_SFX);
+        this.numCoins = 0;
         // this will obviously change based on a number of factors later
     }
 
@@ -130,6 +132,14 @@ public class Player extends Entity {
     }
 
     /**
+     *
+     * @return percentage of ability time left
+     */
+    public float getAbilityTimeLeft() {
+        return Math.min(abilityTimer / abilityCooldown, 1);
+    }
+
+    /**
      * Attack, tie any projectiles to a frame/pid
      * @param pid
      * @param frame
@@ -184,13 +194,13 @@ public class Player extends Entity {
         if (abilityTimer < abilityCooldown) { return; }
         // good spot for a sound effect
         abilityTimer = 0f;
-        float bombXDir = Math.signum(xVelocity);
-        float bombYDir = Math.signum(yVelocity);
-        if (bombXDir == 0 && bombYDir == 0) {
-            if (flipped) bombXDir = -1;
-            else bombXDir = 1;
-        }
-        new SmokeBomb(getX(), getY(), bombXDir, bombYDir, SMOKE_BOMB_THROW_DISTANCE, RRGame.STANDARD_PROJECTILE_SPEED);
+        float x = Gdx.input.getX();
+        float y = Gdx.input.getY();
+        Vector3 mouseLocation = RRGame.playerCam.unproject(new Vector3(x, y, 0));
+        float xCenter = this.getX() + this.getWidth()/2;
+        float yCenter = this.getY() + this.getHeight()/2;
+        Vector3 bombDir = new Vector3(mouseLocation.x-xCenter, mouseLocation.y-yCenter, 0);
+        new SmokeBomb(getX(), getY(), bombDir.x, bombDir.y, SMOKE_BOMB_THROW_DISTANCE, RRGame.STANDARD_PROJECTILE_SPEED);
     }
 
     public void setHoldingKey(boolean holdingKey){
@@ -219,15 +229,29 @@ public class Player extends Entity {
             setHoldingKey(true);
             RRGame.globals.network.connection.dispatchKeyPickup(this.associatedPID, keyID);
             pickupKeySFX.play(0.2f);
-            //todo: play this on client too.
         }
 
         // (key will destroy itself upon collision)
     }
 
-
     public boolean isHoldingKey(){
         return holdingKey;
+    }
+
+    public void grabCoin() {
+        //Players on server pick up coins directly, and tell clients that a player picked up a coin.
+        // slight desync is fine bc coins should be common enough its ok if two players pick up the same one
+        if (RRGame.globals.pid == 0){
+            numCoins++;
+            //RRGame.globals.network.connection.dispatchCoinPickup(this.associatedPID);
+            pickupKeySFX.play(0.1f);
+        }
+        System.out.println("Current coins " + numCoins);
+    }
+
+    public void spendCoins(int amount) {
+        // idk how this will work for merchant but i'm adding the function here
+        numCoins--;
     }
 
     public void useConsumable(int pid, long frame) {
@@ -306,8 +330,11 @@ public class Player extends Entity {
         else if (thingThatHurtMe instanceof Key) {
             this.grabKey(thingThatHurtMe.id);
         }
-        else if (thingThatHurtMe instanceof Door) {
-            // actually don't need this
+        else if (thingThatHurtMe instanceof Coin) {
+            this.grabCoin();
+        }
+        else if (thingThatHurtMe instanceof Door || thingThatHurtMe instanceof Chest) {
+            // just catch the things we know of that don't do anything
         }
         else {
             System.out.println("This shouldn't ever happen...");
