@@ -34,6 +34,9 @@ public class Bomber extends Enemy {
     private HashSet<Player> playerSet;
     private State state;
 
+    private final float attackTimerMax = 1.2f;
+    private final float windupTime = attackTimerMax * 11 / 18;
+    private boolean coolingDown = false;
     private float attackTimer;
     private float attentionTimer;
 
@@ -233,7 +236,7 @@ public class Bomber extends Enemy {
                 break;
 
             case ATTACK:
-
+                this.setCurrentAnimation(AnimationAction.ATTACK);
                 // Target Player Dead -> go idle
                 if (target.stats.isDead()){
                     state = State.IDLE;

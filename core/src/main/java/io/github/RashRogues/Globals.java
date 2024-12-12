@@ -276,6 +276,12 @@ public class Globals {
         }
     }
 
+    public void executeCommandOnCurrentScreen(String[] cmd){
+        if (this.currentScreen != null){
+            this.currentScreen.executeCommand(cmd);
+        }
+    }
+
     /**
      * Set the seed for all random numbers.
      * @param seed

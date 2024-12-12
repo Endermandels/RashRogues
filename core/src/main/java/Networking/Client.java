@@ -8,6 +8,7 @@ import io.github.RashRogues.*;
 
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -159,6 +160,8 @@ public class Client implements Endpoint {
                 this.handleDestroyProjectile(msg);
             } else if (msgType == KILL_PLAYER.getvalue()){
                 this.handleKillPlayer(msg);
+            } else if (msgType == COMMAND.getvalue()){
+                this.handleCommand(msg);
             } else if (msgType == PICKUP_KEY.getvalue()){
                 this.handlePickupKey(msg);
             } else if (msgType == SET_TARGET.getvalue()){
@@ -230,6 +233,11 @@ public class Client implements Endpoint {
 
     @Override
     public void dispatchTarget(int eid, int pid) {
+       return;
+    }
+
+    @Override
+    public void dispatchCommand(String[] cmd) {
        return;
     }
 
@@ -337,6 +345,34 @@ public class Client implements Endpoint {
             System.out.println(">>! Warning: Unable to match entity with Server!");
 
         }
+    }
+
+    /**
+     * We receieved a command from the server. Enact it.
+     * @param packet
+     */
+    public void handleCommand(byte[] packet){
+        ArrayList<String> commands = new ArrayList<>();
+        StringBuilder strBuilder = new StringBuilder();
+
+        for (int i = 1; i < packet.length; i++){
+            //encountered cmdlet delimiter - add cmdlet to list and clear current cmdlet.
+            if (packet[i] == '#'){
+                commands.add(strBuilder.toString());
+                strBuilder = new StringBuilder();
+            //encountered a char - add to current cmdlet
+            }else{
+                strBuilder.append((char) packet[i]);
+            }
+        }
+
+        //convert arraylist to array.
+        String[] finalCommand = new String[commands.size()];
+        for (int i = 0; i < commands.size(); i++){
+            finalCommand[i] = commands.get(i);
+        }
+
+        RRGame.globals.executeCommandOnCurrentScreen(finalCommand);
     }
 
     /**

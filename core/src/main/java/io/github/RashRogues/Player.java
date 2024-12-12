@@ -1,17 +1,22 @@
 package io.github.RashRogues;
 
 import Networking.ReplicationType;
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
+
+import java.util.Random;
 
 import static java.lang.Math.abs;
 
 public class Player extends Entity {
 
-    private final int BASE_PLAYER_HEALTH = 100000;
-    private final int BASE_PLAYER_DAMAGE = 10;
+    private final int BASE_PLAYER_HEALTH = 10000000;
+    private final int BASE_PLAYER_DAMAGE = 10000;
     private final float BASE_PLAYER_ATTACK_SPEED = 0.5f;
     private final float ACCELERATION = 50.0f;
     private final float FRICTION = 25.0f;
@@ -35,9 +40,16 @@ public class Player extends Entity {
     private boolean holdingKey;
     private Sprite keySprite;
     private int healthPotionsHeld;
+    private float deathTimer = 0f;
+
+    private Random rnd;
+    private Sound pickupKeySFX;
+    private Sound hurtSFX;
+    private Sound shootSFX;
 
     public Player(Texture texture, float x, float y, float width, float height, int pid) {
-        super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER, ReplicationType.PLAYER, -1, -1);
+        super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER, AnimationActor.PLAYER1,
+                ReplicationType.PLAYER, -1, -1);
         RRGame.globals.currentNumPlayers++;
         this.maxXVelocity = BASE_PLAYER_MOVE_SPEED;
         this.maxYVelocity = BASE_PLAYER_MOVE_SPEED;
@@ -56,6 +68,10 @@ public class Player extends Entity {
         setBoxPercentSize(PLAYER_HIT_BOX_PERCENT_SCALAR, PLAYER_HIT_BOX_PERCENT_SCALAR, hitBox);
         setBoxPercentSize(PLAYER_HURT_BOX_WIDTH_PERCENT_SCALAR, PLAYER_HURT_BOX_HEIGHT_PERCENT_SCALAR, hurtBox);
         this.associatedPID = pid;
+        rnd = RRGame.globals.getRandom();
+        pickupKeySFX = RRGame.am.get(RRGame.RSC_PICK_UP_KEY_SFX);
+        hurtSFX = RRGame.am.get(RRGame.RSC_HURT_SFX);
+        shootSFX = RRGame.am.get(RRGame.RSC_SHOOT_SFX);
         // this will obviously change based on a number of factors later
     }
 
@@ -76,16 +92,14 @@ public class Player extends Entity {
         dashTimer += delta;
         abilityTimer += delta;
         consumableTimer += delta;
-
-
+        adjustVelocity();
+        super.update(delta);
         // we likely want some resurrection sort of ability or even just a ghost camera you can move
-        // Only the server can directly kill.
+        if (deathTimer >= RRGame.STANDARD_DEATH_DURATION) { this.removeSelf(); return; }
         if (stats.isDead() && RRGame.globals.pid == 0) {
             this.dropKey();
             this.removeSelf();
         }
-        adjustVelocity();
-        super.update(delta);
         hurtBox.update(delta);
         keySprite.setX(getX()-getWidth()/2);
         keySprite.setY(getY()+getHeight()/2);
@@ -123,14 +137,17 @@ public class Player extends Entity {
      */
     public boolean attack(int pid, long frame) {
         // good spot for a sound effect
-        float throwingKnifeXDir = Math.signum(xVelocity);
-        float throwingKnifeYDir = Math.signum(yVelocity);
-        if (throwingKnifeXDir == 0 && throwingKnifeYDir == 0) {
-            if (flipped) throwingKnifeXDir = -1;
-            else throwingKnifeXDir = 1;
-        }
-        new ThrowingKnife(getX(), getY(), throwingKnifeXDir, throwingKnifeYDir, stats.getDamage(),
+        //this converts a Vector3 position of pixels to a Vector3 position of units
+        float x = Gdx.input.getX();
+        float y = Gdx.input.getY();
+        Vector3 mouseLocation = RRGame.playerCam.unproject(new Vector3(x, y, 0));
+        float xCenter = this.getX() + this.getWidth()/2;
+        float yCenter = this.getY() + this.getHeight()/2;
+        Vector3 throwingKnifeDir = new Vector3(mouseLocation.x-xCenter, mouseLocation.y-yCenter, 0);
+        new ThrowingKnife(getX(), getY(), throwingKnifeDir.x, throwingKnifeDir.y, stats.getDamage(),
                 RRGame.STANDARD_PROJECTILE_SPEED, pid, frame);
+        shootSFX.play(0.5f, rnd.nextFloat(0.5f, 2f), 0);
+        this.setCurrentAnimation(AnimationAction.ATTACK);
         return true;
     }
 
@@ -192,6 +209,8 @@ public class Player extends Entity {
         if (RRGame.globals.pid == 0){
             setHoldingKey(true);
             RRGame.globals.network.connection.dispatchKeyPickup(this.associatedPID);
+            pickupKeySFX.play(0.2f);
+            //todo: play this on client too.
         }
     }
 
@@ -261,12 +280,17 @@ public class Player extends Entity {
 
     @Override
     public void onHurt(Entity thingThatHurtMe) {
+        boolean tookDamage = false;
         if (thingThatHurtMe.alignment == EntityAlignment.PLAYER) { return; }
         else if (thingThatHurtMe instanceof Projectile && thingThatHurtMe.alignment == EntityAlignment.ENEMY) {
             this.stats.takeDamage(((Projectile) thingThatHurtMe).damage);
+            tookDamage = true;
+            hurtSFX.play(0.5f, rnd.nextFloat(0.5f, 2f), 0);
         }
         else if (thingThatHurtMe instanceof Enemy) {
             this.stats.takeDamage(((Enemy) thingThatHurtMe).stats.getDamage());
+            tookDamage = true;
+            hurtSFX.play(0.5f, rnd.nextFloat(0.5f, 2f), 0);
         }
         else if (thingThatHurtMe instanceof Key) {
             this.grabKey();
@@ -276,6 +300,15 @@ public class Player extends Entity {
         }
         else {
             System.out.println("This shouldn't ever happen...");
+        }
+
+        if (stats.isDead()) {
+            // sound
+            this.setCurrentAnimation(AnimationAction.DIE);
+        }
+        else if (tookDamage) {
+            // sound
+            this.setCurrentAnimation(AnimationAction.HURT);
         }
     }
 

@@ -7,10 +7,13 @@ DefaultImages/bomb.png
 DefaultImages/bomber.png
 DefaultImages/boss room1.png
 DefaultImages/chest.png
+DefaultImages/cloak.png
 DefaultImages/coin.png
+DefaultImages/dagger.png
 DefaultImages/door.png
 DefaultImages/dragon.png
 DefaultImages/explosion.png
+DefaultImages/health_potion.png
 DefaultImages/hole.png
 DefaultImages/key.png
 DefaultImages/king.png
@@ -20,6 +23,7 @@ DefaultImages/merchant.png
 DefaultImages/particle_large.png
 DefaultImages/particle_medium.png
 DefaultImages/particle_small.png
+DefaultImages/ring.png
 DefaultImages/rogue.png
 DefaultImages/room1.png
 DefaultImages/room2.png
@@ -33,12 +37,12 @@ Fonts/debug.png
 GUI/health_bar.png
 Images/animations.md
 Images/archer sprite sheet.png
-Images/bomb sprite sheet.png
+Images/bomber sprite sheet.png
+Images/bomberBomb sprite sheet.png
+Images/bomberExplosion sprite sheet.png
 Images/chest sprite sheet.png
 Images/door sprite sheet.png
 Images/dragon sprite sheet.png
-Images/explosion sprite sheet.png
-Images/grenadier sprite sheet.png
 Images/king sprite sheet.png
 Images/merchant sprite sheet.png
 Images/rogue sprite sheet 2.png
@@ -49,3 +53,17 @@ Images/swordsman sprite sheet.png
 Menu/game_list_background.png
 Menu/game_list_item.png
 Menu/net_viewer.png
+SFX/music/Rogue Rush v2.mp3
+SFX/music/Rogue Rush.mp3
+SFX/music/Stealth Surge.mp3
+SFX/music/Upbeat Beating.mp3
+SFX/music/a hero of the 80s.mp3
+SFX/music/on the road to the 80s.mp3
+SFX/sounds/doorOpen.wav
+SFX/sounds/explosion.wav
+SFX/sounds/hitHurt.wav
+SFX/sounds/hitHurtEnemy.wav
+SFX/sounds/pickupKey.wav
+SFX/sounds/shoot.wav
+SFX/sounds/swordSwipe.wav
+credits.txt

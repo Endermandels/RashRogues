@@ -1,5 +1,6 @@
 package io.github.RashRogues;
 
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 
@@ -14,13 +15,22 @@ public class Room extends Sprite {
 
     protected int numEnemies;
     protected int difficulty;
+    protected Music music;
     // enemies would likely be spawned in here
     // this would include the one that drops the key.
 
-    Room(Texture texture, int doorPositionX, int doorPositionY, int numEnemies, int difficulty) {
+    protected final float SPAWN_TIMER_DECAY = 0.5f;
+    protected final float SPAWN_TIMER_MIN = 0.5f;
+    protected float spawnTimerMax = 5f;
+    protected float spawnTimer;
+
+    protected Random rnd;
+
+    Room(Texture texture, int doorPositionX, int doorPositionY, int numEnemies, int difficulty, Music music) {
         super(texture);
         this.doorPositionX = doorPositionX;
         this.doorPositionY = doorPositionY;
+        this.music = music;
         /*
         the logic below scales whatever the size of the map is to be 500m wide and
         whatever the proportional height is to that based on the texture.
@@ -35,10 +45,30 @@ public class Room extends Sprite {
 
         this.numEnemies = numEnemies;
         this.difficulty = difficulty;
+        spawnTimer = 0;
+        rnd = RRGame.globals.getRandom();
+    }
+
+    private void spawnEnemy(float x, float y, boolean hasKey) {
+        int choice = rnd.nextInt(3);
+        Enemy e = null;
+        switch (choice) {
+            case 0:
+                e = new Swordsman(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet, hasKey);
+                break;
+            case 1:
+                e = new Archer(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet, hasKey);
+                break;
+            case 2:
+                e = new Bomber(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet, hasKey);
+                break;
+        }
+        for (int j = 0; j < difficulty; j++){
+            e.levelUpEnemy();
+        }
     }
 
     void spawnInitialEnemies() {
-        Random rnd = RRGame.globals.getRandom();
         int numKeys = 5;
         for (int i = 0; i < numEnemies; i++) {
             float x = rnd.nextFloat(10, roomWidth-10);
@@ -47,22 +77,24 @@ public class Room extends Sprite {
                 // Key enemies should be up towards the door
                 y = rnd.nextFloat(roomHeight-10, roomHeight);
             }
-            int choice = rnd.nextInt(3);
-            Enemy e = null;
-            switch (choice) {
-                case 0:
-                    e = new Swordsman(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet, numKeys-- > 0);
-                    break;
-                case 1:
-                    e = new Archer(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet, numKeys-- > 0);
-                    break;
-                case 2:
-                    e = new Bomber(x, y, RRGame.STANDARD_ENEMY_SIZE, RRGame.globals.playersSet, numKeys-- > 0);
-                    break;
-            }
-            for (int j = 0; j < difficulty; j++){
-                e.levelUpEnemy();
-            }
+            spawnEnemy(x, y, numKeys-- > 0);
+        }
+        music.play();
+    }
+
+    void stopMusic() {
+        music.stop();
+    }
+
+    void update(float delta) {
+        // Spawn enemies
+        spawnTimer += delta;
+        if (spawnTimer > spawnTimerMax) {
+            spawnTimer = 0;
+            spawnTimerMax = Math.max(SPAWN_TIMER_MIN, spawnTimerMax-SPAWN_TIMER_DECAY);
+            float x = rnd.nextFloat(10, roomWidth-10);
+            float y = rnd.nextFloat(0, 10);
+            spawnEnemy(x, y, false);
         }
     }
 }

@@ -103,6 +103,11 @@ public class LobbyScreen extends ScreenAdapter implements RRScreen {
         return;
     }
 
+    @Override
+    public void executeCommand(String[] cmd) {
+       return;
+    }
+
     public void dispose(){
         if (this.solicitor != null){
             this.solicitor.dispose();

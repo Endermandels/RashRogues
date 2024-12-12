@@ -1,6 +1,9 @@
 package io.github.RashRogues;
 
+import com.badlogic.gdx.audio.Sound;
+
 import java.util.HashSet;
+import java.util.Random;
 
 public class Archer extends Enemy {
 
@@ -39,6 +42,9 @@ public class Archer extends Enemy {
 
     private Player target;
 
+    private Random rnd;
+    private Sound shootSFX;
+
     Archer(float x, float y, float size, HashSet<Player> playerSet, boolean hasKey) {
         super(RRGame.am.get(RRGame.RSC_ARCHER_IMG), x, y, size, hasKey);
         this.stats = new EnemyStats(BASE_ARCHER_HEALTH, BASE_ARCHER_DAMAGE, BASE_ARCHER_ATTACK_SPEED, BASE_ARCHER_MOVE_SPEED, BASE_ARCHER_RETREAT_SPEED, this);
@@ -47,6 +53,8 @@ public class Archer extends Enemy {
 
         state = State.IDLE;
         this.playerSet = playerSet;
+        rnd = RRGame.globals.getRandom();
+        shootSFX = RRGame.am.get(RRGame.RSC_SHOOT_SFX);
         attackTimer    = 0f;
         attentionTimer = 0f;
         breatherTimer  = 0f;
@@ -86,9 +94,13 @@ public class Archer extends Enemy {
     }
 
     private void attack(float delta) {
+        // TODO: If you want aim/attack/stow to be different things at different times, that logic goes here
+        // Aim = OPEN, Stow = CLOSE
         attackTimer += delta;
 
         if (attackTimer > ATTACK_TIME_MAX) {
+            float xOff = rnd.nextFloat(-0.2f,0.2f);
+            float yOff = rnd.nextFloat(-0.2f,0.2f);
 
             float xDist = target.getX()+target.getWidth()/2 - this.getX()-this.getWidth()/2;
             float yDist = target.getY()+target.getHeight()/2 - this.getY()-this.getHeight()/2;
@@ -101,7 +113,8 @@ public class Archer extends Enemy {
                 this.flipped = true;
             }
 
-            new Arrow(getX(), getY(), attackXDir, attackYDir, ARROW_DAMAGE,
+            shootSFX.play(0.1f, rnd.nextFloat(0.5f,2f),0);
+            new Arrow(getX()+getWidth()/2, getY()+getHeight()/2, attackXDir+xOff, attackYDir+yOff, ARROW_DAMAGE,
                     RRGame.STANDARD_PROJECTILE_SPEED, this.id);
             attackTimer = 0f;
         }
@@ -237,6 +250,7 @@ public class Archer extends Enemy {
                 break;
 
             case ATTACK:
+                this.setCurrentAnimation(AnimationAction.ATTACK);
 
                 // Target Player Dead -> go idle
                 if (target.stats.isDead()){

@@ -211,6 +211,13 @@ public class Server implements Endpoint{
     }
 
     @Override
+    public void dispatchCommand(String[] cmd) {
+        for (ClientListener c : clients){
+            c.dispatchCommand(cmd);
+        }
+    }
+
+    @Override
     public void dispatchHeartbeat() {
         return;
     }

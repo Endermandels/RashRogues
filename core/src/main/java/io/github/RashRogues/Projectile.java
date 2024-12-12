@@ -4,8 +4,6 @@ import Networking.ReplicationType;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 
-import java.security.Timestamp;
-
 public class Projectile extends Entity {
     // Melee Projectiles are just projectiles that don't move and only last a small amount of time (animation time)
 
@@ -20,6 +18,7 @@ public class Projectile extends Entity {
     private float distance;
     private long number;
     private int creator;
+    private AnimationActor animationActor;
 
     /**
      * Typical Ranged Projectile (direction, distance, and speed based)
@@ -42,8 +41,8 @@ public class Projectile extends Entity {
      */
     Projectile(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
                float xDirection, float yDirection, int damage, float degreesOffsetFromFacingRight,
-               boolean onlyHitOneTarget, float distance, float speed, ReplicationType replicationType, int pid, long number) {
-        super(alignment,texture,x,y,width,height,Layer.PROJECTILE, replicationType, pid, number);
+               boolean onlyHitOneTarget, float distance, float speed, AnimationActor animationActor, ReplicationType replicationType, int pid, long number) {
+        super(alignment,texture,x,y,width,height,Layer.PROJECTILE, animationActor, replicationType, pid, number);
         Vector2 direction = new Vector2(xDirection, yDirection).nor();
         this.damage = damage;
         this.distance = distance;
@@ -54,8 +53,10 @@ public class Projectile extends Entity {
         this.setRotation(degreesOffsetFromFacingRight+direction.angleDeg());
         this.onlyHitOneTarget = onlyHitOneTarget;
         this.travelTimer = 0f;
+        this.animationActor = animationActor;
         this.number = number;
         this.creator = pid;
+        setCurrentAnimation(AnimationAction.ATTACK);
     }
 
     /**
@@ -72,9 +73,10 @@ public class Projectile extends Entity {
      * @param onlyHitOneTarget
      * @param duration
      */
-    Projectile(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
-               int damage, float degreesOffsetFromFacingRight, boolean onlyHitOneTarget, float duration) {
-        super(alignment, texture, x, y, width, height, Layer.PROJECTILE,ReplicationType.CLIENTSIDE,-1,-1);
+    Projectile(EntityAlignment alignment, Texture texture, float x, float y, float width, float height, int damage,
+               float degreesOffsetFromFacingRight, boolean onlyHitOneTarget, float duration, AnimationActor animationActor) {
+        super(alignment, texture, x, y, width, height, Layer.PROJECTILE, animationActor,
+                ReplicationType.CLIENTSIDE,-1,-1);
         this.damage = damage;
         this.speed = 0;
         this.duration = duration;
@@ -83,8 +85,10 @@ public class Projectile extends Entity {
         this.setRotation(degreesOffsetFromFacingRight+90);
         this.onlyHitOneTarget = onlyHitOneTarget;
         this.travelTimer = 0f;
+        this.animationActor = animationActor;
         this.number = -1;
         this.creator = -1;
+        setCurrentAnimation(AnimationAction.ATTACK);
     }
 
     /**
@@ -104,11 +108,12 @@ public class Projectile extends Entity {
             float degOffset = this.getRotation() - direction.angleDeg();
             returnProjectile = new Projectile(this.alignment, this.getTexture(), this.getX(), this.getY(), this.getWidth(),
                     this.getHeight(), this.xVelocity, this.yVelocity, this.damage, degOffset, this.onlyHitOneTarget,
-                    this.distance, this.speed, this.replicationType, this.creator,this.number);
+                    this.distance, this.speed, this.animationActor, this.replicationType, this.creator, this.number);
         }
         else {
             returnProjectile =  new Projectile(this.alignment, this.getTexture(), this.getX(), this.getY(), this.getWidth(),
-                    this.getHeight(), this.damage, this.getRotation(), this.onlyHitOneTarget, this.duration);
+                    this.getHeight(), this.damage, this.getRotation(), this.onlyHitOneTarget, this.duration,
+                    this.animationActor);
         }
         // because this step is done on each subclass, we need to do it here
         returnProjectile.setBoxPercentSize(this.hitBoxWidthScalar, this.hitBoxHeightScalar, returnProjectile.hitBox);

@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Rectangle;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public abstract class Entity extends Sprite {
 
@@ -26,6 +27,14 @@ public abstract class Entity extends Sprite {
     public ReplicationType replicationType;
 
     private BitmapFont font = new BitmapFont();
+
+    // Used for Animation
+    private static AnimationHandler ah = new AnimationHandler();
+    private Map<AnimationAction, AnimationInfo> animations;
+    private AnimationInfo currentAnimationInfo;
+    private AnimationAction currentAnimationAction;
+    private float animationTimer;
+    private boolean animationsActive;
 
     // Used For Networking
     public int id     = -1;
@@ -47,7 +56,8 @@ public abstract class Entity extends Sprite {
      * @param number
      */
     public Entity(EntityAlignment alignment, Texture texture, float x, float y,
-                     float width, float height, Layer layer, ReplicationType replicationType, int creatorPID, long number) {
+                     float width, float height, Layer layer, AnimationActor animationActor,
+                     ReplicationType replicationType, int creatorPID, long number) {
         super(texture);
         setSize(width, height);
         setOrigin(width / 2, height / 2);
@@ -65,6 +75,33 @@ public abstract class Entity extends Sprite {
         this.activeEffects = new HashMap<Effect, Float>();
         this.replicationType = replicationType;
         RRGame.globals.registerEntity(this, replicationType, creatorPID, number);
+        this.toggleAnimations(true);
+        if (animationActor == null) {
+            // this is redundant but necessary unless we want a whole extra layer of nested if loops!
+            this.animations = null;
+        }
+        else if (this instanceof Player) {
+            switch (RRGame.globals.pid) {
+                case 0:
+                    this.setUpAnimations(AnimationActor.PLAYER1);
+                    break;
+                case 1:
+                    this.setUpAnimations(AnimationActor.PLAYER2);
+                    break;
+                case 2:
+                    this.setUpAnimations(AnimationActor.PLAYER3);
+                    break;
+                case 3:
+                    this.setUpAnimations(AnimationActor.PLAYER4);
+                    break;
+                default:
+                    this.setUpAnimations(animationActor);
+                    break;
+            }
+        }
+        else {
+            this.setUpAnimations(animationActor);
+        }
     }
 
     /**
@@ -73,6 +110,23 @@ public abstract class Entity extends Sprite {
      * @param delta
      */
     public void update(float delta) {
+
+        // change animation state if necessary
+        // if an animation wasn't set up and animations aren't active, there will just be the default static sprite image
+        if (animations != null && animationsActive) {
+            animationTimer += delta;
+            if (xVelocity != 0 || yVelocity != 0) {
+                setCurrentAnimation(AnimationAction.MOVE);
+            }
+            if (currentAnimationInfo.isAnimationFinished(animationTimer)) {
+                setCurrentAnimation(AnimationAction.DEFAULT);
+            }
+            setRegion(currentAnimationInfo.getCurrentFrame(animationTimer));
+        }
+        else {
+            setRegion(getTexture());
+        }
+
 
         // update any timers for effects; once the time has elapsed, remove that effect
         for (Effect effect : activeEffects.keySet()) {
@@ -95,6 +149,40 @@ public abstract class Entity extends Sprite {
 
         hitBox.update(delta);
     }
+
+    private void setUpAnimations(AnimationActor animationActor) {
+        this.animationTimer = 0f;
+        if (Entity.ah.animations.get(animationActor) == null) return;
+        this.animations = Entity.ah.animations.get(animationActor);
+        this.currentAnimationInfo = this.animations.get(AnimationAction.DEFAULT);
+        this.currentAnimationAction = AnimationAction.DEFAULT;
+    }
+
+    protected boolean setCurrentAnimation(AnimationAction action) {
+        // if somehow we've asked it to do something that doesn't exist, then don't crash
+        // additionally, death animations take priority over everything
+        if (this.animations == null || !this.animations.containsKey(action) || this.currentAnimationAction == AnimationAction.DIE) {
+            return false;
+        }
+        // move only has priority over the idle animation, no others
+        if (action == AnimationAction.MOVE && this.currentAnimationAction != AnimationAction.DEFAULT) {
+            return false;
+        }
+        this.currentAnimationInfo = this.animations.get(action);
+        // if it's the same action, then skip resetting it, UNLESS it's the hurt animation
+        if (this.currentAnimationAction != action || this.currentAnimationAction == AnimationAction.HURT) {
+            this.currentAnimationAction = action;
+            this.animationTimer = 0f;
+            return true;
+        }
+        return false;
+    }
+
+    protected void toggleAnimations(boolean onOrOff) {
+        this.animationsActive = onOrOff;
+    }
+
+    protected boolean isAnimationFinished() { return this.currentAnimationInfo.isAnimationFinished(animationTimer); }
 
     /**
      * Hit or Hurt Box has its width and height multiplied by WidthScalar and HeightScalar respectively.

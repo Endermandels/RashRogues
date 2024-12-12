@@ -1,6 +1,9 @@
 package io.github.RashRogues;
 
+import com.badlogic.gdx.audio.Sound;
+
 import java.util.HashSet;
+import java.util.Random;
 
 public class Swordsman extends Enemy {
 
@@ -34,8 +37,11 @@ public class Swordsman extends Enemy {
 
     private Player target;
 
+    private Random rnd;
+    private Sound swipeSFX;
+
     Swordsman(float x, float y, float size, HashSet<Player> playerSet, boolean hasKey) {
-        super(RRGame.am.get(RRGame.RSC_SWORDSMAN_IMG), x, y, size, hasKey);
+        super(RRGame.am.get(RRGame.RSC_SWORDSMAN_IMG), x, y, size, hasKey, AnimationActor.SWORDSMAN);
         this.stats = new EnemyStats(BASE_SWORDSMAN_HEALTH, BASE_SWORDSMAN_DAMAGE, BASE_SWORDSMAN_ATTACK_SPEED, BASE_SWORDSMAN_MOVE_SPEED, BASE_SWORDSMAN_RETREAT_SPEED, this);
         setBoxPercentSize(SWORDSMAN_HIT_BOX_PERCENT_SCALAR, SWORDSMAN_HIT_BOX_PERCENT_SCALAR, hitBox);
         setBoxPercentSize(SWORDSMAN_HURT_BOX_PERCENT_SCALAR, SWORDSMAN_HURT_BOX_PERCENT_SCALAR, hurtBox);
@@ -44,6 +50,8 @@ public class Swordsman extends Enemy {
         state = State.IDLE;
         attackTimer    = 0f;
         attentionTimer = 0f;
+        swipeSFX = RRGame.am.get(RRGame.RSC_SWORD_SWIP_SFX);
+        rnd = RRGame.globals.getRandom();
 
     }
 
@@ -71,12 +79,9 @@ public class Swordsman extends Enemy {
 
         if (attackTimer > ATTACK_TIME_MAX) {
             // Create melee attack
-            new MeleeAttack(EntityAlignment.ENEMY,
-                    RRGame.am.get(RRGame.RSC_SMOKE_BOMB_EXPLOSION_IMG),
-                    attackX-5, attackY-3,
-                    RRGame.SMOKE_BOMB_EXPLOSION_SIZE, RRGame.SMOKE_BOMB_EXPLOSION_SIZE,
-                    ATTACK_DAMAGE, ATTACK_DURATION);
+            new SwordsmanSwing(attackX-5, attackY-3, ATTACK_DAMAGE);
             attackTimer = 0f;
+            swipeSFX.play(0.2f,rnd.nextFloat(0.5f, 2.0f),0);
         }
     }
 
@@ -177,6 +182,8 @@ public class Swordsman extends Enemy {
                 break;
 
             case ATTACK:
+
+                this.setCurrentAnimation(AnimationAction.ATTACK);
 
                 if (target.stats.isDead()){
                     state = State.IDLE;
