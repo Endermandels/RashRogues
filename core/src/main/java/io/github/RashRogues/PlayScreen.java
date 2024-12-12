@@ -1,6 +1,10 @@
 package io.github.RashRogues;
 
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.graphics.FPSLogger;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -28,6 +32,10 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     private HashMap<Integer, Boolean> inputs;
     public static CollisionGrid collisionGrid = new CollisionGrid();
 
+    //Debugging
+    private static BitmapFont font = new BitmapFont(Gdx.files.internal("fonts/debug.fnt"),false);
+    private static Entity debugEntity = null;
+
     public PlayScreen(RRGame game) {
 
         /* Initialization */
@@ -41,6 +49,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         loadRooms();
         setNextRoom();
         createHUDAndInputs();
+        font.getData().setScale(3f);
 
         /* Player Creation */
         player = new Player(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, (int) RRGame.PLAYER_SIZE, RRGame.globals.pid);
@@ -49,8 +58,12 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         gui = new GUI(player);
 
         /* Instance Creation */
-//        new Swordsman(50, 30, 10, RRGame.globals.playersSet);
-//        new Key(30, 280);
+        new Archer(45, 275, 4, RRGame.globals.playersSet,true);
+        new Bomber(35, 275, 4, RRGame.globals.playersSet,true);
+        new Swordsman(25, 275, 4, RRGame.globals.playersSet,true);
+        new Key(25,275);
+        new Key(25,280);
+        new Key(25,290);
 
         /* Camera Setup */
         game.playerCam.bind(player);
@@ -188,9 +201,36 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                 Enemy enemy = (Enemy) e;
                 drawHurtBox(enemy.hurtBox);
             }
+
         }
         game.shapeRenderer.end();
         Gdx.gl.glDisable(GL20.GL_BLEND);
+
+        Vector3 mouse = new Vector3();
+        mouse.x = Gdx.input.getX();
+        mouse.y = Gdx.input.getY();
+        mouse.z = 0;
+        game.playerCam.unproject(mouse);
+
+        for (Entity e : localEntities){
+            if ((mouse.x > e.hitBox.getX() && mouse.x < e.hitBox.getX() + e.hitBox.getWidth()) && (mouse.y > e.hitBox.getY() && mouse.y < e.hitBox.getY() + e.hitBox.getHeight())){
+                debugEntity = e;
+                break;
+            }
+        }
+
+        if (debugEntity != null) {
+            game.hudBatch.begin();
+            font.getData().setScale(3f);
+            font.draw(game.hudBatch, "Entity: " + debugEntity.toString(), 5, Gdx.graphics.getHeight()-30);
+            font.draw(game.hudBatch, "Repl. Type: " + debugEntity.replicationType, 5, Gdx.graphics.getHeight()-60);
+            font.getData().setScale(2.5f);
+            font.draw(game.hudBatch, "ID: " + debugEntity.id, 5, Gdx.graphics.getHeight() - 90);
+            font.draw(game.hudBatch, "Number: " + debugEntity.number, 5, Gdx.graphics.getHeight() - 110);
+            font.draw(game.hudBatch, "Creator: " + debugEntity.pid, 5, Gdx.graphics.getHeight() - 130);
+            game.hudBatch.end();
+        }
+
     }
 
     @Override
@@ -213,7 +253,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     private void loadRooms() {
         this.rooms = new ArrayList<>();
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM1_IMG),
-                35, 301, 80, 0, game.room1Music));
+                35, 301, 00, 0, game.room1Music));
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM2_IMG),
                 35, 301, 120, 10, game.room2Music));
 
@@ -306,13 +346,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
             public String help(String[] cmd) {
                 return help;
-            }
-        });
-
-        hud.registerAction("netviewer", new HUDActionCommand() {
-            @Override
-            public String execute(String[] cmd) {
-                return "see console.";
             }
         });
 
@@ -491,7 +524,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                 if (keycode == Input.Keys.Q) {
                     inputs.put(Input.Keys.Q, true);
                 }
-
 
                 return true;
             }

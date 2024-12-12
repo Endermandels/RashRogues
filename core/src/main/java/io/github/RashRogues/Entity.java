@@ -42,7 +42,7 @@ public abstract class Entity extends Sprite {
     // Used For Networking
     public int id     = -1;
     public int pid    = -1;
-    public long frame = -1;
+    public long number = -1;
 
     /**
      * Create an Entity on the current screen.
@@ -205,7 +205,7 @@ public abstract class Entity extends Sprite {
             return false;
         }
         // move only has priority over the idle animation, no others
-        if (action == AnimationAction.MOVE && this.currentAnimationAction != AnimationAction.DEFAULT) {
+        if (action == AnimationAction.MOVE && this.currentAnimationAction != AnimationAction.IDLE &&this.currentAnimationAction != AnimationAction.DEFAULT) {
             return false;
         }
         this.currentAnimationInfo = this.animations.get(action);

@@ -19,8 +19,11 @@ public enum PacketType {
     RANDOM_SEED(36),
     DESTROY3(37),
     KILL_PLAYER(38),
-    COMMAND(39),
-    PICKUP_KEY(40);
+    SET_TARGET(39),
+    PICKUP_KEY(40),
+    DESTROY4(41),
+    COMMAND(42),
+    DROP_KEY(43);
 
     private final int value;
     PacketType(int value){
