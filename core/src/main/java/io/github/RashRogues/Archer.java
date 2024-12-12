@@ -28,9 +28,9 @@ public class Archer extends Enemy {
     private final int ARROW_DAMAGE = 30;
     private final int ATTENTION_SPAN = 90;
     private final float ATTACK_TIME_MAX = 0.7f;
-    private float STRIKING_DISTANCE = 10f;
-    private float RETREAT_DISTANCE  = 8f;
-    private float RETREAT_THRESHOLD = 4f;
+    private float STRIKING_DISTANCE = 20f; // Shooting Range.
+    private float RETREAT_DISTANCE  = 18f; // Retreat to this distance if chased by player.
+    private float RETREAT_THRESHOLD = 8f;  // How close the player can get before retreating.
     private float BREATHER_TIME = 0.25f;
 
     private HashSet<Player> playerSet;
@@ -233,7 +233,7 @@ public class Archer extends Enemy {
 
                 float dist = distanceTo(target);
 
-                // Safe Distance -> Attack
+                // Safe Distance -> Take a breather
                 if (dist > RETREAT_DISTANCE) {
                     attentionTimer = 0;
                     xVelocity      = 0f;
