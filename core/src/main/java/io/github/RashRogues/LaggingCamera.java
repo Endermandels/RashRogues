@@ -13,6 +13,8 @@ public class LaggingCamera extends OrthographicCamera{
 
     public float roomWidth;
     public float roomHeight;
+    public float doorPositionX;
+    public float doorPositionY;
 
     public LaggingCamera(float viewportWidth, float viewportHeight) {
         super(viewportWidth, viewportHeight);
@@ -20,9 +22,11 @@ public class LaggingCamera extends OrthographicCamera{
         this.roomHeight = RRGame.WORLD_WIDTH; // this will change after about 5 milliseconds but needs to be here
     }
 
-    public void changeWorldSize(float roomWidth, float roomHeight) {
+    public void changeWorldSize(float roomWidth, float roomHeight, float doorPositionX, float doorPositionY) {
         this.roomWidth = roomWidth;
         this.roomHeight = roomHeight;
+        this.doorPositionX = doorPositionX;
+        this.doorPositionY = doorPositionY;
     }
 
     public void moveToPlayer(float playerCenterX, float playerCenterY, float delta) {

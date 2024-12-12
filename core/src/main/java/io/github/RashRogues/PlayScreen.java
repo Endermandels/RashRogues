@@ -1,6 +1,5 @@
 package io.github.RashRogues;
 
-import Networking.NetViewer;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.graphics.Color;
@@ -246,7 +245,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         currentRoom.spawnInitialEnemies();
         localEntities = tempLocalEntities;
         currentDoor = new Door(currentRoom.doorPositionX, currentRoom.doorPositionY);
-        game.playerCam.changeWorldSize(currentRoom.roomWidth, currentRoom.roomHeight);
+        game.playerCam.changeWorldSize(currentRoom.roomWidth, currentRoom.roomHeight, currentRoom.doorPositionX, currentRoom.doorPositionY);
         collisionGrid.updateCollisionGridRoomValues(currentRoom.roomWidth, currentRoom.roomHeight);
     }
 
