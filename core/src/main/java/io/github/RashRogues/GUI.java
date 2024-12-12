@@ -11,9 +11,11 @@ import static java.lang.Math.max;
 public class GUI {
 
     private HealthBar hb;
+    private SpecialAttack sa;
 
     public GUI(Player player) {
         hb = new HealthBar(player);
+        sa = new SpecialAttack(player);
     }
 
     public void update() {
@@ -22,40 +24,75 @@ public class GUI {
 
     public void draw(Batch batch) {
         hb.draw(batch);
+        sa.draw(batch);
     }
 
     public void resize(int width, int height) {
         hb.resize(width, height);
+        sa.resize(width, height);
     }
 }
 
-class HealthBar extends Entity{
+class GUIElement extends Entity {
+    protected Player player;
+
+    public GUIElement(Player player, Texture texture, float x, float y,
+                      float width, float height, AnimationActor animationActor) {
+        super(EntityAlignment.UI, texture, x, y,
+            width, height, Layer.FOREGROUND, animationActor,
+            ReplicationType.CLIENTSIDE, player.pid, -1);
+        this.player = player;
+    }
+}
+
+class SpecialAttack extends GUIElement {
+    private static final float X = 150f;
+    private static final float Y = -50f;
+    private float imgWidth;
+    private float imgHeight;
+
+    public SpecialAttack(Player player) {
+        super(player, RRGame.am.get(RRGame.RSC_SMOKE_BOMB_IMG), X, Y,
+                RRGame.SMOKE_BOMB_SIZE, RRGame.SMOKE_BOMB_SIZE, null);
+        imgWidth = Gdx.graphics.getWidth() * 0.25f;
+        imgHeight = imgWidth;
+    }
+
+    public void update() {
+        // Do animation with: player.getAbilityTimeLeft();
+    }
+
+    public void resize(int width, int height) {
+        imgWidth = Gdx.graphics.getWidth() * 0.25f;
+        imgHeight = imgWidth;
+    }
+
+    @Override
+    public void draw(Batch batch) {
+        batch.draw(getTexture(), X, Y, imgWidth, imgHeight);
+    }
+}
+
+class HealthBar extends GUIElement {
 
     private final long FREQUENCY = 50L;
-    private final float X = 10f;
-    private final float Y = 10f;
+    private static final float X = 10f;
+    private static final float Y = 10f;
     private float barWidth = Gdx.graphics.getWidth() * 0.25f;
     private float barHeight = barWidth / 4f;
-    private static final float TEXTURE_WIDTH = 64;
-    private static final float TEXTURE_HEIGHT = 16;
 
     private long lastShaked;
     private int lastHP;
     private int shakeY;
     private int bars; // Number of bars to show (from 0 to 8)
 
-    private Player player;
-    private TextureRegion image;
-
     public HealthBar(Player player) {
-        super(EntityAlignment.UI, RRGame.am.get(RRGame.RSC_HEALTH_BAR), 0, 0,
-        TEXTURE_WIDTH, TEXTURE_HEIGHT, Layer.FOREGROUND, AnimationActor.HEALTH_BAR_8,
-                ReplicationType.CLIENTSIDE, player.pid, -1);
+        super(player, RRGame.am.get(RRGame.RSC_HEALTH_BAR), X, Y,
+            64f, 16f, AnimationActor.HEALTH_BAR_8);
 
         // The Health Bar has 9 states in total, from empty to full 8 bars
         shakeY = 0;
         lastShaked = -1L;
-        this.player = player;
         lastHP = player.stats.getHealth();
         bars = 8;
     }

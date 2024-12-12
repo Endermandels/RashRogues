@@ -87,6 +87,7 @@ public class RRGame extends Game {
     public static final String RSC_BOMBER_EXPLOSION_SHEET = "Images/bomberExplosion sprite sheet.png";
     public static final String RSC_CHEST_SHEET = "Images/chest sprite sheet.png";
     public static final String RSC_DOOR_SHEET = "Images/door sprite sheet.png";
+    public static final String RSC_BOMB_GUI_SHEET = "Images/bomb GUI sprite sheet.png";
 
     // item/background sprites
     public static final String RSC_ROOM1_IMG = "DefaultImages/room1.png";
@@ -156,6 +157,7 @@ public class RRGame extends Game {
         am.load(RSC_MERCHANT_SHEET, Texture.class);
         am.load(RSC_CHEST_SHEET, Texture.class);
         am.load(RSC_DOOR_SHEET, Texture.class);
+        am.load(RSC_BOMB_GUI_SHEET, Texture.class);
         am.load(RSC_BOMBER_BOMB_SHEET, Texture.class);
         am.load(RSC_BOMBER_EXPLOSION_SHEET, Texture.class);
 

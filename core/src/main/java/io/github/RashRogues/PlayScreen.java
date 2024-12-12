@@ -150,7 +150,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         currentRoom.draw(game.batch);
         while (!renderQueue.isEmpty()){
             Entity e = renderQueue.poll();
-            if (!(e instanceof HealthBar)) e.draw(game.batch);
+            if (!(e instanceof GUIElement)) e.draw(game.batch);
         }
         game.batch.end();
 
