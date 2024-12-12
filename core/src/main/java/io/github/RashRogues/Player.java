@@ -194,6 +194,9 @@ public class Player extends Entity {
     }
 
     public void setHoldingKey(boolean holdingKey){
+        if (holdingKey){
+            pickupKeySFX.play(0.2f);
+        }
         this.holdingKey = holdingKey;
     }
 
@@ -204,14 +207,20 @@ public class Player extends Entity {
         }
     }
 
-    public void grabKey(){
+    public void grabKey(int keyID){
+        if (RRGame.globals.getKey(keyID) == null){
+            return;
+        }
+
         //Players on server pick up keys directly, and tell clients that a player picked up a key.
         if (RRGame.globals.pid == 0){
             setHoldingKey(true);
-            RRGame.globals.network.connection.dispatchKeyPickup(this.associatedPID);
+            RRGame.globals.network.connection.dispatchKeyPickup(this.associatedPID, keyID);
             pickupKeySFX.play(0.2f);
             //todo: play this on client too.
         }
+
+        // (key will destroy itself upon collision)
     }
 
 
@@ -293,7 +302,7 @@ public class Player extends Entity {
             hurtSFX.play(0.5f, rnd.nextFloat(0.5f, 2f), 0);
         }
         else if (thingThatHurtMe instanceof Key) {
-            this.grabKey();
+            this.grabKey(thingThatHurtMe.id);
         }
         else if (thingThatHurtMe instanceof Door) {
             // actually don't need this

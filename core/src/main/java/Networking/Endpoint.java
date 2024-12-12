@@ -21,5 +21,5 @@ public interface Endpoint {
     void dispatchKillPlayer(int pid);
     void dispatchTarget(int eid, int pid);
     public void dispatchCommand(String[] cmd);
-    void dispatchKeyPickup(int pid);
+    void dispatchKeyPickup(int pid, int keyID);
 }

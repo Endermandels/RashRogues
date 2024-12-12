@@ -215,8 +215,8 @@ public class ClientListener implements Endpoint {
      * Tell client that 'pid' picked up a key.
      * @param pid
      */
-    public void dispatchKeyPickup(int pid){
-        this.outgoingMessages.add(StreamMaker.pickupKey(pid));
+    public void dispatchKeyPickup(int pid, int keyID){
+        this.outgoingMessages.add(StreamMaker.pickupKey(pid, keyID));
     }
 
     /**

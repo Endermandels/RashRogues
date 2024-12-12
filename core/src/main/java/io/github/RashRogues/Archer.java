@@ -46,7 +46,7 @@ public class Archer extends Enemy {
     private Sound shootSFX;
 
     Archer(float x, float y, float size, HashSet<Player> playerSet, boolean hasKey) {
-        super(RRGame.am.get(RRGame.RSC_ARCHER_IMG), x, y, size, hasKey);
+        super(RRGame.am.get(RRGame.RSC_ARCHER_IMG), x, y, size, hasKey, AnimationActor.ARCHER);
         this.stats = new EnemyStats(BASE_ARCHER_HEALTH, BASE_ARCHER_DAMAGE, BASE_ARCHER_ATTACK_SPEED, BASE_ARCHER_MOVE_SPEED, BASE_ARCHER_RETREAT_SPEED, this);
         setBoxPercentSize(ARCHER_HIT_BOX_PERCENT_WIDTH_SCALAR, ARCHER_HIT_BOX_PERCENT_HEIGHT_SCALAR, hitBox);
         setBoxPercentSize(ARCHER_HURT_BOX_PERCENT_WIDTH_SCALAR, ARCHER_HURT_BOX_PERCENT_HEIGHT_SCALAR, hurtBox);
@@ -117,6 +117,10 @@ public class Archer extends Enemy {
             new Arrow(getX()+getWidth()/2, getY()+getHeight()/2, attackXDir+xOff, attackYDir+yOff, ARROW_DAMAGE,
                     RRGame.STANDARD_PROJECTILE_SPEED, this.id);
             attackTimer = 0f;
+
+            // update target after attacking.
+            this.findTarget();
+
         }
     }
 
@@ -253,7 +257,7 @@ public class Archer extends Enemy {
                 this.setCurrentAnimation(AnimationAction.ATTACK);
 
                 // Target Player Dead -> go idle
-                if (target.stats.isDead()){
+                if (target == null || target.stats.isDead()){
                     state = State.IDLE;
                     break;
                 }

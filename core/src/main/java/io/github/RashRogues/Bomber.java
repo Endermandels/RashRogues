@@ -43,7 +43,7 @@ public class Bomber extends Enemy {
     private Player target;
 
     Bomber(float x, float y, float size, HashSet<Player> playerSet, boolean hasKey) {
-        super(RRGame.am.get(RRGame.RSC_BOMBER_IMG), x, y, size, hasKey);
+        super(RRGame.am.get(RRGame.RSC_BOMBER_IMG), x, y, size, hasKey, AnimationActor.BOMBER);
         this.stats = new EnemyStats(BASE_BOMBER_HEALTH, BASE_BOMBER_DAMAGE, BASE_BOMBER_ATTACK_SPEED, BASE_BOMBER_MOVE_SPEED, BASE_BOMBER_RETREAT_SPEED, this);
         setBoxPercentSize(BOMBER_HIT_BOX_PERCENT_WIDTH_SCALAR, BOMBER_HIT_BOX_PERCENT_HEIGHT_SCALAR, hitBox);
         setBoxPercentSize(BOMBER_HURT_BOX_PERCENT_WIDTH_SCALAR, BOMBER_HURT_BOX_PERCENT_HEIGHT_SCALAR, hurtBox);
@@ -103,11 +103,11 @@ public class Bomber extends Enemy {
             }else{
                 this.flipped = true;
             }
-
-            new Bomb(EntityAlignment.ENEMY, RRGame.am.get(RRGame.RSC_SMOKE_BOMB_IMG), getX(), getY(), RRGame.SMOKE_BOMB_SIZE,
-                    RRGame.SMOKE_BOMB_SIZE, attackXDir, attackYDir, BOMB_DISTANCE, BOMB_FUSE_DURATION,
-                    new BombExplosion(EntityAlignment.ENEMY, getX(), getY(), BOMB_DAMAGE), BOMB_SPEED);
+            new BomberBomb(getX(), getY(), attackXDir, attackYDir, BOMB_DISTANCE, BOMB_SPEED,BOMB_DAMAGE);
             attackTimer = 0f;
+
+            //update the target after we attack
+            this.findTarget();
         }
     }
 
@@ -238,7 +238,7 @@ public class Bomber extends Enemy {
             case ATTACK:
                 this.setCurrentAnimation(AnimationAction.ATTACK);
                 // Target Player Dead -> go idle
-                if (target.stats.isDead()){
+                if (target == null || target.stats.isDead()){
                     state = State.IDLE;
                     break;
                 }

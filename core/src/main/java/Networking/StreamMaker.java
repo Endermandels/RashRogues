@@ -142,10 +142,16 @@ public class StreamMaker {
       return stream;
    }
 
-   public static byte[] pickupKey(int pid){
+   public static byte[] pickupKey(int pid, int keyID){
       byte[] stream = new byte[128];
       stream[0] = (byte) PacketType.PICKUP_KEY.getvalue();
       stream[1] = (byte) pid;
+      byte[] keyIDBytes = StreamMaker.intToBytes(keyID);
+      stream[2] = keyIDBytes[0];
+      stream[3] = keyIDBytes[1];
+      stream[4] = keyIDBytes[2];
+      stream[5] = keyIDBytes[3];
+
       return stream;
    }
 

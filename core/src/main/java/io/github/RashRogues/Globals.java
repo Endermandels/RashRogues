@@ -1,6 +1,5 @@
 package io.github.RashRogues;
 
-import Networking.Endpoint;
 import Networking.Network;
 import Networking.ReplicationType;
 
@@ -30,10 +29,11 @@ public class Globals {
     // Entities that are not deterministic but must be tied to a frame.
     private final HashMap<Integer, HashMap<Long,Entity>> nondeterministicReplicatedEntities     = new HashMap<>();
     private final HashMap<Integer, HashMap<Long,Entity>> nondeterministicReplicatedProjectiles  = new HashMap<>();
-    private final HashMap<Integer,HashMap<Long, Entity>> nondeterministicReplicatedEnemyProjectiles = new HashMap<>();
 
     private final HashMap<Integer,Long> projectileNumber                                        = new HashMap<>();
-    private final HashMap<Integer,Long> enemyProjectileNumber                                   = new HashMap<>();
+
+    private final HashMap<Integer,Entity> keys = new HashMap<>();
+    private int keyCount = 0;
 
     public void setupRandomNumberGenerator(){
         seed = new Random().nextLong();
@@ -44,7 +44,6 @@ public class Globals {
        this.pid = pid;
         this.nondeterministicReplicatedEntities.put(pid,new HashMap<>());
         this.nondeterministicReplicatedProjectiles.put(pid, new HashMap<>());
-        this.nondeterministicReplicatedEnemyProjectiles.put(pid, new HashMap<>());
         this.projectileNumber.put(pid,0l);
     }
 
@@ -65,16 +64,8 @@ public class Globals {
             return;
         }
 
-        // This entity needs to be indexed to a certain enemy, and then the count of projectiles that enemy has produced.
-        // in this scenario, creator is the id of the Entity, and number is the number of projectiles that entity has produced in the past.
-        if (type == ReplicationType.ENEMY_PROJECTILE_NUMBER) {
-            this.nondeterministicReplicatedEnemyProjectiles.get(creatorID).put(this.enemyProjectileNumber.get(creatorID),e);
-            e.number = this.enemyProjectileNumber.get(creatorID);
-            e.pid    = creatorID;
-            this.enemyProjectileNumber.put(creatorID, this.enemyProjectileNumber.get(creatorID)+1);
-
         // This entity needs to be indexed to a certain 'frame', and originator.
-        } else if (type == ReplicationType.FRAME_NUMBER) {
+         if (type == ReplicationType.FRAME_NUMBER) {
             this.nondeterministicReplicatedEntities.get(creatorID).put(number, e);
             e.pid = creatorID;
             e.number = number;
@@ -91,9 +82,11 @@ public class Globals {
             deterministicReplicatedEntities.put(this.eid, e);
             e.id = this.eid;
             deterministicReplicatedEntitiesSet.add(e);
-            this.enemyProjectileNumber.put(e.id,0l);
-            this.nondeterministicReplicatedEnemyProjectiles.put(e.id, new HashMap<>());
             this.eid++;
+        } else if (type == ReplicationType.KEY){
+            keys.put(this.keyCount,e);
+            e.id = keyCount;
+            keyCount++;
         }
         RRGame.globals.currentScreen.registerEntity(e);
     }
@@ -106,13 +99,6 @@ public class Globals {
 
         if (e == null){
             return;
-        }
-
-        if (e.replicationType == ReplicationType.ENEMY_PROJECTILE_NUMBER){
-            // Tell client to destroy this projectile.
-            if (this.pid == 0){
-                Globals.network.connection.dispatchDestroyEntity3(e.pid, e.number);
-            }
         }
 
          if (e.replicationType == ReplicationType.PLAYER){
@@ -162,11 +148,13 @@ public class Globals {
         return 0;
     }
 
-    public long getEnemyProjectileNumber(int eid){
-        if (this.enemyProjectileNumber.containsKey(eid)){
-            return this.enemyProjectileNumber.get(eid);
-        }
-        return 0;
+    /**
+     * Get the entity of a registered Key.
+     * @param keyID
+     * @return
+     */
+    public Entity getKey(int keyID){
+        return this.keys.get(keyID);
     }
 
     /**
@@ -191,19 +179,6 @@ public class Globals {
     public Entity findNondeterministicProjectile(int pid, long number){
         if (this.nondeterministicReplicatedProjectiles.containsKey(pid)){
             return this.nondeterministicReplicatedProjectiles.get(pid).get(number);
-        }
-        return null;
-    }
-
-    /**
-     * Get a projectile that was registered as nondeterministic, and was fired by entity 'eid'
-     * @param eid
-     * @param number
-     * @return
-     */
-    public Entity findNondeterministicEnemyProjectile(int eid, long number){
-        if (this.nondeterministicReplicatedEnemyProjectiles.containsKey(eid)){
-            return this.nondeterministicReplicatedEnemyProjectiles.get(eid).get(number);
         }
         return null;
     }
@@ -254,7 +229,6 @@ public class Globals {
         RRGame.globals.clientSet.add(pid);
         this.nondeterministicReplicatedEntities.put(pid,new HashMap<>());
         this.nondeterministicReplicatedProjectiles.put(pid,new HashMap<>());
-        this.nondeterministicReplicatedEnemyProjectiles.put(pid,new HashMap<>());
         this.projectileNumber.put(pid,0l);
     }
 

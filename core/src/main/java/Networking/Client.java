@@ -166,8 +166,6 @@ public class Client implements Endpoint {
                 this.handlePickupKey(msg);
             } else if (msgType == SET_TARGET.getvalue()){
                 this.handleSetTarget(msg);
-            } else if (msgType == DESTROY4.getvalue()){
-                this.handleDestroyEnemyProjectile(msg);
             }
         }
 
@@ -242,7 +240,7 @@ public class Client implements Endpoint {
     }
 
     @Override
-    public void dispatchKeyPickup(int pid) {
+    public void dispatchKeyPickup(int pid, int keyID) {
        return;
     }
 
@@ -275,12 +273,25 @@ public class Client implements Endpoint {
         RRGame.globals.setPID(this.pid);
     }
 
+    /**
+     * Server told us to pickup a specific key from the world.
+     * @param packet
+     */
     public void handlePickupKey(byte[] packet){
         int playerWhoPickedUpKey = packet[1];
+        byte[] keyIDBytes = new byte[4];
+        System.arraycopy(packet,3,keyIDBytes,0,4);
+        int keyID = StreamMaker.bytesToInt(keyIDBytes);
+
+        Entity key = RRGame.globals.getKey(keyID);
         Player p = RRGame.globals.players.get(playerWhoPickedUpKey);
-        if (p != null){
-            p.setHoldingKey(true);
+
+        if (key == null || p == null){
+            return;
         }
+
+        RRGame.globals.deregisterEntity(key);
+        p.setHoldingKey(true);
     }
 
     /**
@@ -317,33 +328,9 @@ public class Client implements Endpoint {
         if (e != null && e instanceof Enemy){
             ((Enemy) e).setTarget(p);
         }else{
+            System.out.println("EID: " + eid);
+            System.out.println("E: " + e);
             System.out.println(">>! Warning: Unable to match entity with Server!");
-        }
-    }
-
-    /**
-     * Server has instructed us to destroy a projectile.
-     * This projectile belongs to entity 'eid' and is the 'number'th projectile produced by this entity.
-     * @param packet
-     */
-    public void handleDestroyEnemyProjectile(byte[] packet){
-        byte[] eidBytes = new byte[4];
-        System.arraycopy(packet,1,eidBytes,0,4);
-        int eid = StreamMaker.bytesToInt(eidBytes);
-
-        byte[] numberBytes = new byte[8];
-        System.arraycopy(packet,5, numberBytes,0,8);
-        long number = StreamMaker.bytesToLong(numberBytes);
-
-        System.out.println("Destroying projectile from " + Integer.toString(eid));
-
-        Entity e = RRGame.globals.findNondeterministicEnemyProjectile(eid,number);
-        System.out.flush();
-        if (e != null){
-            RRGame.globals.deregisterEntity(e);
-        }else{
-            System.out.println(">>! Warning: Unable to match entity with Server!");
-
         }
     }
 

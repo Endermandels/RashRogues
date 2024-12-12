@@ -50,7 +50,7 @@ public class Swordsman extends Enemy {
         state = State.IDLE;
         attackTimer    = 0f;
         attentionTimer = 0f;
-        swipeSFX = RRGame.am.get(RRGame.RSC_SWORD_SWIP_SFX);
+        swipeSFX = RRGame.am.get(RRGame.RSC_SWORD_SWIPE_SFX);
         rnd = RRGame.globals.getRandom();
 
     }
@@ -82,6 +82,9 @@ public class Swordsman extends Enemy {
             new SwordsmanSwing(attackX-5, attackY-3, ATTACK_DAMAGE);
             attackTimer = 0f;
             swipeSFX.play(0.2f,rnd.nextFloat(0.5f, 2.0f),0);
+
+            //after each attack, see if there is a better target available.
+            this.findTarget();
         }
     }
 
@@ -170,6 +173,7 @@ public class Swordsman extends Enemy {
                     state          = State.ATTACK;
                     break;
                 }
+
                 move();
 
                 break;
@@ -182,10 +186,9 @@ public class Swordsman extends Enemy {
                 break;
 
             case ATTACK:
-
                 this.setCurrentAnimation(AnimationAction.ATTACK);
 
-                if (target.stats.isDead()){
+                if (target == null || target.stats.isDead()){
                     state = State.IDLE;
                     break;
                 }
@@ -194,6 +197,7 @@ public class Swordsman extends Enemy {
                     attackTimer = 0;
                     break;
                 }
+
                 attack(delta);
 
                 break;

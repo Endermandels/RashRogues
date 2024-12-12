@@ -204,9 +204,9 @@ public class Server implements Endpoint{
        }
     }
 
-    public void dispatchKeyPickup(int pid){
+    public void dispatchKeyPickup(int pid,int keyID){
         for (ClientListener c : clients){
-            c.dispatchKeyPickup(pid);
+            c.dispatchKeyPickup(pid,keyID);
         }
     }
 
