@@ -356,7 +356,6 @@ public class Client implements Endpoint {
         RRGame.globals.deregisterEntity(p);
     }
 
-
     public void handleSetTarget(byte[] packet){
         int pid = packet[1];
         byte[] eidBytes = new byte[4];
@@ -375,7 +374,6 @@ public class Client implements Endpoint {
             }
 
             if (tgtPktDeferCount.get(eid) >= tgtPktDeferMax){
-                System.out.println(">>! Unable to set target for Entity #" + eid + " after " + tgtPktDeferMax + " tries.");
                 return;
             }
 

@@ -279,17 +279,6 @@ public class Globals {
         return this.seed;
     }
 
-    /**
-     * Returns a number between 0 and bound
-     * @param bound Upper bound
-     * @return int
-     */
-    public int getRandomInteger(int bound){
-       if (this.random != null){
-           return random.nextInt(bound);
-       }
-       return 0;
-    }
 
     /**
      * Returns a random number generator.
@@ -297,7 +286,8 @@ public class Globals {
      * @return Random
      */
     public Random getRandom(){
-        return this.random;
+        Random newRandom = new Random(this.random.nextLong());
+        return newRandom;
     }
 
 }
