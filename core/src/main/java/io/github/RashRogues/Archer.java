@@ -1,6 +1,7 @@
 package io.github.RashRogues;
 
 import java.util.HashSet;
+import java.util.Random;
 
 public class Archer extends Enemy {
 
@@ -27,6 +28,8 @@ public class Archer extends Enemy {
     private float attackTimer;
     private float attackXDir, attackYDir;
 
+    private Random rnd;
+
     Archer(float x, float y, float size, HashSet<Player> playerSet, boolean hasKey) {
         super(RRGame.am.get(RRGame.RSC_ARCHER_IMG), x, y, size, hasKey, AnimationActor.ARCHER);
         this.stats = new EnemyStats(BASE_ARCHER_HEALTH, BASE_ARCHER_DAMAGE, BASE_ARCHER_ATTACK_SPEED, BASE_ARCHER_MOVE_SPEED, this);
@@ -36,6 +39,7 @@ public class Archer extends Enemy {
         state = State.WALK;
         this.playerSet = playerSet;
         attackTimer = 0f;
+        rnd = RRGame.globals.getRandom();
     }
 
 
@@ -71,10 +75,14 @@ public class Archer extends Enemy {
             flipped = xVelocity < 0f;
         } else if (magnitude < 20f) {
             // Start shooting
+            float predictConst = 40f; // adjust this to tweak how much the archer aims ahead
             xVelocity = 0f;
             yVelocity = 0f;
-            attackXDir = xDist / magnitude;
-            attackYDir = yDist / magnitude;
+            xDist += predictConst * (p.xVelocity / p.maxXVelocity);
+            yDist += predictConst * (p.yVelocity / p.maxYVelocity);
+            magnitude = (float) Math.sqrt(xDist * xDist + yDist * yDist);
+            attackXDir =  xDist / magnitude;
+            attackYDir =  yDist / magnitude;
             state = State.ATTACK;
         } else {
             // Move towards player
@@ -96,8 +104,11 @@ public class Archer extends Enemy {
         attackTimer += delta;
         if (attackTimer > attackTimerMax) {
             // Spawn arrow
-            new Arrow(getX(), getY(), attackXDir, attackYDir, ARROW_DAMAGE,
-                    RRGame.STANDARD_PROJECTILE_SPEED);
+            float xOff = rnd.nextFloat(-0.2f, 0.2f);
+            float yOff = rnd.nextFloat(-0.2f, 0.2f);
+
+            new Arrow(getX()+getWidth()/2, getY()+getHeight()/2, attackXDir+xOff, attackYDir+yOff,
+                    ARROW_DAMAGE, RRGame.STANDARD_PROJECTILE_SPEED);
             attackTimer = 0f;
             state = State.WALK;
         }
