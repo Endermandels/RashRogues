@@ -1,6 +1,9 @@
 package io.github.RashRogues;
 
+import com.badlogic.gdx.audio.Sound;
+
 import java.util.HashSet;
+import java.util.Random;
 
 public class Archer extends Enemy {
 
@@ -27,6 +30,9 @@ public class Archer extends Enemy {
     private float attackTimer;
     private float attackXDir, attackYDir;
 
+    private Random rnd;
+    private Sound shootSFX;
+
     Archer(float x, float y, float size, HashSet<Player> playerSet, boolean hasKey) {
         super(RRGame.am.get(RRGame.RSC_ARCHER_IMG), x, y, size, hasKey, AnimationActor.ARCHER);
         this.stats = new EnemyStats(BASE_ARCHER_HEALTH, BASE_ARCHER_DAMAGE, BASE_ARCHER_ATTACK_SPEED, BASE_ARCHER_MOVE_SPEED, this);
@@ -36,6 +42,9 @@ public class Archer extends Enemy {
         state = State.WALK;
         this.playerSet = playerSet;
         attackTimer = 0f;
+
+        rnd = RRGame.globals.getRandom();
+        shootSFX = RRGame.am.get(RRGame.RSC_SHOOT_SFX);
     }
 
 
@@ -98,6 +107,7 @@ public class Archer extends Enemy {
             // Spawn arrow
             new Arrow(getX(), getY(), attackXDir, attackYDir, ARROW_DAMAGE,
                     RRGame.STANDARD_PROJECTILE_SPEED);
+            shootSFX.play(0.1f, rnd.nextFloat(0.5f, 2f), 0);
             attackTimer = 0f;
             state = State.WALK;
         }

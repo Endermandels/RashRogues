@@ -183,7 +183,7 @@ public class RRGame extends Game {
 
         room2Music = Gdx.audio.newMusic(Gdx.files.internal(RSC_ROOM2_MUSIC));
         room2Music.setLooping(true);
-        room2Music.setVolume(0.05f);
+        room2Music.setVolume(0.3f);
 
         batch = new SpriteBatch();
         hudBatch = new SpriteBatch();
