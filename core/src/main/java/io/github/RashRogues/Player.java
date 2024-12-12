@@ -15,7 +15,7 @@ import static java.lang.Math.abs;
 
 public class Player extends Entity {
 
-    private final int BASE_PLAYER_HEALTH = 1;
+    private final int BASE_PLAYER_HEALTH = 100;
     private final int BASE_PLAYER_DAMAGE = 10000;
     private final float BASE_PLAYER_ATTACK_SPEED = 0.5f;
     private final float ACCELERATION = 50.0f;
@@ -97,7 +97,6 @@ public class Player extends Entity {
         // we likely want some resurrection sort of ability or even just a ghost camera you can move
         if (deathTimer >= RRGame.STANDARD_DEATH_DURATION) { this.removeSelf(); return; }
         if (stats.isDead() && RRGame.globals.pid == 0) {
-            System.out.println("DROPPING AND DISPATCHING");
             this.dropKey();
             this.removeSelf();
         }

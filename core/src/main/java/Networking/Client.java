@@ -316,7 +316,6 @@ public class Client implements Endpoint {
     }
 
     public void handleDropKey(byte[] packet){
-        System.out.println("DROPPING KEY");
         byte[] xBytes = new byte[4];
         byte[] yBytes = new byte[4];
 

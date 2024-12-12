@@ -199,9 +199,6 @@ public class StreamMaker {
         tx += cmdlet_bytes.length+1;
      }
      stream[tx-1] = '#';
-     for (int i = 0; i < stream.length; i++){
-        System.out.println(stream[i]);
-     }
      return stream;
    }
 
