@@ -341,7 +341,11 @@ public class Client implements Endpoint {
     public void handleKillPlayer(byte[] packet){
         int pidToKill = packet[1];
         Player player = RRGame.globals.players.get(pidToKill);
-        player.stats.kill();
+        if (player != null){
+            player.stats.kill();
+        }else{
+            System.out.println("Warning! Player doesn't exist!");
+        }
     }
 
     /**
