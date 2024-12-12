@@ -60,6 +60,7 @@ public class RRGame extends Game {
 
     public static final String RSC_MONO_FONT_FILE = "Fonts/JetBrainsMono-Regular.ttf";
     public static final String RSC_MONO_FONT = "JBM.ttf";
+    public static final String RSC_MONO_FONT_LARGE = "JBM_Large.ttf";
 
     // entity sprites (players, enemies, projectiles)
     public static final String RSC_ROGUE_IMG = "DefaultImages/rogue.png";
@@ -130,10 +131,16 @@ public class RRGame extends Game {
         FileHandleResolver resolver = new InternalFileHandleResolver();
         am.setLoader(FreeTypeFontGenerator.class, new FreeTypeFontGeneratorLoader(resolver));
         am.setLoader(BitmapFont.class, ".ttf", new FreetypeFontLoader(resolver));
+
         FreetypeFontLoader.FreeTypeFontLoaderParameter myFont = new FreetypeFontLoader.FreeTypeFontLoaderParameter();
         myFont.fontFileName = RSC_MONO_FONT_FILE;
         myFont.fontParameters.size = 14;
         am.load(RSC_MONO_FONT, BitmapFont.class, myFont);
+
+        FreetypeFontLoader.FreeTypeFontLoaderParameter myFontLarge = new FreetypeFontLoader.FreeTypeFontLoaderParameter();
+        myFontLarge.fontFileName = RSC_MONO_FONT_FILE;
+        myFontLarge.fontParameters.size = 24;
+        am.load(RSC_MONO_FONT_LARGE, BitmapFont.class, myFontLarge);
 
         am.load(RSC_ROGUE_IMG, Texture.class);
         am.load(RSC_ARCHER_IMG, Texture.class);

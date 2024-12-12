@@ -4,6 +4,7 @@ import Networking.ReplicationType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 import static java.lang.Math.max;
@@ -12,10 +13,12 @@ public class GUI {
 
     private HealthBar hb;
     private SpecialAttack sa;
+    private CoinCount cc;
 
     public GUI(Player player) {
         hb = new HealthBar(player);
         sa = new SpecialAttack(player);
+        cc = new CoinCount(player);
     }
 
     public void update() {
@@ -26,11 +29,13 @@ public class GUI {
     public void draw(Batch batch) {
         hb.draw(batch);
         sa.draw(batch);
+        cc.draw(batch);
     }
 
     public void resize(int width, int height) {
         hb.resize(width, height);
         sa.resize(width, height);
+        cc.resize(width, height);
     }
 }
 
@@ -44,6 +49,34 @@ class GUIElement extends Entity {
             ReplicationType.CLIENTSIDE, player.pid, -1);
         // TODO: the part above might need to be player.associatedPID, question for Cade
         this.player = player;
+    }
+}
+
+class CoinCount extends GUIElement {
+    private static final float X = -48f;
+    private static final float Y = Gdx.graphics.getHeight() - 130f;
+    private float imgWidth;
+    private float imgHeight;
+    private BitmapFont font;
+
+    public CoinCount(Player player) {
+        super(player, RRGame.am.get(RRGame.RSC_COIN_IMG), X, Y,
+                RRGame.KEY_SIZE, RRGame.KEY_SIZE, null);
+        imgWidth = Gdx.graphics.getWidth() * 0.2f;
+        imgHeight = imgWidth;
+        font = RRGame.am.get(RRGame.RSC_MONO_FONT_LARGE);
+        font.setColor(0,0,0,1);
+    }
+
+    public void resize(int width, int height) {
+        imgWidth = Gdx.graphics.getWidth() * 0.2f;
+        imgHeight = imgWidth;
+    }
+
+    @Override
+    public void draw(Batch batch) {
+        batch.draw(getTexture(), X, Y, imgWidth, imgHeight);
+        font.draw(batch, Integer.toString(player.getNumCoins()), X+imgWidth/2+20, Y+imgHeight/2+10);
     }
 }
 
