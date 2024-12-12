@@ -1,10 +1,13 @@
 package io.github.RashRogues;
 
 import Networking.ReplicationType;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
+
+import java.util.Random;
 
 import static java.lang.Math.abs;
 
@@ -37,6 +40,9 @@ public class Player extends Entity {
     private int healthPotionsHeld;
     private float deathTimer = 0f;
 
+    private Sound pickupKeySFX;
+    private Random rnd;
+
     public Player(Texture texture, float x, float y, float width, float height, int pid) {
         super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER, AnimationActor.PLAYER1,
                 ReplicationType.PLAYER, -1, -1);
@@ -58,6 +64,8 @@ public class Player extends Entity {
         setBoxPercentSize(PLAYER_HIT_BOX_PERCENT_SCALAR, PLAYER_HIT_BOX_PERCENT_SCALAR, hitBox);
         setBoxPercentSize(PLAYER_HURT_BOX_WIDTH_PERCENT_SCALAR, PLAYER_HURT_BOX_HEIGHT_PERCENT_SCALAR, hurtBox);
         this.associatedPID = pid;
+        pickupKeySFX = RRGame.am.get(RRGame.RSC_PICK_UP_KEY_SFX);
+        rnd = RRGame.globals.getRandom();
         // this will obviously change based on a number of factors later
     }
 
@@ -191,6 +199,7 @@ public class Player extends Entity {
         if (RRGame.globals.pid == 0){
             setHoldingKey(true);
             RRGame.globals.network.connection.dispatchKeyPickup(this.associatedPID);
+            pickupKeySFX.play(0.2f);
         }
     }
 
