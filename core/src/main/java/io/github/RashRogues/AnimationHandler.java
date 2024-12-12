@@ -8,6 +8,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.lang.Math.max;
+
 public class AnimationHandler {
 
     private final int PLAYER_NUM_ROWS = 5;
@@ -32,6 +34,8 @@ public class AnimationHandler {
     private final int DOOR_NUM_COLS = 6;
     private final int MERCHANT_NUM_ROWS = 3;
     private final int MERCHANT_NUM_COLS = 4;
+    private final int HEALTH_BAR_NUM_ROWS = 50;
+    private final int HEALTH_BAR_NUM_COLS = 1;
 
 
 
@@ -169,6 +173,21 @@ public class AnimationHandler {
         animations.get(AnimationActor.MERCHANT).put(AnimationAction.CLOSE, new AnimationInfo(merchantFrames, 2, 3, 0.5f));
         animations.get(AnimationActor.MERCHANT).put(AnimationAction.DEFAULT, animations.get(AnimationActor.MERCHANT).get(AnimationAction.IDLE));
 
+        // health bar (different from others)
+        Texture healthBarSheet = new Texture(RRGame.RSC_HEALTH_BAR);
+        TextureRegion[][] healthBarFrames = TextureRegion.split(healthBarSheet,
+                healthBarSheet.getWidth() / HEALTH_BAR_NUM_COLS,
+                healthBarSheet.getHeight() / HEALTH_BAR_NUM_ROWS);
+        setHealthBarAnimations(healthBarFrames, AnimationActor.HEALTH_BAR_0, 0);
+        setHealthBarAnimations(healthBarFrames, AnimationActor.HEALTH_BAR_1, 1);
+        setHealthBarAnimations(healthBarFrames, AnimationActor.HEALTH_BAR_2, 2);
+        setHealthBarAnimations(healthBarFrames, AnimationActor.HEALTH_BAR_3, 3);
+        setHealthBarAnimations(healthBarFrames, AnimationActor.HEALTH_BAR_4, 4);
+        setHealthBarAnimations(healthBarFrames, AnimationActor.HEALTH_BAR_5, 5);
+        setHealthBarAnimations(healthBarFrames, AnimationActor.HEALTH_BAR_6, 6);
+        setHealthBarAnimations(healthBarFrames, AnimationActor.HEALTH_BAR_7, 7);
+        animations.put(AnimationActor.HEALTH_BAR_8, new HashMap<AnimationAction, AnimationInfo>(HEALTH_BAR_NUM_ROWS));
+        animations.get(AnimationActor.HEALTH_BAR_8).put(AnimationAction.DEFAULT, new AnimationInfo(healthBarFrames,1, 1, 0.1f, 0));
 
         // things not finished yet
 //        animations.put(AnimationActor.SMOKE_BOMB, null);
@@ -191,6 +210,17 @@ public class AnimationHandler {
         animations.get(playerNum).put(AnimationAction.DIE, new AnimationInfo(playerFrames, 4, 14, RRGame.STANDARD_DEATH_DURATION));
         animations.get(playerNum).put(AnimationAction.DEFAULT, animations.get(playerNum).get(AnimationAction.IDLE));
 
+    }
+
+    private void setHealthBarAnimations(TextureRegion[][] healthBarFrames, AnimationActor healthBarActor, int healthBarNum) {
+        animations.put(healthBarActor, new HashMap<AnimationAction, AnimationInfo>(HEALTH_BAR_NUM_COLS));
+
+        TextureRegion[][] validHealthBarFrames = new TextureRegion[1][6];
+        for (int ii = 0; ii < 6; ii++) {
+            validHealthBarFrames[0][ii] = healthBarFrames[HEALTH_BAR_NUM_ROWS-6*(healthBarNum+1)+ii][0];
+        }
+        animations.get(healthBarActor).put(AnimationAction.HURT, new AnimationInfo(validHealthBarFrames,0, 6, 0.8f));
+        animations.get(healthBarActor).put(AnimationAction.DEFAULT, new AnimationInfo(validHealthBarFrames,0, 1, 0.1f, 5));
     }
 
 }
@@ -260,6 +290,15 @@ enum AnimationActor {
     CHEST,
     DOOR,
     MERCHANT,
+    HEALTH_BAR_0,
+    HEALTH_BAR_1,
+    HEALTH_BAR_2,
+    HEALTH_BAR_3,
+    HEALTH_BAR_4,
+    HEALTH_BAR_5,
+    HEALTH_BAR_6,
+    HEALTH_BAR_7,
+    HEALTH_BAR_8,
     // these don't exist yet:
     SMOKE_BOMB,
     SMOKE_BOMB_EXPLOSION,

@@ -196,6 +196,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     @Override
     public void resize(int width, int height) {
         hud.resize(width, height, game);
+        gui.resize(width, height);
     }
 
     private void initInputs(){
