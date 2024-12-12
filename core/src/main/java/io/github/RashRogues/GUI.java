@@ -4,6 +4,7 @@ import Networking.ReplicationType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 import static java.lang.Math.max;
 
@@ -19,6 +20,7 @@ public class GUI {
 
     public void update() {
         hb.update();
+        sa.update();
     }
 
     public void draw(Batch batch) {
@@ -47,23 +49,37 @@ class GUIElement extends Entity {
 
 class SpecialAttack extends GUIElement {
     private static final float PERCENT_DIST_FROM_LEFT_SIDE = 0.25f;
-    private static final float PERCENT_DIST_FROM_BOTTOM = 0.025f;
+    private static final float PERCENT_DIST_FROM_BOTTOM = 0.03f;
     private static final float BASE_NUM_PIXELS_TO_BOTTOM_OF_BOMB = 12f;
+    private static final int BOMB_GUI_NUM_ROWS = 1;
+    private static final int BOMB_GUI_NUM_COLS = 8;
 
     private float xOffset = Gdx.graphics.getWidth()*PERCENT_DIST_FROM_LEFT_SIDE;
     private float yOffset = Gdx.graphics.getHeight()*PERCENT_DIST_FROM_BOTTOM;
     private float imgWidth;
     private float imgHeight;
+    private TextureRegion[][] bombGUIFrames;
+    private TextureRegion currentFrame = new TextureRegion(RRGame.am.get(RRGame.RSC_SMOKE_BOMB_IMG, Texture.class), 0, 0, 32, 32);
 
     public SpecialAttack(Player player) {
         super(player, RRGame.am.get(RRGame.RSC_SMOKE_BOMB_IMG), Gdx.graphics.getWidth()*PERCENT_DIST_FROM_LEFT_SIDE, Gdx.graphics.getHeight()*PERCENT_DIST_FROM_BOTTOM,
                 RRGame.SMOKE_BOMB_SIZE, RRGame.SMOKE_BOMB_SIZE, null);
         imgWidth = Gdx.graphics.getWidth() * 0.25f;
         imgHeight = imgWidth;
+        Texture bombGUISheet = new Texture(RRGame.RSC_BOMB_GUI_SHEET);
+        bombGUIFrames = TextureRegion.split(bombGUISheet,
+                bombGUISheet.getWidth() / BOMB_GUI_NUM_COLS,
+                bombGUISheet.getHeight() / BOMB_GUI_NUM_ROWS);
     }
 
     public void update() {
-        // Do animation with: player.getAbilityTimeLeft();
+        int frame = max(0, (int) (7f * player.getAbilityTimeLeft()));
+        if (frame == 7) {
+            currentFrame = bombGUIFrames[0][0];
+        }
+        else {
+            currentFrame = bombGUIFrames[0][frame+1];
+        }
     }
 
     public void resize(int width, int height) {
@@ -76,7 +92,7 @@ class SpecialAttack extends GUIElement {
 
     @Override
     public void draw(Batch batch) {
-        batch.draw(getTexture(), xOffset, yOffset, imgWidth, imgHeight);
+        batch.draw(currentFrame, xOffset, yOffset, imgWidth, imgHeight);
     }
 }
 
