@@ -137,6 +137,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
          the door kill itself when it's ready to move on, so we just need to check:
         */
         if (!localEntities.contains(currentDoor)) { setNextRoom(); }
+        currentRoom.update(delta);
 
         gui.update();
     }
