@@ -66,10 +66,10 @@ public abstract class Enemy extends Entity {
      * Drop coins of an amount equal to or less than twice this Enemy's level
      */
     public void dropCoins() {
-        int numCoin = RRGame.globals.getRandomInteger(2*(enemyLevel+1));
+        int numCoin = rnd.nextInt(2*(enemyLevel+1));
         for (int ii = 0; ii < numCoin; ii++) {
-            float x = (RRGame.globals.getRandomInteger(MAX_DROP_DISTANCE) - 1) / 2;
-            float y = (RRGame.globals.getRandomInteger(MAX_DROP_DISTANCE) - 1) / 2;
+            float x = (rnd.nextInt(MAX_DROP_DISTANCE) - 1) / 2;
+            float y = (rnd.nextInt(MAX_DROP_DISTANCE) - 1) / 2;
             new Coin(getX() + x, getY() + y);
         }
     }
