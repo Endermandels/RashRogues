@@ -267,8 +267,8 @@ public abstract class Entity extends Sprite {
         // Only the host has the authority to remove an Entity directly.
         // Clients will be instructed to do so via the network.
         // Entities marked with clientSideOnly may be removed by anyone.
-        if (RRGame.globals.pid == 0 || replicationType == ReplicationType.CLIENTSIDE) {
+//        if (RRGame.globals.pid == 0 || replicationType == ReplicationType.CLIENTSIDE) {
             RRGame.globals.deregisterEntity(this);
-        }
+//        }
     }
 }

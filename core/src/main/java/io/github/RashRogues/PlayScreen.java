@@ -36,7 +36,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     public static Array<ParticleEffectPool.PooledEffect> smokeParticleEffects;
 
     //Debugging
-    private static BitmapFont font = new BitmapFont(Gdx.files.internal("fonts/debug.fnt"),false);
+    private static BitmapFont font = new BitmapFont(Gdx.files.internal("Fonts/debug.fnt"),false);
     private static Entity debugEntity = null;
 
     public PlayScreen(RRGame game) {
@@ -286,7 +286,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM_MERCHANT_IMG),
                 10, 19, 0, 0, game.room2Music, RoomType.MERCHANT));
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM1_IMG),
-                35, 301, 80, 0, game.room1Music, RoomType.BATTLE));
+                35, 301, 5, 0, game.room1Music, RoomType.BATTLE));
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM2_IMG),
                 35, 301, 120, 10, game.room2Music, RoomType.BATTLE));
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM3_IMG),

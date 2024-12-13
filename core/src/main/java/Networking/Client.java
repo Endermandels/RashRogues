@@ -664,7 +664,7 @@ public class Client implements Endpoint {
         System.arraycopy(packet,64, xBytes,0,4);
         System.arraycopy(packet,68, yBytes,0,4);
         System.arraycopy(packet,72, mxBytes,0,4);
-        System.arraycopy(packet,75, myBytes,0,4);
+        System.arraycopy(packet,76, myBytes,0,4);
 
         long frame = StreamMaker.bytesToLong(longBytes);
         float x = StreamMaker.bytesToFloat(xBytes);
