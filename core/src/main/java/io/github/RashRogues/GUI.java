@@ -117,6 +117,8 @@ class MerchantMenu {
     private float exitButtonX = 0;
     private float exitButtonY = 0;
 
+    private float itemWidth = 32;
+
     Texture detailPaneTexture;
     Texture itemPaneTexture;
     Texture selectionTexture;
@@ -187,10 +189,11 @@ class MerchantMenu {
 
         itemPaneWidth    = Gdx.graphics.getWidth() / 3;
         itemPaneHeight   = itemPaneWidth * 2;
-        itemPaneX        = Gdx.graphics.getWidth() - 64 - itemPaneWidth;
+        itemPaneX        = Gdx.graphics.getWidth() - 54 - itemPaneWidth;
         itemPaneY        = Gdx.graphics.getHeight() - 16 - itemPaneHeight;
 
-        itemSelectWidth  = itemPaneHeight / 4;
+        itemWidth = itemPaneHeight / 4;
+        itemSelectWidth  = itemPaneHeight / 3;
         itemSelectHeight = itemSelectWidth;
 
         moneyDisplayWidth = Gdx.graphics.getWidth() / 5;
@@ -213,21 +216,7 @@ class MerchantMenu {
         this.disabled = true;
     }
 
-    public void update(){
-
-        float mx = Gdx.input.getX();
-        float my = Gdx.graphics.getHeight() - Gdx.input.getY();
-
-        if (mx > exitButtonX && mx < exitButtonX + exitButtonWidth){
-            if (my > exitButtonY && my < exitButtonY + exitButtonHeight){
-               if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)){
-                   this.player.stopShopping();
-                   return;
-               }
-            }
-        }
-
-    }
+    public void update(){}
 
     public void draw(Batch batch) {
         if (disabled) {
@@ -239,7 +228,6 @@ class MerchantMenu {
         batch.draw(this.moneyDisplayTexture,moneyDisplayX,moneyDisplayY, moneyDisplayWidth, moneyDisplayHeight);
         font.getData().setScale((int) this.moneyDisplayWidth / 40);
         font.draw(batch, Integer.toString(player.getCoins()), this.moneyDisplayX+this.moneyDisplayWidth/8, this.moneyDisplayY+this.moneyDisplayHeight/1.5f);
-        batch.draw(this.exitButtonTexture,this.exitButtonX,this.exitButtonY,this.exitButtonWidth,this.exitButtonHeight);
 
         float mx = Gdx.input.getX();
         float my = Gdx.graphics.getHeight() - Gdx.input.getY();
@@ -252,19 +240,21 @@ class MerchantMenu {
 
             if (i < 4) {
                 x = this.itemPaneX;
-                y = this.itemPaneY + this.itemSelectWidth * i;
+                y = this.itemPaneY + this.itemWidth * i;
             } else {
-                x = this.itemPaneX + this.itemSelectWidth;
-                y = this.itemPaneY + this.itemSelectWidth * (i - 4);
+                x = this.itemPaneX + this.itemWidth;
+                y = this.itemPaneY + this.itemWidth * (i - 4);
             }
 
-            if (mx > x && mx < x + this.itemSelectWidth) {
-                if (my > y && my < y + this.itemSelectWidth) {
+            batch.draw(item.getTexture(), x, y, itemWidth, itemWidth);
+
+            if (mx > x && mx < x + this.itemWidth) {
+                if (my > y && my < y + this.itemWidth) {
                     batch.draw(this.selectionTexture, x, y, itemSelectWidth, itemSelectHeight);
+                    batch.draw(item.getTexture(),x,y,itemSelectWidth,itemSelectHeight);
                     sel = i;
                 }
             }
-            batch.draw(item.getTexture(), x, y, itemSelectWidth, itemSelectHeight);
         }
 
         if (sel != -1){
@@ -276,10 +266,22 @@ class MerchantMenu {
             font.draw(batch, Integer.toString(items[sel].cost) + " GP", this.detailPaneX + 48, this.detailPaneY + this.detailPaneHeight - 116);
 
             if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
-                System.out.println("BUYING : " + items[sel]);
                 this.player.buyItem(items[sel].itemType, items[sel].cost);
             }
         }
+
+        if ((mx > exitButtonX && mx < exitButtonX + exitButtonWidth) && (my > exitButtonY && my < exitButtonY + exitButtonHeight)){
+            batch.setColor(Color.CORAL);
+            batch.draw(this.exitButtonTexture,this.exitButtonX,this.exitButtonY,this.exitButtonWidth,this.exitButtonHeight);
+            batch.setColor(Color.WHITE);
+            if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+                this.player.stopShopping();
+                return;
+            }
+        }else{
+            batch.draw(this.exitButtonTexture,this.exitButtonX,this.exitButtonY,this.exitButtonWidth,this.exitButtonHeight);
+        }
+
     }
 
 }
