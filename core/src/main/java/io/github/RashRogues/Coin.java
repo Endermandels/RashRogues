@@ -5,12 +5,15 @@ import com.badlogic.gdx.graphics.Texture;
 
 public class Coin extends Entity {
 
-    Coin(float x, float y) {
+    public int value;
+
+    Coin(float x, float y, int value) {
         super(EntityAlignment.BACKGROUND, RRGame.am.get(RRGame.RSC_COIN_IMG, Texture.class),
                 x, y, RRGame.KEY_SIZE, RRGame.KEY_SIZE, Layer.COIN, null,
                 ReplicationType.CLIENTSIDE, -1, -1);
         this.setBoxPercentSize(0.4f, 0.4f, hitBox);
         hitBox.disableLength = 0f;
+        this.value = value;
     }
 
     @Override

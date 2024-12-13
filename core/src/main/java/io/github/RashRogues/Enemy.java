@@ -96,12 +96,10 @@ public abstract class Enemy extends Entity {
      */
     public void dropCoins() {
         if (RRGame.globals.pid == 0){
-            int numCoin = rnd.nextInt(4*(enemyLevel+1));
-            for (int ii = 0; ii < numCoin; ii++) {
-                float x = (rnd.nextInt(MAX_DROP_DISTANCE) - 1) / 2;
-                float y = (rnd.nextInt(MAX_DROP_DISTANCE) - 1) / 2;
-                new Coin(getX() + x, getY() + y);
-            }
+            int valCoin = rnd.nextInt(2*(enemyLevel+1));
+            float x = (rnd.nextInt(MAX_DROP_DISTANCE) - 1) / 2;
+            float y = (rnd.nextInt(MAX_DROP_DISTANCE) - 1) / 2;
+            new Coin(getX() + x, getY() + y, valCoin);
             RRGame.globals.network.connection.dispatchCoinDrop(getX(),getY(), enemyLevel);
         }
     }

@@ -9,11 +9,13 @@ import java.util.Random;
 
 public class Chest extends Entity {
 
-    private boolean open;
-    private final float AMOUNT_NEEDED_TO_OPEN = 300f;
+    public boolean open;
+    public float AMOUNT_NEEDED_TO_OPEN = 300f;
     private float currentAmount;
     private final int BASE_MAX_AMOUNT_OF_COIN = 20;
     private final int MAX_DROP_DISTANCE = 11;
+
+    public int coinValue;
 
     private Random rnd;
 
@@ -30,6 +32,7 @@ public class Chest extends Entity {
         this.currentAmount = 0;
         this.toggleAnimations(false);
         openSFX = RRGame.am.get(RRGame.RSC_DOOR_OPEN_SFX);
+        this.coinValue = 1;
     }
 
     @Override
@@ -50,7 +53,7 @@ public class Chest extends Entity {
             for (int ii = 0; ii < numCoin; ii++) {
                 float x = rnd.nextInt(MAX_DROP_DISTANCE) - 5;
                 float y = rnd.nextInt(MAX_DROP_DISTANCE) - 5;
-                new Coin(getX() + x, getY() + y);
+                new Coin(getX() + x, getY() + y, coinValue);
             }
         }
     }

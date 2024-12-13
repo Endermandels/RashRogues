@@ -18,7 +18,7 @@ public class King extends Enemy {
         this.stats = new EnemyStats(1, 0, 0,0,0, this);
         this.playerSet = playerSet;
         this.setCurrentAnimation(AnimationAction.OPEN);
-        this.enemyLevel = 50;
+        this.enemyLevel = 1;
     }
 
     @Override
@@ -32,5 +32,13 @@ public class King extends Enemy {
      */
     public void update(float delta){
         super.update(delta);
+    }
+
+    @Override
+    public void dropCoins() {
+        super.dropCoins();
+        Chest chest = new Chest(this.getX(), this.getY());
+        chest.AMOUNT_NEEDED_TO_OPEN = 0f;
+        chest.coinValue = 1000;
     }
 }

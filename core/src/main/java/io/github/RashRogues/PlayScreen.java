@@ -684,12 +684,10 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     @Override
     public void dropCoins(float x, float y, int enemyLevel) {
         System.out.println("DROPPING COINS FROM THE SERVER At X = " + x + " and Y = " + y + " level " + enemyLevel);
-        int numCoin = rnd.nextInt(4*(enemyLevel+1));
-        for (int ii = 0; ii < numCoin; ii++) {
-            float dx = (rnd.nextInt(Enemy.MAX_DROP_DISTANCE) - 1) / 2;
-            float dy = (rnd.nextInt(Enemy.MAX_DROP_DISTANCE) - 1) / 2;
-            new Coin(x + dx, x + dy);
-            System.out.println("newcoin!");
-        }
+        int valCoin = rnd.nextInt(2*(enemyLevel+1));
+        float dx = (rnd.nextInt(Enemy.MAX_DROP_DISTANCE) - 1) / 2;
+        float dy = (rnd.nextInt(Enemy.MAX_DROP_DISTANCE) - 1) / 2;
+        new Coin(x + dx, x + dy, valCoin);
+        System.out.println("newcoin!");
     }
 }

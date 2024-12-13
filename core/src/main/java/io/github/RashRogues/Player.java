@@ -307,10 +307,12 @@ public class Player extends Entity {
         return holdingKey;
     }
 
-    public void grabCoin() {
+    public void grabCoin(Coin coin) {
         if (RRGame.globals.pid == this.associatedPID){
-            numCoins++;
-            pickupKeySFX.play(0.1f);
+            for (int ii = 0; ii < coin.value; ii++) {
+                numCoins++;
+                pickupKeySFX.play(0.1f);
+            }
         }
     }
 
@@ -457,7 +459,7 @@ public class Player extends Entity {
             this.grabKey(thingThatHurtMe.id);
         }
         else if (thingThatHurtMe instanceof Coin) {
-            this.grabCoin();
+            this.grabCoin((Coin)thingThatHurtMe);
         }
         else if (thingThatHurtMe instanceof Door || thingThatHurtMe instanceof Chest) {
             // just catch the things we know of that don't do anything
