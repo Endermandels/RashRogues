@@ -36,10 +36,16 @@ public class RRGame extends Game {
 
     // constants
     public static final float WORLD_WIDTH = 80;
+    public static final float MERCHANT_ROOM_WIDTH = 30;
+    public static final int MERCHANT_SPAWN_X = 12;
+    public static final int MERCHANT_SPAWN_Y = 8;
+    public static final int PLAYER_SPAWN_MERCHANT_X = 14;
+    public static final int PLAYER_SPAWN_MERCHANT_Y = 3;
     public static final int PLAYER_SPAWN_X = 40;
     public static final int PLAYER_SPAWN_Y = 10;
     public static final float CAMERA_SIZE = 30;
     public static final float PLAYER_SIZE = 2;
+    public static final float MERCHANT_SIZE = 7;
     public static final float STANDARD_ENEMY_SIZE = 5;
     public static final float DOOR_SIZE = 10;
     public static final float CHEST_SIZE = 4;
@@ -73,6 +79,10 @@ public class RRGame extends Game {
     public static final String RSC_SWORDSMAN_IMG = "DefaultImages/swordsman.png";
     public static final String RSC_ARROW_IMG = "DefaultImages/arrow.png";
     public static final String RSC_THROWING_KNIFE_IMG = "DefaultImages/throwing_knife.png";
+    public static final String RSC_HEALTH_POTION_IMG = "DefaultImages/health_potion.png";
+    public static final String RSC_RING_IMG = "DefaultImages/ring.png";
+    public static final String RSC_CLOAK_IMG = "DefaultImages/cloak.png";
+    public static final String RSC_DAGGER_IMG = "DefaultImages/dagger.png";
     public static final String RSC_SMOKE_BOMB_IMG = "DefaultImages/bomb.png";
     public static final String RSC_SMOKE_BOMB_EXPLOSION_IMG = "DefaultImages/explosion.png";
     public static final String RSC_SWORDSMAN_SWING_IMG = "DefaultImages/sword_swing.png";
@@ -99,11 +109,11 @@ public class RRGame extends Game {
     public static final String RSC_ROOM1_IMG = "DefaultImages/room1.png";
     public static final String RSC_ROOM2_IMG = "DefaultImages/room2.png";
     public static final String RSC_ROOM3_IMG = "DefaultImages/room3.png";
+    public static final String RSC_ROOM_MERCHANT_IMG = "DefaultImages/merchant_room.png";
     public static final String RSC_KEY_IMG = "DefaultImages/key.png";
     public static final String RSC_DOOR_IMG = "DefaultImages/door.png";
     public static final String RSC_CHEST_IMG = "DefaultImages/chest.png";
     public static final String RSC_COIN_IMG = "DefaultImages/coin.png";
-    public static final String RSC_HEALTH_POTION_IMG = "DefaultImages/health_potion.png";
 
     // debug tools
     public static final String RSC_NET_VIEWER = "Menu/net_viewer.png";
@@ -121,6 +131,8 @@ public class RRGame extends Game {
     public static final String RSC_PICK_UP_KEY_SFX = "SFX/sounds/pickupKey.wav";
     public static final String RSC_SWORD_SWIPE_SFX = "SFX/sounds/swordSwipe.wav";
     public static final String RSC_DASH_SFX = "SFX/sounds/dash.wav";
+    public static final String RSC_SHOP_PURCHASE = "SFX/sounds/shop_purchase.wav";
+    public static final String RSC_SHOP_INVALID = "SFX/sounds/shop_invalid.wav";
 
     // music
     public static final String RSC_ROOM1_MUSIC = "SFX/music/on the road to the 80s.mp3";
@@ -137,6 +149,11 @@ public class RRGame extends Game {
     public static final String RSC_GAME_LIST = "Menu/game_list_background.png";
     public static final String RSC_GAME_LIST_ITEM = "Menu/game_list_item.png";
     public static final String RSC_HEALTH_BAR = "GUI/health_bar.png";
+    public static final String RSC_SHOP_DETAILED_VIEW = "Menu/shop_detailed_view.png";
+    public static final String RSC_SHOP_ITEMS_VIEW = "Menu/shop_items_view.png";
+    public static final String RSC_SHOP_ITEMS_SELECT = "Menu/shop_items_select.png";
+    public static final String RSC_SHOP_MONEY_DISPLAY= "Menu/shop_money_display.png";
+    public static final String RSC_SHOP_EXIT_BUTTON= "Menu/shop_exit_button.png";
 
     @Override
     public void create() {
@@ -193,10 +210,15 @@ public class RRGame extends Game {
         am.load(RSC_ROOM1_IMG, Texture.class);
         am.load(RSC_ROOM2_IMG, Texture.class);
         am.load(RSC_ROOM3_IMG, Texture.class);
+        am.load(RSC_ROOM_MERCHANT_IMG, Texture.class);
         am.load(RSC_KEY_IMG, Texture.class);
         am.load(RSC_DOOR_IMG, Texture.class);
         am.load(RSC_CHEST_IMG, Texture.class);
         am.load(RSC_COIN_IMG, Texture.class);
+        am.load(RSC_HEALTH_POTION_IMG, Texture.class);
+        am.load(RSC_CLOAK_IMG, Texture.class);
+        am.load(RSC_RING_IMG, Texture.class);
+        am.load(RSC_DAGGER_IMG, Texture.class);
         am.load(RSC_HEALTH_POTION_IMG, Texture.class);
 
         am.load(RSC_NET_VIEWER, Texture.class);
@@ -210,8 +232,15 @@ public class RRGame extends Game {
         am.load(RSC_GAME_LIST, Texture.class);
         am.load(RSC_BTN_HOST, Texture.class);
         am.load(RSC_BTN_JOIN, Texture.class);
+        am.load(RSC_SHOP_DETAILED_VIEW, Texture.class);
+        am.load(RSC_SHOP_ITEMS_VIEW, Texture.class);
+        am.load(RSC_SHOP_MONEY_DISPLAY, Texture.class);
+        am.load(RSC_SHOP_ITEMS_SELECT, Texture.class);
+        am.load(RSC_SHOP_EXIT_BUTTON, Texture.class);
 
         am.load(RSC_SWORD_SWIPE_SFX, Sound.class);
+        am.load(RSC_SHOP_PURCHASE, Sound.class);
+        am.load(RSC_SHOP_INVALID, Sound.class);
         am.load(RSC_PICK_UP_KEY_SFX, Sound.class);
         am.load(RSC_HURT_ENEMY_SFX, Sound.class);
         am.load(RSC_EXPLOSION_SFX, Sound.class);

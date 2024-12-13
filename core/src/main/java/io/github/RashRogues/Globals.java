@@ -32,6 +32,9 @@ public class Globals {
 
     private final HashMap<Integer,Long> projectileNumber                                        = new HashMap<>();
 
+    // These items can only be purchased one time per player.
+    public final HashSet<BuyableItem> nonRepurchasableItems = new HashSet<>(Arrays.asList(BuyableItem.CLOAK,BuyableItem.DAGGER, BuyableItem.RING));
+
     private final HashMap<Integer,Entity> keys = new HashMap<>();
     private int keyCount = 0;
 

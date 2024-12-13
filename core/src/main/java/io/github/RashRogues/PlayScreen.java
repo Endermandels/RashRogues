@@ -23,7 +23,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     private boolean debug = false;
     private RRGame game;
     private HUD hud;
-    private GUI gui;
+    public GUI gui;
     private Room currentRoom;
     private Player player;
     private Door currentDoor;
@@ -53,27 +53,34 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         initInputs();
         loadRooms();
         createHUDAndInputs();
+        initPlayer();
+        setNextRoom();
+
+        if (this.currentRoom.getRoomType() == RoomType.BATTLE){
+            player.setPosition(RRGame.PLAYER_SPAWN_X,RRGame.PLAYER_SPAWN_Y);
+        }
+
+        if (this.currentRoom.getRoomType() == RoomType.MERCHANT){
+            player.setPosition(RRGame.PLAYER_SPAWN_MERCHANT_X,RRGame.PLAYER_SPAWN_MERCHANT_Y);
+        }
+
+        this.game.network.connection.dispatchCreatePlayer(player);
+
+    }
+
+    private void initPlayer(){
+
+        player = new Player(1,1, (int) RRGame.PLAYER_SIZE, RRGame.globals.pid);
+
         font.getData().setScale(3f);
         smokeParticleEffectPool = new ParticleEffectPool(RRGame.am.get(RRGame.RSC_SMOKE_PARTICLE_EFFECT, ParticleEffect.class), 5, 10);
         smokeParticleEffects = new Array<>();
 
-        /* Player Creation */
-        player = new Player(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, (int) RRGame.PLAYER_SIZE, RRGame.globals.pid);
         RRGame.globals.addPlayer(RRGame.globals.pid,player);
-        this.game.network.connection.dispatchCreatePlayer(player);
-        setNextRoom();
 
-        /* Instance Creation */
-//        new Archer(45, 275, 4, RRGame.globals.playersSet,true);
-//        new Bomber(35, 275, 4, RRGame.globals.playersSet,true);
-//        new Swordsman(25, 275, 4, RRGame.globals.playersSet,true);
-//        new Key(25,275);
-//        new Key(25,280);
-//        new Key(25,290);
-
-        /* Camera Setup */
-        game.playerCam.bind(player);
+        gui = new GUI(player);
         game.playerCam.center();
+        game.playerCam.bind(player);
 
     }
 
@@ -120,8 +127,11 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             keyMask[6] = 1;
         }
 
-        game.network.connection.dispatchKeys(keyMask, RRGame.globals.frame);
-        RRGame.globals.frame++;
+        if (this.player.shopping) {
+            return;
+        }
+            game.network.connection.dispatchKeys(keyMask, RRGame.globals.frame);
+            RRGame.globals.frame++;
     }
 
     public void update(float delta) {
@@ -270,12 +280,14 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
     private void loadRooms() {
         this.rooms = new ArrayList<>();
+        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM_MERCHANT_IMG),
+                10, 19, 0, 0, game.room2Music, RoomType.MERCHANT));
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM1_IMG),
-                35, 301, 50, 0, game.room1Music));
+                35, 301, 80, 0, game.room1Music, RoomType.BATTLE));
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM2_IMG),
-                35, 301, 80, 3, game.room2Music));
+                35, 301, 120, 10, game.room2Music, RoomType.BATTLE));
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM3_IMG),
-                35, 301, 120, 10, game.room3Music));
+                35, 301, 120, 10, game.room3Music, RoomType.BATTLE));
 
         // other rooms will go below here
     }
@@ -300,13 +312,13 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         for (Entity e : localEntities) {
             if (e instanceof Player) {
                 Player player = (Player) e;
-                player.resetForNewRoom();
+                player.resetForNewRoom(currentRoom.getRoomType());
                 tempLocalEntities.add(e);
             }
         }
         currentRoom.spawnInitialEntities();
         localEntities = tempLocalEntities;
-        currentDoor = new Door(currentRoom.doorPositionX, currentRoom.doorPositionY);
+        currentDoor = new Door(currentRoom.doorPositionX, currentRoom.doorPositionY, currentRoom.doorUnlockedByDefault);
         game.playerCam.changeWorldSize(currentRoom.roomWidth, currentRoom.roomHeight, currentRoom.doorPositionX, currentRoom.doorPositionY);
         collisionGrid.updateCollisionGridRoomValues(currentRoom.roomWidth, currentRoom.roomHeight);
         gui = new GUI(RRGame.globals.players.get(RRGame.globals.pid));
@@ -535,6 +547,11 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                     inputs.put(Input.Keys.UP, true);
                 }
 
+                // Do Not Allow Inputs Other Than Movement In Merchant Room
+                if (currentRoom.getRoomType() == RoomType.MERCHANT){
+                    return true;
+                }
+
                 if (keycode == Input.Keys.SPACE) {
                     inputs.put(Input.Keys.SPACE, true);
                 }
@@ -611,5 +628,14 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         for (ParticleEffectPool.PooledEffect effect : smokeParticleEffects) {
             effect.free();
         }
+    }
+
+    public GUI getGUI(){
+        return this.gui;
+    }
+
+    @Override
+    public Room getRoom() {
+        return this.currentRoom;
     }
 }

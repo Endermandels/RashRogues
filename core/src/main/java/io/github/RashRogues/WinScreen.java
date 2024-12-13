@@ -56,4 +56,14 @@ public class WinScreen extends ScreenAdapter implements RRScreen {
         return;
     }
 
+    @Override
+    public GUI getGUI() {
+        return null;
+    }
+
+    @Override
+    public Room getRoom() {
+        return null;
+    }
+
 }

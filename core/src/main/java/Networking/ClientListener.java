@@ -2,6 +2,7 @@ package Networking;
 
 import com.badlogic.gdx.net.Socket;
 import com.badlogic.gdx.utils.Queue;
+import io.github.RashRogues.BuyableItem;
 import io.github.RashRogues.Entity;
 import io.github.RashRogues.Player;
 import io.github.RashRogues.RRGame;
@@ -140,6 +141,10 @@ public class ClientListener implements Endpoint {
                     this.handleCreatePlayer(msg);
                 } else if ( msgType == KEYS.getvalue() ) {
                     this.inputQueues.get((int) msg[1]).addLast(msg);
+                } else if (msgType == MERCHANT.getvalue()){
+                    this.handleMerchant(msg);
+                } else if (msgType == UPGRADE.getvalue()){
+                    this.handleUpgrade(msg);
                 }
             }
 
@@ -197,6 +202,10 @@ public class ClientListener implements Endpoint {
         this.outgoingMessages.add(StreamMaker.startGame());
     }
 
+    public void dispatchUpgrade(int pid, BuyableItem item){
+        this.outgoingMessages.add(StreamMaker.upgrade(pid,item));
+    }
+
     /**
      * Communicate to the client that the server is shutting down.
      */
@@ -221,6 +230,16 @@ public class ClientListener implements Endpoint {
 
     public void dispatchKeyDrop(float x, float y){
         this.outgoingMessages.add(StreamMaker.dropKey(x, y));
+    }
+
+    @Override
+    public void dispatchEnterMerchant(int pid) {
+       this.outgoingMessages.add(StreamMaker.merchant(pid,true));
+    }
+
+    @Override
+    public void dispatchLeaveMerchant(int pid) {
+        this.outgoingMessages.add(StreamMaker.merchant(pid,false));
     }
 
     /**
@@ -317,6 +336,51 @@ public class ClientListener implements Endpoint {
         Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG),x,y, RRGame.PLAYER_SIZE, new_pid);
         RRGame.globals.addPlayer(new_pid,player);
     }
+
+    public void handleUpgrade(byte[] packet){
+        int pid = packet[1];
+        int upgrade = packet[2];
+        Player p = RRGame.globals.players.get(pid);
+        if (p == null){
+            System.out.println(">>! Null Player!");
+            return;
+        }
+        if (upgrade == BuyableItem.CLOAK.getvalue()){
+            p.stats.increaseMoveSpeed(5);
+        } else if (upgrade == BuyableItem.DAGGER.getvalue()){
+            p.stats.increaseAttackSpeed(1);
+        } else if (upgrade == BuyableItem.HEALTH_POTION.getvalue()){
+            p.healthPotionsHeld+=1;
+        } else if (upgrade == BuyableItem.RING.getvalue()){
+            p.stats.increaseHealth(25);
+        }
+
+        System.out.println("PLAYER NOW:");
+        System.out.println("------------------");
+        System.out.println("HP:" + p.stats.getMaxHealth());
+        System.out.println("Health Potions: " + p.healthPotionsHeld);
+        System.out.println("Attack Speed: " + p.stats.getAttackSpeed());
+        System.out.println("Move Speed: " + p.stats.getMoveSpeed());
+        System.out.println("------------------");
+
+    }
+
+
+
+    public void handleMerchant(byte[] packet){
+        int pid = packet[1];
+        boolean enterOrLeave = false;
+        if ((int) packet[2] == 1){
+            enterOrLeave = true;
+        }
+        Player p = RRGame.globals.players.get(pid);
+        if (enterOrLeave){
+            p.startShopping();
+        }else{
+            p.stopShopping();
+        }
+    }
+
 
     /**
      * Client Requests to execute keystrokes on a player.

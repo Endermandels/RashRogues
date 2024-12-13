@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
+import java.util.HashSet;
 import java.util.Random;
 
 import static java.lang.Math.abs;
@@ -28,6 +29,7 @@ public class Player extends Entity {
     private final float PLAYER_HIT_BOX_PERCENT_SCALAR = 0.01f;
     private final float PLAYER_HURT_BOX_WIDTH_PERCENT_SCALAR = 0.2f;
     private final float PLAYER_HURT_BOX_HEIGHT_PERCENT_SCALAR = 0.4f;
+    private final float MERCHANT_COOLDOWN = 2f;
     private float dashTimer;
     private final float DASH_DEXTERITY_CONVERTER = 10f;
     private final float DASH_DISTANCE = 6f;
@@ -39,15 +41,21 @@ public class Player extends Entity {
     private final float CONSUMABLE_COOLDOWN = 0.2f;
     private boolean holdingKey;
     private Sprite keySprite;
-    private int healthPotionsHeld;
-    private float deathTimer;
+    public int healthPotionsHeld;
+    private float deathTimer = 0f;
+    private float merchantTimer = MERCHANT_COOLDOWN;
     private int numCoins;
+    private HashSet<BuyableItem> purchasedItems;
+    public boolean shopping = false;
 
     private Random rnd;
     private Sound pickupKeySFX;
     private Sound hurtSFX;
     private Sound shootSFX;
     private Sound dashSFX;
+    private Sound purchaseSFX;
+    private Sound invalidSFX;
+
 
     public Player(Texture texture, float x, float y, float width, float height, int pid) {
         super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER, AnimationActor.PLAYER1,
@@ -84,6 +92,11 @@ public class Player extends Entity {
                 this.setUpAnimations(AnimationActor.PLAYER1);
                 break;
         }
+        purchaseSFX = RRGame.am.get(RRGame.RSC_SHOP_PURCHASE);
+        invalidSFX = RRGame.am.get(RRGame.RSC_SHOP_INVALID);
+        this.numCoins = 300;
+        this.purchasedItems = new HashSet<>();
+        // this will obviously change based on a number of factors later
     }
 
     public Player(Texture texture, float x, float y, float size, int pid) {
@@ -99,6 +112,14 @@ public class Player extends Entity {
      * @param delta Time since last frame
      */
     public void update(float delta) {
+        if (shopping){
+            return;
+        }
+
+        if (merchantTimer < MERCHANT_COOLDOWN){
+            merchantTimer+=delta;
+        }
+
         attackTimer += delta;
         dashTimer += delta;
         abilityTimer += delta;
@@ -176,6 +197,9 @@ public class Player extends Entity {
      * @return
      */
     public boolean attack(int pid, long frame) {
+        if (RRGame.globals.currentScreen.getRoom().getRoomType() == RoomType.MERCHANT){
+            return false;
+        }
         // good spot for a sound effect
         //this converts a Vector3 position of pixels to a Vector3 position of units
         float x = Gdx.input.getX();
@@ -288,13 +312,75 @@ public class Player extends Entity {
         System.out.println("Current coins " + numCoins);
     }
 
-    public void spendCoins(int amount) {
-        // idk how this will work for merchant but i'm adding the function here
-        numCoins--;
+    public void buyItem(BuyableItem item, int cost) {
+
+        // We can't afford this item, or we already own it and it's non-disposable.
+       if (numCoins < cost || (purchasedItems.contains(item) && RRGame.globals.nonRepurchasableItems.contains(item))){
+           this.invalidSFX.play(0.2f);
+           return;
+       }
+
+       // Buy the item
+       this.purchaseSFX.play(0.2f);
+       numCoins -= cost;
+       this.purchasedItems.add(item);
+
+       // Apply/Give Item To Player
+       switch(item){
+           case HEALTH_POTION:
+               this.healthPotionsHeld+=1;
+           break;
+
+           case RING:
+               this.stats.increaseHealth(25);
+           break;
+
+           case DAGGER:
+               this.stats.increaseAttackSpeed(1);
+           break;
+
+           case CLOAK:
+               this.stats.increaseMoveSpeed(5);
+           break;
+       }
+
+
+        System.out.println("PLAYER NOW:");
+        System.out.println("------------------");
+        System.out.println("HP:" + stats.getMaxHealth());
+        System.out.println("Health Potions: " + healthPotionsHeld);
+        System.out.println("Attack Speed: " + stats.getAttackSpeed());
+        System.out.println("Move Speed: " + stats.getMoveSpeed());
+        System.out.println("------------------");
+
+
+       // tell others we purchased an upgrade.
+       RRGame.globals.network.connection.dispatchUpgrade(this.associatedPID, item);
     }
 
-    public int getNumCoins() {
-        return numCoins;
+    public int getCoins(){
+        return this.numCoins;
+    }
+
+    public int getNumCoins(){
+        return this.numCoins;
+    }
+
+    public void startShopping(){
+        if (RRGame.globals.pid == this.associatedPID){
+            GUI gui = RRGame.globals.currentScreen.getGUI();
+            gui.openStore();
+        }
+        this.shopping = true;
+    }
+
+    public void stopShopping(){
+        if (RRGame.globals.pid == this.associatedPID){
+            RRGame.globals.network.connection.dispatchLeaveMerchant(this.associatedPID);
+            GUI gui = RRGame.globals.currentScreen.getGUI();
+            gui.closeStore();
+        }
+        this.shopping = false;
     }
 
     public void useConsumable(int pid, long frame) {
@@ -353,12 +439,23 @@ public class Player extends Entity {
 
     @Override
     public void onHurt(Entity thingThatHurtMe) {
+        if (shopping){
+            return;
+        }
+
         boolean tookDamage = false;
         if (thingThatHurtMe.alignment == EntityAlignment.PLAYER) { return; }
         else if (thingThatHurtMe instanceof Projectile && thingThatHurtMe.alignment == EntityAlignment.ENEMY) {
             this.stats.takeDamage(((Projectile) thingThatHurtMe).damage);
             tookDamage = true;
             hurtSFX.play(0.5f, rnd.nextFloat(0.5f, 2f), 0);
+        }
+        else if (thingThatHurtMe instanceof Merchant) {
+            if (this.merchantTimer >= MERCHANT_COOLDOWN){
+                this.startShopping();
+                this.merchantTimer = 0;
+            }
+            return;
         }
         else if (thingThatHurtMe instanceof Enemy) {
             this.stats.takeDamage(((Enemy) thingThatHurtMe).stats.getDamage());
@@ -388,13 +485,30 @@ public class Player extends Entity {
         }
     }
 
-    public void resetForNewRoom() {
-        this.setPosition(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y);
-        this.holdingKey = false;
-        this.attackTimer = 0f;
-        this.dashTimer = DASH_DEXTERITY_CONVERTER / stats.getDexterity();
-        this.abilityTimer = abilityCooldown;
-        this.consumableTimer = CONSUMABLE_COOLDOWN;
+    public void resetForNewRoom(RoomType roomType) {
+
+        switch (roomType){
+
+            case BATTLE:
+                this.setPosition(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y);
+                this.holdingKey = false;
+                this.attackTimer = 0f;
+                this.dashTimer = DASH_DEXTERITY_CONVERTER / stats.getDexterity();
+                this.abilityTimer = abilityCooldown;
+                this.consumableTimer = CONSUMABLE_COOLDOWN;
+
+            break;
+
+            case MERCHANT:
+                this.setPosition(RRGame.PLAYER_SPAWN_MERCHANT_X, RRGame.PLAYER_SPAWN_MERCHANT_Y);
+                this.holdingKey = false;
+                this.attackTimer = 0f;
+                this.dashTimer = 0f;
+                this.abilityTimer = 0f;
+                this.consumableTimer = 0f;
+            break;
+
+        }
     }
 
     @Override
@@ -403,5 +517,10 @@ public class Player extends Entity {
             keySprite.draw(batch);
         }
         super.draw(batch);
+    }
+
+
+    public HashSet<BuyableItem> getPurchasedItems(){
+        return this.purchasedItems;
     }
 }

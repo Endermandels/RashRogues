@@ -168,7 +168,7 @@ public class AnimationHandler {
                 merchantSheet.getWidth() / MERCHANT_NUM_COLS,
                 merchantSheet.getHeight() / MERCHANT_NUM_ROWS);
         animations.put(AnimationActor.MERCHANT, new HashMap<AnimationAction, AnimationInfo>(MERCHANT_NUM_ROWS));
-        animations.get(AnimationActor.MERCHANT).put(AnimationAction.IDLE, new AnimationInfo(merchantFrames, 0, 4, 0.2f));
+        animations.get(AnimationActor.MERCHANT).put(AnimationAction.IDLE, new AnimationInfo(merchantFrames, 0, 4, 0.5f));
         animations.get(AnimationActor.MERCHANT).put(AnimationAction.OPEN, new AnimationInfo(merchantFrames, 1, 3, 0.5f));
         animations.get(AnimationActor.MERCHANT).put(AnimationAction.CLOSE, new AnimationInfo(merchantFrames, 2, 3, 0.5f));
         animations.get(AnimationActor.MERCHANT).put(AnimationAction.DEFAULT, animations.get(AnimationActor.MERCHANT).get(AnimationAction.IDLE));
