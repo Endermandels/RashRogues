@@ -3,8 +3,11 @@ package io.github.RashRogues;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.ParticleEffect;
+import com.badlogic.gdx.graphics.g2d.ParticleEffectPool;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -31,6 +34,8 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     private PriorityQueue<Entity> renderQueue;
     private HashMap<Integer, Boolean> inputs;
     public static CollisionGrid collisionGrid = new CollisionGrid();
+    public static ParticleEffectPool smokeParticleEffectPool;
+    public static Array<ParticleEffectPool.PooledEffect> smokeParticleEffects;
 
     //Debugging
     private static BitmapFont font = new BitmapFont(Gdx.files.internal("fonts/debug.fnt"),false);
@@ -49,6 +54,8 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         loadRooms();
         createHUDAndInputs();
         font.getData().setScale(3f);
+        smokeParticleEffectPool = new ParticleEffectPool(RRGame.am.get(RRGame.RSC_SMOKE_PARTICLE_EFFECT, ParticleEffect.class), 5, 10);
+        smokeParticleEffects = new Array<>();
 
         /* Player Creation */
         player = new Player(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, (int) RRGame.PLAYER_SIZE, RRGame.globals.pid);
@@ -164,6 +171,18 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             Entity e = renderQueue.poll();
             if (!(e instanceof GUIElement)) e.draw(game.batch);
         }
+        for (ParticleEffectPool.PooledEffect effect : smokeParticleEffects) {
+            effect.draw(game.batch, delta);
+
+            // Ensure we allow the effect to complete if it's looping
+            effect.allowCompletion();
+
+            if (effect.isComplete()) {
+                effect.free();
+                smokeParticleEffects.removeValue(effect, true);
+            }
+        }
+
         game.batch.end();
 
 
@@ -583,5 +602,11 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
     public void executeCommand(String[] cmd){
         this.hud.executeCommand(cmd);
+    }
+
+    public void dispose(){
+        for (ParticleEffectPool.PooledEffect effect : smokeParticleEffects) {
+            effect.free();
+        }
     }
 }

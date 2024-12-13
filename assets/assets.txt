@@ -55,6 +55,8 @@ Images/swordsman sprite sheet.png
 Menu/game_list_background.png
 Menu/game_list_item.png
 Menu/net_viewer.png
+Particles/particle-cloud.png
+Particles/smoke_particles.p
 SFX/music/Rogue Rush v2.mp3
 SFX/music/Rogue Rush.mp3
 SFX/music/Stealth Surge.mp3
