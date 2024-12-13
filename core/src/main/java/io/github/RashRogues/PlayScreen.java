@@ -268,6 +268,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             // last room
             // win screen?
             // this will crash the game for now most likely
+            game.setScreen(new WinScreen(game));
             return;
         }
         else {
