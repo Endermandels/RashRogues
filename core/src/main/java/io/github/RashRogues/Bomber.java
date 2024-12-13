@@ -14,19 +14,18 @@ public class Bomber extends Enemy {
         DIE
     };
 
-    private final int BASE_BOMBER_HEALTH = 200;
+    private final int BASE_BOMBER_HEALTH = 40;
     private final int BASE_BOMBER_DAMAGE = 30;
     private final float BASE_BOMBER_ATTACK_SPEED = 0.1f;
-    private final float BASE_BOMBER_MOVE_SPEED = 1f;
+    private final float BASE_BOMBER_MOVE_SPEED = 5f;
     private final float BASE_BOMBER_RETREAT_SPEED = 3.5f;
     private final float BOMBER_HIT_BOX_PERCENT_WIDTH_SCALAR = 0.4f;
     private final float BOMBER_HIT_BOX_PERCENT_HEIGHT_SCALAR = 0.4f;
     private final float BOMBER_HURT_BOX_PERCENT_WIDTH_SCALAR = 0.55f;
     private final float BOMBER_HURT_BOX_PERCENT_HEIGHT_SCALAR = 0.55f;
-    private final int BOMB_DAMAGE = 100;
-    private final float BOMB_DISTANCE = 8f;
-    private final float BOMB_SPEED = 10f;
-    private final float BOMB_FUSE_DURATION = 1f;
+    private final int BOMB_DAMAGE = 200;
+    private final float BOMB_DISTANCE = 10f;
+    private final float BOMB_SPEED = 15f;
     private final int ATTENTION_SPAN = 60;
     private final float WINDUP_TIME = 0.9f;
     private final float COOLDOWN_TIME = 1.0f;

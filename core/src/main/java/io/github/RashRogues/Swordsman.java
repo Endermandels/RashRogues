@@ -15,13 +15,12 @@ public class Swordsman extends Enemy {
         DIE
     };
 
-    private final int BASE_SWORDSMAN_HEALTH = 100;
-    private final int BASE_SWORDSMAN_DAMAGE = 10;
-    private final int ATTACK_DAMAGE = 50;
-    private final float ATTACK_DURATION = 0.5f;
+    private final int BASE_SWORDSMAN_HEALTH = 50;
+    private final int BASE_SWORDSMAN_DAMAGE = 30;
+    private final int ATTACK_DAMAGE = 100;
     private final float BASE_SWORDSMAN_ATTACK_SPEED = 0.5f;
     private final float BASE_SWORDSMAN_RETREAT_SPEED = 1f;
-    private final float BASE_SWORDSMAN_MOVE_SPEED = 1.5f;
+    private final float BASE_SWORDSMAN_MOVE_SPEED = 4f;
     private final float SWORDSMAN_HIT_BOX_PERCENT_SCALAR = 0.4f;
     private final float SWORDSMAN_HURT_BOX_PERCENT_SCALAR = 0.58f;
     private final float STRIKING_DISTANCE = 4f;

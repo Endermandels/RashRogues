@@ -57,12 +57,12 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         setNextRoom();
 
         /* Instance Creation */
-        new Archer(45, 275, 4, RRGame.globals.playersSet,true);
-        new Bomber(35, 275, 4, RRGame.globals.playersSet,true);
-        new Swordsman(25, 275, 4, RRGame.globals.playersSet,true);
-        new Key(25,275);
-        new Key(25,280);
-        new Key(25,290);
+//        new Archer(45, 275, 4, RRGame.globals.playersSet,true);
+//        new Bomber(35, 275, 4, RRGame.globals.playersSet,true);
+//        new Swordsman(25, 275, 4, RRGame.globals.playersSet,true);
+//        new Key(25,275);
+//        new Key(25,280);
+//        new Key(25,290);
 
         /* Camera Setup */
         game.playerCam.bind(player);
@@ -252,7 +252,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     private void loadRooms() {
         this.rooms = new ArrayList<>();
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM1_IMG),
-                35, 301, 00, 0, game.room1Music));
+                35, 301, 50, 0, game.room1Music));
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM2_IMG),
                 35, 301, 120, 10, game.room2Music));
 
