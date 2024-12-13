@@ -16,16 +16,17 @@ public class Archer extends Enemy {
         DIE
     };
 
-    private final int BASE_ARCHER_HEALTH = 5;
+    private final int BASE_ARCHER_HEALTH = 15;
     private final int BASE_ARCHER_DAMAGE = 5;
     private final float BASE_ARCHER_ATTACK_SPEED = 0.9f;
-    private final float BASE_ARCHER_MOVE_SPEED = 3f;
-    private final float BASE_ARCHER_RETREAT_SPEED = 4f;
+    private final float BASE_ARCHER_MOVE_SPEED = 7f;
+    private final float BASE_ARCHER_RETREAT_SPEED = 9f;
     private final float ARCHER_HIT_BOX_PERCENT_WIDTH_SCALAR = 0.25f;
     private final float ARCHER_HIT_BOX_PERCENT_HEIGHT_SCALAR = 0.45f;
     private final float ARCHER_HURT_BOX_PERCENT_WIDTH_SCALAR = 0.45f;
     private final float ARCHER_HURT_BOX_PERCENT_HEIGHT_SCALAR = 0.65f;
     private final int ARROW_DAMAGE = 30;
+    private final float ATTENTION_DISTANCE = 35f; // Distance at which a player is worth moving
     private final int ATTENTION_SPAN = 90;
     private final float ATTACK_TIME_MAX = 0.7f;
     private float STRIKING_DISTANCE = 20f; // Shooting Range.
@@ -142,7 +143,7 @@ public class Archer extends Enemy {
                 continue;
             }
             float distToP = distanceTo(player);
-            if (distToP < closest) {
+            if (distToP < closest && distToP < ATTENTION_DISTANCE) {
                 p       = player;
                 closest = distToP;
             }
@@ -248,6 +249,8 @@ public class Archer extends Enemy {
 
             case IDLE:
                 this.setCurrentAnimation(AnimationAction.IDLE);
+                xVelocity = 0f;
+                yVelocity = 0f;
                 findTarget();
                 if (this.target != null){
                     this.state = State.WALK;

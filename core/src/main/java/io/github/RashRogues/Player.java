@@ -16,8 +16,8 @@ import static java.lang.Math.abs;
 public class Player extends Entity {
 
     private final int BASE_PLAYER_HEALTH = 500;
-    private final int BASE_PLAYER_DAMAGE = 10000;
-    private final float BASE_PLAYER_ATTACK_SPEED = 0.5f;
+    private final int BASE_PLAYER_DAMAGE = 10;
+    private final float BASE_PLAYER_ATTACK_SPEED = 1f;
     private final float ACCELERATION = 50.0f;
     private final float FRICTION = 25.0f;
     private final float BASE_PLAYER_MOVE_SPEED = 15.0f;

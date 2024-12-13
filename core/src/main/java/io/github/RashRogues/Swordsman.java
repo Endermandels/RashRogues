@@ -15,16 +15,16 @@ public class Swordsman extends Enemy {
         DIE
     };
 
-    private final int BASE_SWORDSMAN_HEALTH = 100;
-    private final int BASE_SWORDSMAN_DAMAGE = 10;
-    private final int ATTACK_DAMAGE = 50;
-    private final float ATTACK_DURATION = 0.5f;
+    private final int BASE_SWORDSMAN_HEALTH = 50;
+    private final int BASE_SWORDSMAN_DAMAGE = 30;
+    private final int ATTACK_DAMAGE = 100;
     private final float BASE_SWORDSMAN_ATTACK_SPEED = 0.5f;
     private final float BASE_SWORDSMAN_RETREAT_SPEED = 1f;
-    private final float BASE_SWORDSMAN_MOVE_SPEED = 1.5f;
+    private final float BASE_SWORDSMAN_MOVE_SPEED = 4f;
     private final float SWORDSMAN_HIT_BOX_PERCENT_SCALAR = 0.4f;
     private final float SWORDSMAN_HURT_BOX_PERCENT_SCALAR = 0.58f;
     private final float STRIKING_DISTANCE = 4f;
+    private final float ATTENTION_DISTANCE = 20f; // Distance at which a player is worth moving
     private final int ATTENTION_SPAN = 60;
     private final float ATTACK_TIME_MAX = 0.7f;
 
@@ -106,7 +106,7 @@ public class Swordsman extends Enemy {
                 continue;
             }
             float distToP = distanceTo(player);
-            if (distToP < closest) {
+            if (distToP < closest && distToP < ATTENTION_DISTANCE) {
                 p       = player;
                 closest = distToP;
             }
@@ -186,6 +186,8 @@ public class Swordsman extends Enemy {
 
             case IDLE:
                 this.setCurrentAnimation(AnimationAction.IDLE);
+                xVelocity = 0f;
+                yVelocity = 0f;
                 findTarget();
                 if (this.target != null){
                     this.state = State.WALK;
