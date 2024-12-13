@@ -41,10 +41,8 @@ public class Projectile extends Entity {
      */
     Projectile(EntityAlignment alignment, Texture texture, float x, float y, float width, float height,
                float xDirection, float yDirection, int damage, float degreesOffsetFromFacingRight,
-               boolean onlyHitOneTarget, float distance, float speed, AnimationActor animationActor,
-               int pid, long number) {
-        super(alignment,texture,x,y,width,height,Layer.PROJECTILE, animationActor,
-                ReplicationType.CLIENTSIDE, pid, number);
+               boolean onlyHitOneTarget, float distance, float speed, AnimationActor animationActor, ReplicationType replicationType, int pid, long number) {
+        super(alignment,texture,x,y,width,height,Layer.PROJECTILE, animationActor, replicationType, pid, number);
         Vector2 direction = new Vector2(xDirection, yDirection).nor();
         this.damage = damage;
         this.distance = distance;
@@ -63,7 +61,7 @@ public class Projectile extends Entity {
 
     /**
      * Explosion or Melee Projectile (duration based)
-     * Duration based projectiles do not need synced.
+     * Duration based projectiles do not need synced because they destroy themselves.
      * @param alignment
      * @param texture
      * @param x
@@ -103,14 +101,18 @@ public class Projectile extends Entity {
      * @param explosionOrMelee should be true if an explosion or a melee projectile (unmoving).
      * @return A copy of this projectile
      */
-    public Projectile makeProjectile(boolean explosionOrMelee, boolean clientside) {
+    public Projectile makeProjectile(boolean explosionOrMelee) {
         Projectile returnProjectile;
         if (!explosionOrMelee) {
             Vector2 direction = new Vector2(xVelocity, yVelocity);
             float degOffset = this.getRotation() - direction.angleDeg();
             returnProjectile = new Projectile(this.alignment, this.getTexture(), this.getX(), this.getY(), this.getWidth(),
                     this.getHeight(), this.xVelocity, this.yVelocity, this.damage, degOffset, this.onlyHitOneTarget,
-                    this.distance, this.speed, this.animationActor, this.creator, this.number);
+                    this.distance, this.speed, this.animationActor, this.replicationType, this.creator, this.number);
+        }
+        else if (this instanceof SmokeBombExplosion){
+            // this is annoying but i'm tired and cant think of another easy way to do this:
+            returnProjectile =  new SmokeBombExplosion(this.getX(), this.getY());
         }
         else {
             returnProjectile =  new Projectile(this.alignment, this.getTexture(), this.getX(), this.getY(), this.getWidth(),
@@ -119,6 +121,7 @@ public class Projectile extends Entity {
         }
         // because this step is done on each subclass, we need to do it here
         returnProjectile.setBoxPercentSize(this.hitBoxWidthScalar, this.hitBoxHeightScalar, returnProjectile.hitBox);
+        returnProjectile.hitBox.setEffect(this.hitBox.getEffect());
         return returnProjectile;
     }
 

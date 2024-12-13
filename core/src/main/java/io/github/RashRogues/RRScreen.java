@@ -31,4 +31,9 @@ public interface RRScreen {
     public void executeCommand(String[] cmd);
 
     void dispose();
+
+    GUI getGUI();
+
+    Room getRoom();
+
 }

@@ -4,10 +4,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.net.Socket;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.Queue;
+import io.github.RashRogues.BuyableItem;
 import io.github.RashRogues.Entity;
-import io.github.RashRogues.PlayScreen;
 import io.github.RashRogues.Player;
 import io.github.RashRogues.RRGame;
+import io.github.RashRogues.*;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -26,6 +27,10 @@ public class Client implements Endpoint {
     private Thread listeningThread;
     private Thread speakingThread;
     private int pid;
+
+    private Queue<byte[]> deferQueue = new Queue<>();
+    private HashMap<Integer,Integer> tgtPktDeferCount = new HashMap<>();
+    private int tgtPktDeferMax = 3;
 
     public ConcurrentLinkedQueue<byte[]> incomingMessages = new ConcurrentLinkedQueue<>();
     public ConcurrentLinkedQueue<byte[]> outgoingMessages = new ConcurrentLinkedQueue<>();
@@ -128,6 +133,11 @@ public class Client implements Endpoint {
      */
     public void processMessages() {
 
+        // Check deferred packets from last frame.
+        while (!this.deferQueue.isEmpty()){
+            this.incomingMessages.add(deferQueue.removeFirst());
+        }
+
         //READ MESSAGES FROM LISTENER THREAD
         while (!this.incomingMessages.isEmpty()) {
             byte[] msg = this.incomingMessages.poll();
@@ -167,6 +177,14 @@ public class Client implements Endpoint {
                 this.handleCommand(msg);
             } else if (msgType == PICKUP_KEY.getvalue()){
                 this.handlePickupKey(msg);
+            } else if (msgType == MERCHANT.getvalue()){
+                this.handleMerchant(msg);
+            } else if (msgType == UPGRADE.getvalue()){
+                this.handleUpgrade(msg);
+            } else if (msgType == SET_TARGET.getvalue()){
+                this.handleSetTarget(msg);
+            } else if (msgType == DROP_KEY.getvalue()){
+                this.handleDropKey(msg);
             }
         }
 
@@ -195,6 +213,11 @@ public class Client implements Endpoint {
      */
     public void dispatchCreatePlayer(Player player) {
         this.outgoingMessages.add(StreamMaker.createPlayer(this.pid, (int) player.getX(), (int) player.getY()));
+    }
+
+    @Override
+    public void dispatchDestroyPlayer(int pid) {
+       return;
     }
 
     /**
@@ -231,13 +254,38 @@ public class Client implements Endpoint {
     }
 
     @Override
+    public void dispatchTarget(int eid, int pid) {
+       return;
+    }
+
+    @Override
     public void dispatchCommand(String[] cmd) {
        return;
     }
 
     @Override
-    public void dispatchKeyPickup(int pid) {
+    public void dispatchKeyPickup(int pid, int keyID) {
        return;
+    }
+
+    @Override
+    public void dispatchKeyDrop(float x, float y) {
+        return;
+    }
+
+    @Override
+    public void dispatchEnterMerchant(int pid) {
+        this.outgoingMessages.add(StreamMaker.merchant(pid,true));
+    }
+
+    @Override
+    public void dispatchLeaveMerchant(int pid) {
+        this.outgoingMessages.add(StreamMaker.merchant(pid,false));
+    }
+
+    @Override
+    public void dispatchUpgrade(int pid, BuyableItem item) {
+       this.outgoingMessages.add(StreamMaker.upgrade(pid,item));
     }
 
 
@@ -269,11 +317,58 @@ public class Client implements Endpoint {
         RRGame.globals.setPID(this.pid);
     }
 
+    /**
+     * Server told us to pickup a specific key from the world.
+     * @param packet
+     */
     public void handlePickupKey(byte[] packet){
         int playerWhoPickedUpKey = packet[1];
+        byte[] keyIDBytes = new byte[4];
+        System.arraycopy(packet,2,keyIDBytes,0,4);
+        int keyID = StreamMaker.bytesToInt(keyIDBytes);
+
+        Entity key = RRGame.globals.getKey(keyID);
         Player p = RRGame.globals.players.get(playerWhoPickedUpKey);
-        if (p != null){
-            p.setHoldingKey(true);
+
+        if (key == null || p == null){
+            return;
+        }
+
+        RRGame.globals.deregisterEntity(key);
+        p.setHoldingKey(true);
+    }
+
+    public void handleDropKey(byte[] packet){
+        byte[] xBytes = new byte[4];
+        byte[] yBytes = new byte[4];
+
+        xBytes[0] = packet[1];
+        xBytes[1] = packet[2];
+        xBytes[2] = packet[3];
+        xBytes[3] = packet[4];
+
+        yBytes[0] = packet[5];
+        yBytes[1] = packet[6];
+        yBytes[2] = packet[7];
+        yBytes[3] = packet[8];
+
+        float x = StreamMaker.bytesToFloat(xBytes);
+        float y = StreamMaker.bytesToFloat(yBytes);
+        new Key(x,y);
+    }
+
+    public void handleMerchant(byte[] packet){
+        int pid = packet[1];
+        boolean enterOrLeave = false;
+        if ((int) packet[2] == 1){
+            enterOrLeave = true;
+        }
+
+        Player p = RRGame.globals.players.get(pid);
+        if (enterOrLeave){
+            p.startShopping();
+        }else{
+            p.stopShopping();
         }
     }
 
@@ -283,8 +378,49 @@ public class Client implements Endpoint {
      */
     public void handleKillPlayer(byte[] packet){
         int pidToKill = packet[1];
-        Entity playerEntity = (Entity) RRGame.globals.players.get(pidToKill);
-        RRGame.globals.deregisterEntity(playerEntity);
+        Player player = RRGame.globals.players.get(pidToKill);
+        if (player != null){
+            player.stats.kill();
+        }else{
+            System.out.println("Warning! Player doesn't exist!");
+        }
+    }
+
+    /**
+     * We received the instruction to destroy a player entity.
+     * @param packet
+     */
+    public void handleDestroyPlayer(byte[] packet){
+        int pid = packet[1];
+        Player p = RRGame.globals.players.get(pid);
+        RRGame.globals.removePlayer(pid);
+        RRGame.globals.deregisterEntity(p);
+    }
+
+    public void handleSetTarget(byte[] packet){
+        int pid = packet[1];
+        byte[] eidBytes = new byte[4];
+        System.arraycopy(packet,2,eidBytes,0,4);
+        int eid = StreamMaker.bytesToInt(eidBytes);
+        Entity e = RRGame.globals.deterministicReplicatedEntities.get(eid);
+        Player p = RRGame.globals.players.get(pid);
+
+        if (e != null && e instanceof Enemy){
+            ((Enemy) e).setTarget(p);
+
+        //try again next frame.
+        } else {
+            if (tgtPktDeferCount.containsKey(eid) == false) {
+                tgtPktDeferCount.put(eid, 0);
+            }
+
+            if (tgtPktDeferCount.get(eid) >= tgtPktDeferMax){
+                return;
+            }
+
+            tgtPktDeferCount.put(eid, tgtPktDeferCount.get(eid) + 1);
+            this.deferQueue.addLast(packet);
+        }
     }
 
     /**
@@ -323,6 +459,34 @@ public class Client implements Endpoint {
         for (int i = 0; i < clients; i++){
             RRGame.globals.addClient(packet[2+i]);
         }
+    }
+
+    public void handleUpgrade(byte[] packet){
+        int pid = packet[1];
+        int upgrade = packet[2];
+        Player p = RRGame.globals.players.get(pid);
+        if (p == null){
+            System.out.println(">>! Null Player!");
+            return;
+        }
+        if (upgrade == BuyableItem.CLOAK.getvalue()){
+            p.stats.increaseMoveSpeed(5);
+        } else if (upgrade == BuyableItem.DAGGER.getvalue()){
+            p.stats.increaseAttackSpeed(1);
+        } else if (upgrade == BuyableItem.HEALTH_POTION.getvalue()){
+            p.healthPotionsHeld+=1;
+        } else if (upgrade == BuyableItem.RING.getvalue()){
+            p.stats.increaseHealth(25);
+        }
+
+        System.out.println("PLAYER NOW:");
+        System.out.println("------------------");
+        System.out.println("HP:" + p.stats.getMaxHealth());
+        System.out.println("Health Potions: " + p.healthPotionsHeld);
+        System.out.println("Attack Speed: " + p.stats.getAttackSpeed());
+        System.out.println("Move Speed: " + p.stats.getMoveSpeed());
+        System.out.println("------------------");
+
     }
 
     /**
@@ -377,14 +541,6 @@ public class Client implements Endpoint {
         Player player = new Player(RRGame.am.get(RRGame.RSC_ROGUE_IMG), x, y, RRGame.PLAYER_SIZE, new_pid);
         this.inputQueues.put((int) packet[1],new Queue<byte[]>());
         RRGame.globals.addPlayer(new_pid,player);
-    }
-
-    public void handleDestroyPlayer(byte[] packet){
-        int pid = packet[1];
-        Player p = RRGame.globals.players.get(pid);
-        RRGame.globals.removePlayer(pid);
-        RRGame.globals.removeClient(pid);
-        RRGame.globals.deregisterEntity(p);
     }
 
     public void handleDestroyProjectile(byte[] packet){
@@ -510,6 +666,11 @@ public class Client implements Endpoint {
 
     @Override
     public void dispatchDestroyEntity2(int pid, long frame) {
+       return;
+    }
+
+    @Override
+    public void dispatchDestroyEntity3(int eid, long number) {
        return;
     }
 

@@ -1,6 +1,13 @@
 package io.github.RashRogues;
 
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.graphics.FPSLogger;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.ParticleEffect;
+import com.badlogic.gdx.graphics.g2d.ParticleEffectPool;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -16,7 +23,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     private boolean debug = false;
     private RRGame game;
     private HUD hud;
-    private GUI gui;
+    public GUI gui;
     private Room currentRoom;
     private Player player;
     private Door currentDoor;
@@ -27,6 +34,12 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     private PriorityQueue<Entity> renderQueue;
     private HashMap<Integer, Boolean> inputs;
     public static CollisionGrid collisionGrid = new CollisionGrid();
+    public static ParticleEffectPool smokeParticleEffectPool;
+    public static Array<ParticleEffectPool.PooledEffect> smokeParticleEffects;
+
+    //Debugging
+    private static BitmapFont font = new BitmapFont(Gdx.files.internal("fonts/debug.fnt"),false);
+    private static Entity debugEntity = null;
 
     public PlayScreen(RRGame game) {
 
@@ -39,22 +52,35 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         this.renderQueue    = new PriorityQueue<>(new EntityComparator());
         initInputs();
         loadRooms();
-        setNextRoom();
         createHUDAndInputs();
+        initPlayer();
+        setNextRoom();
 
-        /* Player Creation */
-        player = new Player(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y, (int) RRGame.PLAYER_SIZE, RRGame.globals.pid);
-        RRGame.globals.addPlayer(RRGame.globals.pid,player);
+        if (this.currentRoom.getRoomType() == RoomType.BATTLE){
+            player.setPosition(RRGame.PLAYER_SPAWN_X,RRGame.PLAYER_SPAWN_Y);
+        }
+
+        if (this.currentRoom.getRoomType() == RoomType.MERCHANT){
+            player.setPosition(RRGame.PLAYER_SPAWN_MERCHANT_X,RRGame.PLAYER_SPAWN_MERCHANT_Y);
+        }
+
         this.game.network.connection.dispatchCreatePlayer(player);
+
+    }
+
+    private void initPlayer(){
+
+        player = new Player(1,1, (int) RRGame.PLAYER_SIZE, RRGame.globals.pid);
+
+        font.getData().setScale(3f);
+        smokeParticleEffectPool = new ParticleEffectPool(RRGame.am.get(RRGame.RSC_SMOKE_PARTICLE_EFFECT, ParticleEffect.class), 5, 10);
+        smokeParticleEffects = new Array<>();
+
+        RRGame.globals.addPlayer(RRGame.globals.pid,player);
+
         gui = new GUI(player);
-
-        /* Instance Creation */
-//        new Swordsman(50, 30, 10, RRGame.globals.playersSet);
-//        new Key(30, 280);
-
-        /* Camera Setup */
-        game.playerCam.bind(player);
         game.playerCam.center();
+        game.playerCam.bind(player);
 
     }
 
@@ -101,8 +127,11 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             keyMask[6] = 1;
         }
 
-        game.network.connection.dispatchKeys(keyMask, RRGame.globals.frame);
-        RRGame.globals.frame++;
+        if (this.player.shopping) {
+            return;
+        }
+            game.network.connection.dispatchKeys(keyMask, RRGame.globals.frame);
+            RRGame.globals.frame++;
     }
 
     public void update(float delta) {
@@ -152,6 +181,18 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             Entity e = renderQueue.poll();
             if (!(e instanceof GUIElement)) e.draw(game.batch);
         }
+        for (ParticleEffectPool.PooledEffect effect : smokeParticleEffects) {
+            effect.draw(game.batch, delta);
+
+            // Ensure we allow the effect to complete if it's looping
+            effect.allowCompletion();
+
+            if (effect.isComplete()) {
+                effect.free();
+                smokeParticleEffects.removeValue(effect, true);
+            }
+        }
+
         game.batch.end();
 
 
@@ -188,9 +229,36 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                 Enemy enemy = (Enemy) e;
                 drawHurtBox(enemy.hurtBox);
             }
+
         }
         game.shapeRenderer.end();
         Gdx.gl.glDisable(GL20.GL_BLEND);
+
+        Vector3 mouse = new Vector3();
+        mouse.x = Gdx.input.getX();
+        mouse.y = Gdx.input.getY();
+        mouse.z = 0;
+        game.playerCam.unproject(mouse);
+
+        for (Entity e : localEntities){
+            if ((mouse.x > e.hitBox.getX() && mouse.x < e.hitBox.getX() + e.hitBox.getWidth()) && (mouse.y > e.hitBox.getY() && mouse.y < e.hitBox.getY() + e.hitBox.getHeight())){
+                debugEntity = e;
+                break;
+            }
+        }
+
+        if (debugEntity != null) {
+            game.hudBatch.begin();
+            font.getData().setScale(3f);
+            font.draw(game.hudBatch, "Entity: " + debugEntity.toString(), 5, Gdx.graphics.getHeight()-30);
+            font.draw(game.hudBatch, "Repl. Type: " + debugEntity.replicationType, 5, Gdx.graphics.getHeight()-60);
+            font.getData().setScale(2.5f);
+            font.draw(game.hudBatch, "ID: " + debugEntity.id, 5, Gdx.graphics.getHeight() - 90);
+            font.draw(game.hudBatch, "Number: " + debugEntity.number, 5, Gdx.graphics.getHeight() - 110);
+            font.draw(game.hudBatch, "Creator: " + debugEntity.pid, 5, Gdx.graphics.getHeight() - 130);
+            game.hudBatch.end();
+        }
+
     }
 
     @Override
@@ -212,10 +280,14 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
     private void loadRooms() {
         this.rooms = new ArrayList<>();
+        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM_MERCHANT_IMG),
+                10, 19, 0, 0, game.room2Music, RoomType.MERCHANT));
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM1_IMG),
-                35, 301, 80, 0, game.room1Music));
+                35, 301, 80, 0, game.room1Music, RoomType.BATTLE));
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM2_IMG),
-                35, 301, 120, 10, game.room2Music));
+                35, 301, 120, 10, game.room2Music, RoomType.BATTLE));
+        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM3_IMG),
+                35, 301, 120, 10, game.room3Music, RoomType.BATTLE));
 
         // other rooms will go below here
     }
@@ -229,6 +301,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             // last room
             // win screen?
             // this will crash the game for now most likely
+            game.setScreen(new WinScreen(game));
             return;
         }
         else {
@@ -239,15 +312,16 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         for (Entity e : localEntities) {
             if (e instanceof Player) {
                 Player player = (Player) e;
-                player.resetForNewRoom();
+                player.resetForNewRoom(currentRoom.getRoomType());
                 tempLocalEntities.add(e);
             }
         }
         currentRoom.spawnInitialEntities();
         localEntities = tempLocalEntities;
-        currentDoor = new Door(currentRoom.doorPositionX, currentRoom.doorPositionY);
+        currentDoor = new Door(currentRoom.doorPositionX, currentRoom.doorPositionY, currentRoom.doorUnlockedByDefault);
         game.playerCam.changeWorldSize(currentRoom.roomWidth, currentRoom.roomHeight, currentRoom.doorPositionX, currentRoom.doorPositionY);
         collisionGrid.updateCollisionGridRoomValues(currentRoom.roomWidth, currentRoom.roomHeight);
+        gui = new GUI(RRGame.globals.players.get(RRGame.globals.pid));
     }
 
     public void createHUDAndInputs() {
@@ -306,13 +380,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
             public String help(String[] cmd) {
                 return help;
-            }
-        });
-
-        hud.registerAction("netviewer", new HUDActionCommand() {
-            @Override
-            public String execute(String[] cmd) {
-                return "see console.";
             }
         });
 
@@ -480,6 +547,11 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                     inputs.put(Input.Keys.UP, true);
                 }
 
+                // Do Not Allow Inputs Other Than Movement In Merchant Room
+                if (currentRoom.getRoomType() == RoomType.MERCHANT){
+                    return true;
+                }
+
                 if (keycode == Input.Keys.SPACE) {
                     inputs.put(Input.Keys.SPACE, true);
                 }
@@ -491,7 +563,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                 if (keycode == Input.Keys.Q) {
                     inputs.put(Input.Keys.Q, true);
                 }
-
 
                 return true;
             }
@@ -551,5 +622,20 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
     public void executeCommand(String[] cmd){
         this.hud.executeCommand(cmd);
+    }
+
+    public void dispose(){
+        for (ParticleEffectPool.PooledEffect effect : smokeParticleEffects) {
+            effect.free();
+        }
+    }
+
+    public GUI getGUI(){
+        return this.gui;
+    }
+
+    @Override
+    public Room getRoom() {
+        return this.currentRoom;
     }
 }

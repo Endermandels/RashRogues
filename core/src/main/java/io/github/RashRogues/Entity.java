@@ -42,7 +42,7 @@ public abstract class Entity extends Sprite {
     // Used For Networking
     public int id     = -1;
     public int pid    = -1;
-    public long frame = -1;
+    public long number = -1;
 
     /**
      * Create an Entity on the current screen.
@@ -79,30 +79,7 @@ public abstract class Entity extends Sprite {
         this.replicationType = replicationType;
         RRGame.globals.registerEntity(this, replicationType, creatorPID, number);
         this.toggleAnimations(true);
-        if (animationActor == null) {
-            // this is redundant but necessary unless we want a whole extra layer of nested if loops!
-            this.animations = null;
-        }
-        else if (this instanceof Player) {
-            switch (RRGame.globals.pid) {
-                case 0:
-                    this.setUpAnimations(AnimationActor.PLAYER1);
-                    break;
-                case 1:
-                    this.setUpAnimations(AnimationActor.PLAYER2);
-                    break;
-                case 2:
-                    this.setUpAnimations(AnimationActor.PLAYER3);
-                    break;
-                case 3:
-                    this.setUpAnimations(AnimationActor.PLAYER4);
-                    break;
-                default:
-                    this.setUpAnimations(animationActor);
-                    break;
-            }
-        }
-        else {
+        if (animationActor != null) {
             this.setUpAnimations(animationActor);
         }
     }
@@ -159,38 +136,38 @@ public abstract class Entity extends Sprite {
             if (y < 0) { setY(0); }
             else if (y+getHeight() > RRGame.playerCam.roomHeight) { setY(RRGame.playerCam.roomHeight-getHeight()); }
 
-            float leftSideXRightDoorWall = RRGame.playerCam.doorPositionX;
-            float rightSideXLeftDoorWall = RRGame.playerCam.doorPositionX+10.1f;
-            float actualDoorBottom = RRGame.playerCam.doorPositionY+1;
-
-            if (y+getHeight() > actualDoorBottom && x < leftSideXRightDoorWall) {
-                // shunt us to the closest wall
-                // if the distance between the entity's head and the doorHeight is less than the distance between
-                // the entity's left side and the door's left side, then push us down; otherwise, push right
-                if (abs(y+getHeight() - actualDoorBottom) < abs(x - leftSideXRightDoorWall)) {
-                    setY(actualDoorBottom-getHeight());
-                }
-                else {
-                    setX(leftSideXRightDoorWall);
-                }
-            }
-            else if (y+getHeight() > actualDoorBottom && x+getWidth() > rightSideXLeftDoorWall) {
-                // shunt us to the closest wall
-                // if the distance between the entity's head and the doorHeight is less than the distance between
-                // the entity's right side and the door's right side, then push us down; otherwise, push left
-                if (abs(y+getHeight() - actualDoorBottom) < abs(x+getWidth() - rightSideXLeftDoorWall)) {
-                    setY(actualDoorBottom-getHeight());
-                }
-                else {
-                    setX(rightSideXLeftDoorWall-getWidth());
-                }
-            }
+//            float leftSideXRightDoorWall = RRGame.playerCam.doorPositionX;
+//            float rightSideXLeftDoorWall = RRGame.playerCam.doorPositionX+10.1f;
+//            float actualDoorBottom = RRGame.playerCam.doorPositionY+1;
+//
+//            if (y+getHeight() > actualDoorBottom && x < leftSideXRightDoorWall) {
+//                // shunt us to the closest wall
+//                // if the distance between the entity's head and the doorHeight is less than the distance between
+//                // the entity's left side and the door's left side, then push us down; otherwise, push right
+//                if (abs(y+getHeight() - actualDoorBottom) < abs(x - leftSideXRightDoorWall)) {
+//                    setY(actualDoorBottom-getHeight());
+//                }
+//                else {
+//                    setX(leftSideXRightDoorWall);
+//                }
+//            }
+//            else if (y+getHeight() > actualDoorBottom && x+getWidth() > rightSideXLeftDoorWall) {
+//                // shunt us to the closest wall
+//                // if the distance between the entity's head and the doorHeight is less than the distance between
+//                // the entity's right side and the door's right side, then push us down; otherwise, push left
+//                if (abs(y+getHeight() - actualDoorBottom) < abs(x+getWidth() - rightSideXLeftDoorWall)) {
+//                    setY(actualDoorBottom-getHeight());
+//                }
+//                else {
+//                    setX(rightSideXLeftDoorWall-getWidth());
+//                }
+//            }
         }
 
         hitBox.update(delta);
     }
 
-    private void setUpAnimations(AnimationActor animationActor) {
+    protected void setUpAnimations(AnimationActor animationActor) {
         this.animationTimer = 0f;
         if (Entity.ah.animations.get(animationActor) == null) return;
         this.animations = Entity.ah.animations.get(animationActor);
@@ -201,11 +178,12 @@ public abstract class Entity extends Sprite {
     protected boolean setCurrentAnimation(AnimationAction action) {
         // if somehow we've asked it to do something that doesn't exist, then don't crash
         // additionally, death animations take priority over everything
-        if (this.animations == null || !this.animations.containsKey(action) || this.currentAnimationAction == AnimationAction.DIE) {
+        if (this.animations == null || !this.animations.containsKey(action) ||
+                (this.currentAnimationAction == AnimationAction.DIE && !this.isAnimationFinished())) {
             return false;
         }
         // move only has priority over the idle animation, no others
-        if (action == AnimationAction.MOVE && this.currentAnimationAction != AnimationAction.DEFAULT) {
+        if (action == AnimationAction.MOVE && this.currentAnimationAction != AnimationAction.IDLE &&this.currentAnimationAction != AnimationAction.DEFAULT) {
             return false;
         }
         this.currentAnimationInfo = this.animations.get(action);
@@ -216,14 +194,6 @@ public abstract class Entity extends Sprite {
             return true;
         }
         return false;
-    }
-
-    /**
-     * Basically only used by HealthBar!
-     * */
-    protected boolean setCurrentAnimation(AnimationAction action, AnimationActor changedActor) {
-        setUpAnimations(changedActor);
-        return setCurrentAnimation(action);
     }
 
     protected void toggleAnimations(boolean onOrOff) {

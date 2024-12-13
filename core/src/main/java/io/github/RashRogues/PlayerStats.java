@@ -5,7 +5,7 @@ public class PlayerStats extends Stats {
     private float dexterity;
 
     PlayerStats(int health, int damage, float attackSpeed, float moveSpeed, float dexterity, Entity parent) {
-        super(health, damage, attackSpeed, moveSpeed, parent);
+        super(health, damage, attackSpeed, moveSpeed, 0f, parent);
         this.dexterity = dexterity;
     }
 

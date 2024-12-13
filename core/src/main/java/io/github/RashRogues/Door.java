@@ -13,16 +13,21 @@ public class Door extends Entity {
 
     private Sound openSFX;
 
-    Door(float x, float y) {
+    Door(float x, float y, boolean unlocked) {
         super(EntityAlignment.BACKGROUND, RRGame.am.get(RRGame.RSC_DOOR_IMG, Texture.class),
                 x, y, RRGame.DOOR_SIZE, RRGame.DOOR_SIZE, Layer.BACKGROUND, AnimationActor.DOOR,
                 ReplicationType.ENTITY_NUMBER,-1,-1);
         this.setBoxPercentSize(0.6f, 0.98f, hitBox);
         hitBox.disableLength = 0f;
-        this.locked = true;
+        this.locked = !unlocked;
         this.playersAtDoor = new HashSet<>();
         this.toggleAnimations(false);
         openSFX = RRGame.am.get(RRGame.RSC_DOOR_OPEN_SFX);
+
+        if (this.locked == false){
+            this.toggleAnimations(true);
+            this.setCurrentAnimation(AnimationAction.OPEN);
+        }
     }
 
     @Override

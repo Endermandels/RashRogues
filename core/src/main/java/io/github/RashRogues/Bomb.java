@@ -3,6 +3,7 @@ package io.github.RashRogues;
 import Networking.ReplicationType;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.ParticleEffectPool;
 import com.badlogic.gdx.math.Vector2;
 
 import java.util.Random;
@@ -60,8 +61,14 @@ public class Bomb extends Entity {
                 // stop fuseLitAnimation
                 fuseLit = false;
                 explosionSFX.play(0.2f, rnd.nextFloat(0.7f, 1.3f), 0);
-                explosion = explosion.makeProjectile(true, true);
+                explosion = explosion.makeProjectile(true);
                 explosion.setPosition(this.getX()+this.getWidth()/2-explosion.getWidth()/2, this.getY()+this.getHeight()/2-explosion.getHeight()/2);
+                if (explosion instanceof SmokeBombExplosion) {
+                    System.out.println(this.getX()+this.getWidth()/2 + " " + this.getY()+this.getHeight()/2);
+                    ParticleEffectPool.PooledEffect effect = PlayScreen.smokeParticleEffectPool.obtain();
+                    effect.setPosition(this.getX()+this.getWidth()/2, this.getY()+this.getHeight()/2);
+                    PlayScreen.smokeParticleEffects.add(effect);
+                }
                 this.removeSelf();
             }
         }

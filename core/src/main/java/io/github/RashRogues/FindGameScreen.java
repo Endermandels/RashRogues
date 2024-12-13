@@ -95,4 +95,14 @@ public class FindGameScreen extends ScreenAdapter implements RRScreen {
         this.solicitee.dispose();
     }
 
+    @Override
+    public GUI getGUI() {
+        return null;
+    }
+
+    @Override
+    public Room getRoom() {
+        return null;
+    }
+
 }

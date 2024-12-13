@@ -3,27 +3,32 @@ package io.github.RashRogues;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-public class LoadScreen extends ScreenAdapter implements RRScreen {
-    RRGame game;
+public class WinScreen extends ScreenAdapter implements RRScreen {
 
-    public LoadScreen(RRGame game) {
+    RRGame game;
+    BitmapFont font;
+    float height;
+
+    public WinScreen(RRGame game) {
         RRGame.globals.currentScreen = this;
         this.game = game;
+        font = RRGame.am.get(RRGame.RSC_MONO_FONT_WIN);
+        height = (float) Gdx.graphics.getHeight()/2 + 64f;
     }
 
     @Override
     public void show() {
-        Gdx.app.log("LoadScreen", "show");
+        Gdx.app.log("WinScreen", "show");
     }
 
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 0, 1);
-        RRGame.am.update(10);
-        if (RRGame.am.isFinished()) {
-            game.setScreen(new MainMenuScreen(game));
-        }
+        game.hudBatch.begin();
+        font.draw(game.hudBatch, "YOU WIN", 48f, height);
+        game.hudBatch.end();
     }
 
     @Override
@@ -48,7 +53,7 @@ public class LoadScreen extends ScreenAdapter implements RRScreen {
 
     @Override
     public void executeCommand(String[] cmd) {
-       return;
+        return;
     }
 
     @Override
@@ -60,4 +65,5 @@ public class LoadScreen extends ScreenAdapter implements RRScreen {
     public Room getRoom() {
         return null;
     }
+
 }

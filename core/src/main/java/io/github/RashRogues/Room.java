@@ -12,9 +12,13 @@ public class Room extends Sprite {
     public int roomHeight;
     protected int doorPositionX;
     protected int doorPositionY;
+    protected boolean doorUnlockedByDefault;
+
+    private RoomType roomType;
 
     private final int BASE_NUM_CHESTS = 20;
     private int numChests;
+
 
     protected int numEnemies;
     protected int difficulty;
@@ -29,11 +33,46 @@ public class Room extends Sprite {
 
     protected Random rnd;
 
-    Room(Texture texture, int doorPositionX, int doorPositionY, int numEnemies, int difficulty, Music music) {
+    /**
+     * Create a battle room.
+     * @param texture
+     * @param doorPositionX
+     * @param doorPositionY
+     * @param numEnemies
+     * @param difficulty
+     * @param music
+     */
+    Room(Texture texture, int doorPositionX, int doorPositionY, int numEnemies, int difficulty, Music music, RoomType roomType) {
         super(texture);
+        this.music = music;
+
+        switch (roomType) {
+            case MERCHANT:
+                roomWidth = (int) RRGame.MERCHANT_ROOM_WIDTH;
+                roomHeight = texture.getHeight() * roomWidth / texture.getWidth();
+                createMerchantRoom(doorPositionX,doorPositionY);
+                break;
+
+            case BOSS:
+                createBossRoom();
+                break;
+
+            case KING:
+                createKingRoom();
+                break;
+
+            case BATTLE:
+                roomWidth = (int) RRGame.WORLD_WIDTH;
+                roomHeight = texture.getHeight() * roomWidth / texture.getWidth();
+                createBattleRoom(doorPositionX,doorPositionY,numEnemies,difficulty);
+                break;
+        }
+        this.roomType = roomType;
+    }
+
+    private void createBattleRoom(int doorPositionX, int doorPositionY, int numEnemies, int difficulty){
         this.doorPositionX = doorPositionX;
         this.doorPositionY = doorPositionY;
-        this.music = music;
         /*
         the logic below scales whatever the size of the map is to be 500m wide and
         whatever the proportional height is to that based on the texture.
@@ -41,8 +80,6 @@ public class Room extends Sprite {
         Room A's texture is 1000 px wide and 2000 px tall. The logic in the constructor
         adjusts the width to be 500 meters and the height to be 1000m.
          */
-        roomWidth = (int) RRGame.WORLD_WIDTH;
-        roomHeight = texture.getHeight() * roomWidth / texture.getWidth();
         setSize(roomWidth, roomHeight);
         setPosition(0, 0);
 
@@ -53,6 +90,24 @@ public class Room extends Sprite {
         this.numChests = BASE_NUM_CHESTS-(difficulty / 10);
         spawnTimer = 0;
         rnd = RRGame.globals.getRandom();
+        this.roomType = RoomType.BATTLE;
+        doorUnlockedByDefault = false;
+    }
+
+    private void createMerchantRoom(int doorPositionX, int doorPositionY){
+        setSize(roomWidth, roomHeight);
+        setPosition(0, 0);
+        this.doorPositionX = doorPositionX;
+        this.doorPositionY = doorPositionY;
+        doorUnlockedByDefault = true;
+    }
+
+    private void createBossRoom(){
+
+    }
+
+    private void createKingRoom(){
+
     }
 
     private void spawnEnemy(float x, float y, boolean hasKey) {
@@ -75,22 +130,38 @@ public class Room extends Sprite {
     }
 
     void spawnInitialEntities() {
-        int numKeys = 5;
-        for (int i = 0; i < numEnemies; i++) {
-            float x = rnd.nextFloat(10, roomWidth-10);
-            float y = rnd.nextFloat(10, doorPositionY-10);
-            if (numKeys > 0) {
-                // Key enemies should be up towards the door
-                y = rnd.nextFloat(doorPositionY-30, doorPositionY-10);
-            }
-            spawnEnemy(x, y, numKeys-- > 0);
+
+        switch (roomType){
+
+            case BATTLE:
+                int numKeys = 5;
+                for (int i = 0; i < numEnemies; i++) {
+                    float x = rnd.nextFloat(10, roomWidth-10);
+                    float y = rnd.nextFloat(10, doorPositionY-10);
+                    if (numKeys > 0) {
+                        // Key enemies should be up towards the door
+                        y = rnd.nextFloat(doorPositionY-30, doorPositionY-10);
+                    }
+                    spawnEnemy(x, y, numKeys-- > 0);
+                }
+                for (int ii = 0; ii < numChests; ii++) {
+                    float x = rnd.nextFloat(10, roomWidth-10);
+                    float y = rnd.nextFloat(10, doorPositionY-10);
+                    new Chest(x, y);
+                }
+                music.play();
+                break;
+
+            case MERCHANT:
+
+                new Merchant(RRGame.MERCHANT_SPAWN_X,RRGame.MERCHANT_SPAWN_Y,RRGame.MERCHANT_SIZE,RRGame.globals.playersSet,false);
+
+
+                break;
         }
-        for (int ii = 0; ii < numChests; ii++) {
-            float x = rnd.nextFloat(10, roomWidth-10);
-            float y = rnd.nextFloat(10, doorPositionY-10);
-            new Chest(x, y);
-        }
-        music.play();
+
+
+
     }
 
     void stopMusic() {
@@ -98,14 +169,38 @@ public class Room extends Sprite {
     }
 
     void update(float delta) {
-        // Spawn enemies
-        spawnTimer += delta;
-        if (spawnTimer > spawnTimerMax) {
-            spawnTimer = 0;
-            spawnTimerMax = Math.max(SPAWN_TIMER_MIN, spawnTimerMax-SPAWN_TIMER_DECAY);
-            float x = rnd.nextFloat(10, roomWidth-10);
-            float y = rnd.nextFloat(0, 10);
-            spawnEnemy(x, y, false);
+
+        switch (roomType){
+
+            case BATTLE:
+                spawnTimer += delta;
+                if (spawnTimer > spawnTimerMax) {
+                    spawnTimer = 0;
+                    spawnTimerMax = Math.max(SPAWN_TIMER_MIN, spawnTimerMax-SPAWN_TIMER_DECAY);
+                    float x = rnd.nextFloat(10, roomWidth-10);
+                    float y = rnd.nextFloat(0, 10);
+                    spawnEnemy(x, y, false);
+                }
+            break;
+
+
+            case MERCHANT:
+
+            break;
+
+
+            case BOSS:
+
+            break;
+
+
+            case KING:
+
+            break;
         }
+    }
+
+    public RoomType getRoomType(){
+        return this.roomType;
     }
 }
