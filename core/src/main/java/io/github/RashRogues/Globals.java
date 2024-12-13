@@ -4,10 +4,7 @@ import Networking.Endpoint;
 import Networking.Network;
 import Networking.ReplicationType;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Random;
+import java.util.*;
 
 public class Globals {
     public long frame = 0;
@@ -34,6 +31,9 @@ public class Globals {
     private final HashMap<Integer, HashMap<Long,Entity>> nondeterministicReplicatedEntities     = new HashMap<>();
     private final HashMap<Integer, HashMap<Long,Entity>> nondeterministicReplicatedProjectiles  = new HashMap<>();
     private final HashMap<Integer,Long> projectileNumber                                        = new HashMap<>();
+
+    // These items can only be purchased one time per player.
+    public final HashSet<BuyableItem> nonRepurchasableItems = new HashSet<>(Arrays.asList(BuyableItem.CLOAK,BuyableItem.DAGGER, BuyableItem.RING));
 
     public void setupRandomNumberGenerator(){
         seed = new Random().nextLong();

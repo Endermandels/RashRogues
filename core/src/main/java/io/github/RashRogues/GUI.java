@@ -8,6 +8,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 
+import java.util.HashSet;
+
 import static java.lang.Math.max;
 
 public class GUI {
@@ -131,11 +133,10 @@ class MerchantMenu {
     private Player player;
 
     private ShopItem[] items = {
-            new ShopItem("Health Potion", "Recovers HP.", 90, RRGame.am.get(RRGame.RSC_HEALTH_POTION_IMG), BuyableItem.HEALTH_POTION)
-//        new ShopItem("Throwing Knife", "Increases weapon damage.", 50, RRGame.am.get(RRGame.RSC_THROWING_KNIFE_IMG), BuyableItem.THROWING_KNIFE),
-//        new ShopItem("Ring", "Increases player speed.", 70, RRGame.am.get(RRGame.RSC_RING_IMG), BuyableItem.RING),
-//        new ShopItem("Dagger", "Increases throwing rate.", 120, RRGame.am.get(RRGame.RSC_DAGGER_IMG), BuyableItem.DAGGER),
-//        new ShopItem("Cloak", "Increases player defense.", 120, RRGame.am.get(RRGame.RSC_CLOAK_IMG), BuyableItem.CLOAK)
+        new ShopItem("Health Potion", "Recovers HP.", 90, RRGame.am.get(RRGame.RSC_HEALTH_POTION_IMG), BuyableItem.HEALTH_POTION),
+        new ShopItem("Ring", "Increases player speed.", 200, RRGame.am.get(RRGame.RSC_RING_IMG), BuyableItem.RING),
+        new ShopItem("Dagger", "Increases throwing rate.", 200, RRGame.am.get(RRGame.RSC_DAGGER_IMG), BuyableItem.DAGGER),
+        new ShopItem("Cloak", "Increases player defense.", 200, RRGame.am.get(RRGame.RSC_CLOAK_IMG), BuyableItem.CLOAK)
     };
 
     private class ShopItem {
@@ -223,6 +224,8 @@ class MerchantMenu {
              return;
         }
 
+        HashSet<BuyableItem> prevPurchased = this.player.getPurchasedItems();
+
         batch.draw(this.detailPaneTexture, detailPaneX,detailPaneY, detailPaneWidth, detailPaneHeight);
         batch.draw(this.itemPaneTexture, itemPaneX,itemPaneY, itemPaneWidth, itemPaneHeight);
         batch.draw(this.moneyDisplayTexture,moneyDisplayX,moneyDisplayY, moneyDisplayWidth, moneyDisplayHeight);
@@ -235,9 +238,10 @@ class MerchantMenu {
 
         for (int i = 0; i < this.items.length; i++) {
             ShopItem item = items[i];
+
+            // Get Drawing Location Of Item
             float x = 0;
             float y = 0;
-
             if (i < 4) {
                 x = this.itemPaneX;
                 y = this.itemPaneY + this.itemWidth * i;
@@ -246,12 +250,25 @@ class MerchantMenu {
                 y = this.itemPaneY + this.itemWidth * (i - 4);
             }
 
+            // Draw Items. Gray out if previously purchased.
+            if (prevPurchased.contains(item.itemType) && RRGame.globals.nonRepurchasableItems.contains(item.itemType)){
+                batch.setColor(Color.DARK_GRAY);
+            }
             batch.draw(item.getTexture(), x, y, itemWidth, itemWidth);
+            batch.setColor(Color.WHITE);
 
+            // Draw Selected Item
             if (mx > x && mx < x + this.itemWidth) {
                 if (my > y && my < y + this.itemWidth) {
+
+                    // Draw Items. Gray out if previously purchased.
+                    if (prevPurchased.contains(item.itemType) && RRGame.globals.nonRepurchasableItems.contains(item.itemType)){
+                        batch.setColor(Color.DARK_GRAY);
+                    }
+
                     batch.draw(this.selectionTexture, x, y, itemSelectWidth, itemSelectHeight);
                     batch.draw(item.getTexture(),x,y,itemSelectWidth,itemSelectHeight);
+                    batch.setColor(Color.WHITE);
                     sel = i;
                 }
             }

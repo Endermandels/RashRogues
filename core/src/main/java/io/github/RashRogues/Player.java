@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
+import java.util.HashSet;
 import java.util.Random;
 
 import static java.lang.Math.abs;
@@ -44,6 +45,7 @@ public class Player extends Entity {
     private float deathTimer = 0f;
     private float merchantTimer = MERCHANT_COOLDOWN;
     private int numCoins;
+    private HashSet<BuyableItem> purchasedItems;
 
     private Random rnd;
     private Sound pickupKeySFX;
@@ -81,7 +83,8 @@ public class Player extends Entity {
         shootSFX = RRGame.am.get(RRGame.RSC_SHOOT_SFX);
         purchaseSFX = RRGame.am.get(RRGame.RSC_SHOP_PURCHASE);
         invalidSFX = RRGame.am.get(RRGame.RSC_SHOP_INVALID);
-        this.numCoins = 150;
+        this.numCoins = 99999;
+        this.purchasedItems = new HashSet<>();
         // this will obviously change based on a number of factors later
     }
 
@@ -256,15 +259,35 @@ public class Player extends Entity {
     }
 
     public void buyItem(BuyableItem item, int cost) {
-       if (numCoins < cost){
+
+        // We can't afford this item, or we already own it and it's non-disposable.
+       if (numCoins < cost || (purchasedItems.contains(item) && RRGame.globals.nonRepurchasableItems.contains(item))){
            this.invalidSFX.play(0.2f);
            return;
        }
+
+       // Buy the item
        this.purchaseSFX.play(0.2f);
        numCoins -= cost;
+       this.purchasedItems.add(item);
+
+       // Apply/Give Item To Player
        switch(item){
            case HEALTH_POTION:
-               this.healthPotionsHeld++;
+               this.healthPotionsHeld+=1;
+           break;
+
+           case RING:
+               this.stats.increaseHealth(50);
+           break;
+
+           case DAGGER:
+               this.stats.increaseDamage(5);
+           break;
+
+           case CLOAK:
+               this.stats.increaseMoveSpeed(5);
+               this.stats.increaseAttackSpeed(5);
            break;
        }
     }
@@ -423,5 +446,10 @@ public class Player extends Entity {
             keySprite.draw(batch);
         }
         super.draw(batch);
+    }
+
+
+    public HashSet<BuyableItem> getPurchasedItems(){
+        return this.purchasedItems;
     }
 }
