@@ -65,6 +65,23 @@ public class Player extends Entity {
         pickupKeySFX = RRGame.am.get(RRGame.RSC_PICK_UP_KEY_SFX);
         hurtSFX = RRGame.am.get(RRGame.RSC_HURT_SFX);
         shootSFX = RRGame.am.get(RRGame.RSC_SHOOT_SFX);
+        switch (this.associatedPID) {
+            case 0:
+                this.setUpAnimations(AnimationActor.PLAYER1);
+                break;
+            case 1:
+                this.setUpAnimations(AnimationActor.PLAYER2);
+                break;
+            case 2:
+                this.setUpAnimations(AnimationActor.PLAYER3);
+                break;
+            case 3:
+                this.setUpAnimations(AnimationActor.PLAYER4);
+                break;
+            default:
+                this.setUpAnimations(AnimationActor.PLAYER1);
+                break;
+        }
     }
 
     public Player(Texture texture, float x, float y, float size, int pid) {
