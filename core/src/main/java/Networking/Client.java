@@ -676,10 +676,6 @@ public class Client implements Endpoint {
         p.mouseLocation.x = mx;
         p.mouseLocation.y = my;
 
-
-        System.out.println("Got mouse location of x as " + mx + " | y=" + my);
-
-
         if (packet[10] == 1){
             p.moveUp();
         }

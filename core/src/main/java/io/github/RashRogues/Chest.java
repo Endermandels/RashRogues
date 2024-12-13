@@ -22,7 +22,7 @@ public class Chest extends Entity {
     Chest(float x, float y) {
         super(EntityAlignment.BACKGROUND, RRGame.am.get(RRGame.RSC_CHEST_IMG, Texture.class),
                 x, y, RRGame.CHEST_SIZE, RRGame.CHEST_SIZE, Layer.BACKGROUND, AnimationActor.CHEST,
-                ReplicationType.ENTITY_NUMBER,-1,-1);
+                ReplicationType.CLIENTSIDE,-1,-1);
         this.setBoxPercentSize(0.48f, 0.41f, hitBox);
         this.rnd = RRGame.globals.getRandom();
         hitBox.disableLength = 0.5f;
