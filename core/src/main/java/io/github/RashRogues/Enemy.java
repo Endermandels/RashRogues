@@ -136,7 +136,6 @@ public abstract class Enemy extends Entity {
         if (stats.isDead()) {
             // sound
             this.setCurrentAnimation(AnimationAction.DIE);
-            System.out.println("dying");
         }
         else if (tookDamage) {
             // sound

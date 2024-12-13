@@ -130,7 +130,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         if (this.player.shopping) {
             return;
         }
-            game.network.connection.dispatchKeys(keyMask, RRGame.globals.frame);
+            game.network.connection.dispatchKeys(keyMask, RRGame.globals.frame, this.player.getX(), this.player.getY());
             RRGame.globals.frame++;
     }
 
@@ -465,6 +465,30 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
             public String help(String[] cmd) {
                 return help;
+            }
+        });
+
+        hud.registerAction("reset", new HUDActionCommand() {
+            static final String help = "Reset a player to default stats and status.";
+
+            @Override
+            public String execute(String[] cmd) {
+                try{
+                    if (cmd.length != 2){
+                        return "Invalid number of arguments.";
+                    }
+                    String pidStr = cmd[1];
+                    int pid = Integer.parseInt(pidStr);
+                    Player p = RRGame.globals.players.get(pid);
+                    if (p == null){
+                        return "No player with pid " + Integer.toString(pid) + " found!";
+                    }
+                    p.resetPlayer();
+
+                } catch (Exception e){
+                   return "Syntax of the command is: reset <pid>";
+                }
+                return "player reset successfully.";
             }
         });
 

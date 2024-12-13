@@ -170,19 +170,20 @@ public class StreamMaker {
       return stream;
    }
 
-   public static byte[] keys(int pid, long frame, byte[] keymask){
+   public static byte[] keys(int pid, long frame, byte[] keymask, float x, float y){
       byte[] stream = new byte[128];
       stream[0] = (byte) PacketType.KEYS.getvalue();
       stream[1] = (byte) pid;
-      stream[2] = (byte) (frame >> 56);
-      stream[3] = (byte) (frame >> 48);
-      stream[4] = (byte) (frame >> 40);
-      stream[5] = (byte) (frame >> 32);
-      stream[6] = (byte) (frame >> 24);
-      stream[7] = (byte) (frame >> 16);
-      stream[8] = (byte) (frame >> 8);
-      stream[9] = (byte) (frame);
-      System.arraycopy(keymask, 0, stream, 10, keymask.length);
+      byte[] frameBytes = StreamMaker.longToBytes(frame);
+      byte[] xBytes = StreamMaker.floatToBytes(x);
+      byte[] yBytes = StreamMaker.floatToBytes(y);
+
+      System.arraycopy(frameBytes, 0, stream, 2, 8);
+      System.arraycopy(keymask, 0, stream, 10, 7);
+
+      System.arraycopy(xBytes, 0, stream, 64,4);
+      System.arraycopy(yBytes, 0, stream, 68,4);
+
       return stream;
    }
 

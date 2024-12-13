@@ -294,8 +294,8 @@ public class Client implements Endpoint {
      *
      * @param keymask Keys pressed.
      */
-    public void dispatchKeys(byte[] keymask, long frame) {
-        this.outgoingMessages.add(StreamMaker.keys(pid, frame, keymask));
+    public void dispatchKeys(byte[] keymask, long frame, float x, float y) {
+        this.outgoingMessages.add(StreamMaker.keys(pid, frame, keymask, x, y));
     }
 
     /**
@@ -478,15 +478,6 @@ public class Client implements Endpoint {
         } else if (upgrade == BuyableItem.RING.getvalue()){
             p.stats.increaseHealth(25);
         }
-
-        System.out.println("PLAYER NOW:");
-        System.out.println("------------------");
-        System.out.println("HP:" + p.stats.getMaxHealth());
-        System.out.println("Health Potions: " + p.healthPotionsHeld);
-        System.out.println("Attack Speed: " + p.stats.getAttackSpeed());
-        System.out.println("Move Speed: " + p.stats.getMoveSpeed());
-        System.out.println("------------------");
-
     }
 
     /**
@@ -606,8 +597,16 @@ public class Client implements Endpoint {
         }
 
         byte[] longBytes = new byte[8];
+        byte[] xBytes = new byte[4];
+        byte[] yBytes = new byte[4];
         System.arraycopy(packet,2, longBytes,0,8);
+        System.arraycopy(packet,64, xBytes,0,4);
+        System.arraycopy(packet,68, yBytes,0,4);
         long frame = StreamMaker.bytesToLong(longBytes);
+        float x = StreamMaker.bytesToFloat(xBytes);
+        float y = StreamMaker.bytesToFloat(yBytes);
+
+        p.setPosition(x,y);
 
         if (packet[10] == 1){
             p.moveUp();

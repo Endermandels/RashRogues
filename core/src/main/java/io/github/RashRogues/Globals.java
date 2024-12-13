@@ -84,6 +84,7 @@ public class Globals {
         } else if (type == ReplicationType.ENTITY_NUMBER){
             deterministicReplicatedEntities.put(this.eid, e);
             e.id = this.eid;
+            System.out.println("Added entity " + e.id +  " - " + e);
             deterministicReplicatedEntitiesSet.add(e);
             this.eid++;
         } else if (type == ReplicationType.KEY){

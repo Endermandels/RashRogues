@@ -126,14 +126,25 @@ public class Player extends Entity {
         consumableTimer += delta;
         adjustVelocity();
         super.update(delta);
+
+        // We have played our death anim, and are ready to reset.
+        // If we are on the server, reset and inform client of the reset.
+
+        // 1. move player back to spawn
         if (deathTimer >= RRGame.STANDARD_DEATH_DURATION && RRGame.globals.pid == 0) {
             String[] cmd = {"tp", Integer.toString(this.associatedPID), Integer.toString(RRGame.PLAYER_SPAWN_X), Integer.toString(RRGame.PLAYER_SPAWN_Y)};
             RRGame.globals.executeCommandOnCurrentScreen(cmd);
+            RRGame.globals.network.connection.dispatchCommand(cmd);
         }
-        if (deathTimer >= RRGame.STANDARD_DEATH_DURATION) {
-            this.resetPlayer();
+
+        //2. reset player's hp/stats etc.
+        if (deathTimer >= RRGame.STANDARD_DEATH_DURATION && RRGame.globals.pid == 0) {
+            String[] cmd = {"reset", Integer.toString(this.associatedPID)};
+            RRGame.globals.executeCommandOnCurrentScreen(cmd);
+            RRGame.globals.network.connection.dispatchCommand(cmd);
             return;
         }
+
         if (stats.isDead() && RRGame.globals.pid == 0) {
             this.dropKey();
             deathTimer += delta;
@@ -150,7 +161,7 @@ public class Player extends Entity {
         }
     }
 
-    private void resetPlayer() {
+    public void resetPlayer() {
         this.maxXVelocity = BASE_PLAYER_MOVE_SPEED;
         this.maxYVelocity = BASE_PLAYER_MOVE_SPEED;
         this.attackTimer = 0f;
@@ -309,7 +320,6 @@ public class Player extends Entity {
             //RRGame.globals.network.connection.dispatchCoinPickup(this.associatedPID);
             pickupKeySFX.play(0.1f);
         }
-        System.out.println("Current coins " + numCoins);
     }
 
     public void buyItem(BuyableItem item, int cost) {
@@ -343,16 +353,6 @@ public class Player extends Entity {
                this.stats.increaseMoveSpeed(5);
            break;
        }
-
-
-        System.out.println("PLAYER NOW:");
-        System.out.println("------------------");
-        System.out.println("HP:" + stats.getMaxHealth());
-        System.out.println("Health Potions: " + healthPotionsHeld);
-        System.out.println("Attack Speed: " + stats.getAttackSpeed());
-        System.out.println("Move Speed: " + stats.getMoveSpeed());
-        System.out.println("------------------");
-
 
        // tell others we purchased an upgrade.
        RRGame.globals.network.connection.dispatchUpgrade(this.associatedPID, item);
@@ -392,7 +392,6 @@ public class Player extends Entity {
         consumableTimer = 0f;
         healthPotionsHeld--;
         stats.heal(RRGame.HEALTH_POTION_HEAL_AMOUNT);
-        System.out.println("New Health: " + stats.getHealth());
     }
 
     public void pickUpConsumable() {
@@ -470,9 +469,6 @@ public class Player extends Entity {
         }
         else if (thingThatHurtMe instanceof Door || thingThatHurtMe instanceof Chest) {
             // just catch the things we know of that don't do anything
-        }
-        else {
-            System.out.println("This shouldn't ever happen...");
         }
 
         if (stats.isDead()) {

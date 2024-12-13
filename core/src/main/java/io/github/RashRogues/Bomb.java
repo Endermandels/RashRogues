@@ -64,7 +64,6 @@ public class Bomb extends Entity {
                 explosion = explosion.makeProjectile(true);
                 explosion.setPosition(this.getX()+this.getWidth()/2-explosion.getWidth()/2, this.getY()+this.getHeight()/2-explosion.getHeight()/2);
                 if (explosion instanceof SmokeBombExplosion) {
-                    System.out.println(this.getX()+this.getWidth()/2 + " " + this.getY()+this.getHeight()/2);
                     ParticleEffectPool.PooledEffect effect = PlayScreen.smokeParticleEffectPool.obtain();
                     effect.setPosition(this.getX()+this.getWidth()/2, this.getY()+this.getHeight()/2);
                     PlayScreen.smokeParticleEffects.add(effect);

@@ -193,9 +193,9 @@ public class Server implements Endpoint{
     }
 
     @Override
-    public void dispatchKeys(byte[] keymask, long frame) {
+    public void dispatchKeys(byte[] keymask, long frame, float x, float y) {
         for (ClientListener c : clients){
-            c.dispatchKeys(keymask, frame);
+            c.dispatchKeys(keymask, frame, x, y);
         }
     }
 

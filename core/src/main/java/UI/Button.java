@@ -184,7 +184,6 @@ public class Button extends Entity {
                break;
 
            default:
-               System.out.println("Warning: a button with no action binding was just triggered.");
                break;
        }
 
