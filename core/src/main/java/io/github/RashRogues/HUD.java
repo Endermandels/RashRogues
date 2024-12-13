@@ -330,6 +330,5 @@ public class HUD {
                 result = knownCommands.get(cmd[0]).execute(cmd);
             }
         }
-        System.out.println(result);
     }
 }

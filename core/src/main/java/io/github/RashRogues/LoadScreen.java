@@ -60,4 +60,9 @@ public class LoadScreen extends ScreenAdapter implements RRScreen {
     public Room getRoom() {
         return null;
     }
+
+    @Override
+    public void dropCoins(float x, float y, int level) {
+
+    }
 }
