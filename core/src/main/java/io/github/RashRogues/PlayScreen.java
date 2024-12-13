@@ -54,25 +54,29 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         loadRooms();
         createHUDAndInputs();
         initPlayer();
+        setNextRoom();
+
+        if (this.currentRoom.getRoomType() == RoomType.BATTLE){
+            player.setPosition(RRGame.PLAYER_SPAWN_X,RRGame.PLAYER_SPAWN_Y);
+        }
+
+        if (this.currentRoom.getRoomType() == RoomType.MERCHANT){
+            player.setPosition(RRGame.PLAYER_SPAWN_MERCHANT_X,RRGame.PLAYER_SPAWN_MERCHANT_Y);
+        }
+
+        this.game.network.connection.dispatchCreatePlayer(player);
+
     }
 
     private void initPlayer(){
 
         player = new Player(1,1, (int) RRGame.PLAYER_SIZE, RRGame.globals.pid);
 
-        if (this.currentRoom.getRoomType() == RoomType.BATTLE){
-            player.setPosition(RRGame.PLAYER_SPAWN_X,RRGame.PLAYER_SPAWN_Y);
-        }
         font.getData().setScale(3f);
         smokeParticleEffectPool = new ParticleEffectPool(RRGame.am.get(RRGame.RSC_SMOKE_PARTICLE_EFFECT, ParticleEffect.class), 5, 10);
         smokeParticleEffects = new Array<>();
 
-        if (this.currentRoom.getRoomType() == RoomType.MERCHANT){
-            player.setPosition(RRGame.PLAYER_SPAWN_MERCHANT_X,RRGame.PLAYER_SPAWN_MERCHANT_Y);
-        }
-
         RRGame.globals.addPlayer(RRGame.globals.pid,player);
-        this.game.network.connection.dispatchCreatePlayer(player);
 
         gui = new GUI(player);
         game.playerCam.center();
@@ -283,7 +287,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM2_IMG),
                 35, 301, 120, 10, game.room2Music, RoomType.BATTLE));
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM3_IMG),
-                35, 301, 120, 10, game.room3Music));
+                35, 301, 120, 10, game.room3Music, RoomType.BATTLE));
 
         // other rooms will go below here
     }

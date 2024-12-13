@@ -18,8 +18,8 @@ DefaultImages/hole.png
 DefaultImages/key.png
 DefaultImages/king.png
 DefaultImages/ladder.png
-DefaultImages/merchant room.png
 DefaultImages/merchant.png
+DefaultImages/merchant_room.png
 DefaultImages/particle_large.png
 DefaultImages/particle_medium.png
 DefaultImages/particle_small.png

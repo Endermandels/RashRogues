@@ -18,8 +18,13 @@ public class Merchant extends Enemy {
         super(RRGame.am.get(RRGame.RSC_ARCHER_IMG), x, y, size, false, AnimationActor.MERCHANT);
         setBoxPercentSize(MERCHANT_HIT_BOX_PERCENT_WIDTH_SCALAR, MERCHANT_HIT_BOX_PERCENT_HEIGHT_SCALAR, hitBox);
         setBoxPercentSize(MERCHANT_HURT_BOX_PERCENT_WIDTH_SCALAR, MERCHANT_HURT_BOX_PERCENT_HEIGHT_SCALAR, hurtBox);
-        this.stats = new EnemyStats(999999, 0, 0,0, this);
+        this.stats = new EnemyStats(999999, 0, 0,0,0, this);
         this.playerSet = playerSet;
+    }
+
+    @Override
+    public void setTarget(Player player) {
+       return;
     }
 
     /**
