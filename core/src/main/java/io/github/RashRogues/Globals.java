@@ -122,10 +122,9 @@ public class Globals {
             // We are the server. Tell client to eliminate this entity.
             // If this entity is client-side-only, don't bother dispatching removal
             if (this.pid == 0){
+                System.out.println(e.id);
                 Globals.network.connection.dispatchDestroyEntity(e.id);
             }
-            //stop tracking this entity.
-            this.removeReplicatedEntity(e);
         }
 
         //This is a nondeterministic replicated entity
@@ -202,22 +201,6 @@ public class Globals {
             return this.deterministicReplicatedEntities.get(id);
         }
         return null;
-    }
-
-    /**
-     * Stop tracking a replicated entity.
-     * @param e Entity to clear out.
-     */
-    public void removeReplicatedEntity(Entity e){
-        if (e.id == -1){
-            return;
-        }
-        if (this.deterministicReplicatedEntities.containsKey(e.id)){
-            this.deterministicReplicatedEntities.remove(e.id);
-        }
-        if (this.deterministicReplicatedEntitiesSet.contains(e)){
-            this.deterministicReplicatedEntitiesSet.remove(e);
-        }
     }
 
     /**

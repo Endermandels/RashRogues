@@ -177,8 +177,8 @@ public class StreamMaker {
       byte[] frameBytes = StreamMaker.longToBytes(frame);
       byte[] xBytes = StreamMaker.floatToBytes(x);
       byte[] yBytes = StreamMaker.floatToBytes(y);
-      byte[] mxBytes = StreamMaker.floatToBytes(x);
-      byte[] myBytes = StreamMaker.floatToBytes(y);
+      byte[] mxBytes = StreamMaker.floatToBytes(mx);
+      byte[] myBytes = StreamMaker.floatToBytes(my);
 
       System.arraycopy(frameBytes, 0, stream, 2, 8);
       System.arraycopy(keymask, 0, stream, 10, 7);
