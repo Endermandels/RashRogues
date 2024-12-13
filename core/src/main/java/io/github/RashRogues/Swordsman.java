@@ -26,7 +26,7 @@ public class Swordsman extends Enemy {
     private final float SWORDSMAN_HURT_BOX_PERCENT_SCALAR = 0.58f;
     private final float STRIKING_DISTANCE = 4f;
     private final int ATTENTION_SPAN = 60;
-    private final int ATTACK_TIME_MAX = 1;
+    private final float ATTACK_TIME_MAX = 0.7f;
 
     private HashSet<Player> playerSet;
     private State state;
@@ -121,6 +121,11 @@ public class Swordsman extends Enemy {
             }
             RRGame.globals.network.connection.dispatchTarget(id, pid);
         }
+
+        if (p == null) return;
+
+        attackX = target.getX() - RRGame.SWORDSMAN_SWING_SIZE/2;
+        attackY = target.getY() - RRGame.SWORDSMAN_SWING_SIZE/2;
     }
 
     @Override
@@ -169,8 +174,8 @@ public class Swordsman extends Enemy {
                     attentionTimer = 0;
                     xVelocity      = 0f;
                     yVelocity      = 0f;
-                    attackX        = target.getX();
-                    attackY        = target.getY();
+                    attackX        = target.getX() - RRGame.SWORDSMAN_SWING_SIZE/2;
+                    attackY        = target.getY() - RRGame.SWORDSMAN_SWING_SIZE/2;
                     state          = State.ATTACK;
                     break;
                 }
@@ -180,6 +185,7 @@ public class Swordsman extends Enemy {
                 break;
 
             case IDLE:
+                this.setCurrentAnimation(AnimationAction.IDLE);
                 findTarget();
                 if (this.target != null){
                     this.state = State.WALK;
@@ -187,17 +193,17 @@ public class Swordsman extends Enemy {
                 break;
 
             case ATTACK:
-                this.setCurrentAnimation(AnimationAction.ATTACK);
 
                 if (target == null || target.stats.isDead()){
                     state = State.IDLE;
                     break;
                 }
-                if (distanceTo(target) >= STRIKING_DISTANCE){
+                if (distanceTo(target) >= STRIKING_DISTANCE && attackTimer == 0f){
                     state = State.WALK;
-                    attackTimer = 0;
                     break;
                 }
+
+                this.setCurrentAnimation(AnimationAction.ATTACK);
 
                 attack(delta);
 

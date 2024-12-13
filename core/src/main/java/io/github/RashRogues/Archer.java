@@ -247,6 +247,7 @@ public class Archer extends Enemy {
                 break;
 
             case IDLE:
+                this.setCurrentAnimation(AnimationAction.IDLE);
                 findTarget();
                 if (this.target != null){
                     this.state = State.WALK;
