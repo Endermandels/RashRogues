@@ -1,5 +1,6 @@
 package Networking;
 
+import io.github.RashRogues.BuyableItem;
 import io.github.RashRogues.Player;
 
 public interface Endpoint {
@@ -20,4 +21,7 @@ public interface Endpoint {
     public void dispatchKillPlayer(int pid);
     public void dispatchCommand(String[] cmd);
     void dispatchKeyPickup(int pid);
+    void dispatchEnterMerchant(int pid);
+    void dispatchLeaveMerchant(int pid);
+    void dispatchUpgrade(int pid, BuyableItem item);
 }

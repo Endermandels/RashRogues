@@ -1,5 +1,6 @@
 package Networking;
 
+import io.github.RashRogues.BuyableItem;
 import io.github.RashRogues.Player;
 import io.github.RashRogues.RRGame;
 
@@ -229,6 +230,20 @@ public class StreamMaker {
       return stream;
    }
 
+   /**
+    * Apply upgrade of type to player with pid
+    * @param pid
+    * @param type
+    * @return
+    */
+   public static byte[] upgrade(int pid, BuyableItem type){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.UPGRADE.getvalue();
+      stream[1] = (byte) pid;
+      stream[2] = (byte) type.getvalue();
+      return stream;
+   }
+
    public static byte[] seed(long seed){
       byte[] stream = new byte[128];
       stream[0] = (byte) PacketType.RANDOM_SEED.getvalue();
@@ -241,6 +256,18 @@ public class StreamMaker {
       stream[6] = seedBytes[5];
       stream[7] = seedBytes[6];
       stream[8] = seedBytes[7];
+      return stream;
+   }
+
+   public static byte[] merchant(int pid, boolean enterOrLeave){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.MERCHANT.getvalue();
+      stream[1] = (byte) pid;
+      if (enterOrLeave){
+         stream[2] = 1;
+      }else{
+         stream[2] = 0;
+      }
       return stream;
    }
 
@@ -269,6 +296,5 @@ public class StreamMaker {
       longbuffer.flip();
       return longbuffer.getLong();
    }
-
 
 }

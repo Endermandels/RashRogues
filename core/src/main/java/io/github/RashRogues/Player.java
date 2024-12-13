@@ -41,11 +41,12 @@ public class Player extends Entity {
     private final float CONSUMABLE_COOLDOWN = 0.2f;
     private boolean holdingKey;
     private Sprite keySprite;
-    private int healthPotionsHeld;
+    public int healthPotionsHeld;
     private float deathTimer = 0f;
     private float merchantTimer = MERCHANT_COOLDOWN;
     private int numCoins;
     private HashSet<BuyableItem> purchasedItems;
+    public boolean shopping = false;
 
     private Random rnd;
     private Sound pickupKeySFX;
@@ -54,7 +55,6 @@ public class Player extends Entity {
     private Sound purchaseSFX;
     private Sound invalidSFX;
 
-    private boolean shopping = false;
 
     public Player(Texture texture, float x, float y, float width, float height, int pid) {
         super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER, AnimationActor.PLAYER1,
@@ -101,7 +101,6 @@ public class Player extends Entity {
      * @param delta Time since last frame
      */
     public void update(float delta) {
-
         if (shopping){
             return;
         }
@@ -278,18 +277,30 @@ public class Player extends Entity {
            break;
 
            case RING:
-               this.stats.increaseHealth(50);
+               this.stats.increaseHealth(25);
            break;
 
            case DAGGER:
-               this.stats.increaseDamage(5);
+               this.stats.increaseAttackSpeed(1);
            break;
 
            case CLOAK:
                this.stats.increaseMoveSpeed(5);
-               this.stats.increaseAttackSpeed(5);
            break;
        }
+
+
+        System.out.println("PLAYER NOW:");
+        System.out.println("------------------");
+        System.out.println("HP:" + stats.getMaxHealth());
+        System.out.println("Health Potions: " + healthPotionsHeld);
+        System.out.println("Attack Speed: " + stats.getAttackSpeed());
+        System.out.println("Move Speed: " + stats.getMoveSpeed());
+        System.out.println("------------------");
+
+
+       // tell others we purchased an upgrade.
+       RRGame.globals.network.connection.dispatchUpgrade(this.associatedPID, item);
     }
 
     public int getCoins(){
@@ -297,14 +308,19 @@ public class Player extends Entity {
     }
 
     public void startShopping(){
-        GUI gui = RRGame.globals.currentScreen.getGUI();
-        gui.openStore();
+        if (RRGame.globals.pid == this.associatedPID){
+            GUI gui = RRGame.globals.currentScreen.getGUI();
+            gui.openStore();
+        }
         this.shopping = true;
     }
 
     public void stopShopping(){
-        GUI gui = RRGame.globals.currentScreen.getGUI();
-        gui.closeStore();
+        if (RRGame.globals.pid == this.associatedPID){
+            RRGame.globals.network.connection.dispatchLeaveMerchant(this.associatedPID);
+            GUI gui = RRGame.globals.currentScreen.getGUI();
+            gui.closeStore();
+        }
         this.shopping = false;
     }
 

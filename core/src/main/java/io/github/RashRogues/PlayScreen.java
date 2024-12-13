@@ -108,8 +108,11 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             keyMask[6] = 1;
         }
 
-        game.network.connection.dispatchKeys(keyMask, RRGame.globals.frame);
-        RRGame.globals.frame++;
+        if (this.player.shopping) {
+            return;
+        }
+            game.network.connection.dispatchKeys(keyMask, RRGame.globals.frame);
+            RRGame.globals.frame++;
     }
 
     public void update(float delta) {

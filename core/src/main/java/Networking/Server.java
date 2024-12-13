@@ -5,6 +5,7 @@ import com.badlogic.gdx.net.ServerSocket;
 import com.badlogic.gdx.net.Socket;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.Queue;
+import io.github.RashRogues.BuyableItem;
 import io.github.RashRogues.Player;
 import io.github.RashRogues.RRGame;
 
@@ -193,6 +194,27 @@ public class Server implements Endpoint{
     public void dispatchKeyPickup(int pid){
         for (ClientListener c : clients){
             c.dispatchKeyPickup(pid);
+        }
+    }
+
+    @Override
+    public void dispatchEnterMerchant(int pid) {
+       for (ClientListener c : clients){
+           c.dispatchEnterMerchant(pid);
+       }
+    }
+
+    @Override
+    public void dispatchLeaveMerchant(int pid) {
+        for (ClientListener c : clients){
+            c.dispatchLeaveMerchant(pid);
+        }
+    }
+
+    @Override
+    public void dispatchUpgrade(int pid, BuyableItem item) {
+        for (ClientListener c : clients){
+            c.dispatchUpgrade(pid, item);
         }
     }
 
