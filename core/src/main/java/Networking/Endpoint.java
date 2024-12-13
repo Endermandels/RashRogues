@@ -28,4 +28,5 @@ public interface Endpoint {
     void dispatchUpgrade(int pid, BuyableItem item);
     void dispatchKeyPickup(int pid, int keyID);
     void dispatchKeyDrop(float x, float y);
+    void dispatchCoinDrop(float x, float y, int level);
 }

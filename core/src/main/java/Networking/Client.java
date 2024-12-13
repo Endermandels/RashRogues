@@ -185,6 +185,8 @@ public class Client implements Endpoint {
                 this.handleSetTarget(msg);
             } else if (msgType == DROP_KEY.getvalue()){
                 this.handleDropKey(msg);
+            } else if (msgType == COINS.getvalue()){
+                this.handleCoinDrop(msg);
             }
         }
 
@@ -266,6 +268,10 @@ public class Client implements Endpoint {
     @Override
     public void dispatchKeyPickup(int pid, int keyID) {
        return;
+    }
+
+    public void dispatchCoinDrop(float x, float y, int level){
+        return;
     }
 
     @Override
@@ -384,6 +390,21 @@ public class Client implements Endpoint {
         }else{
             System.out.println("Warning! Player doesn't exist!");
         }
+    }
+
+    public void handleCoinDrop(byte[] packet){
+       byte[] xBytes = new byte[4];
+       byte[] yBytes = new byte[4];
+       byte[] levelBytes = new byte[4];
+       System.arraycopy(packet,1,xBytes,0,4);
+       System.arraycopy(packet,5,yBytes,0,4);
+       System.arraycopy(packet,9,levelBytes,0,4);
+       float x = StreamMaker.bytesToFloat(xBytes);
+       float y = StreamMaker.bytesToFloat(yBytes);
+       int level = StreamMaker.bytesToInt(levelBytes);
+       if (RRGame.globals.currentScreen != null){
+           RRGame.globals.currentScreen.dropCoins(x,y,level);
+       }
     }
 
     /**

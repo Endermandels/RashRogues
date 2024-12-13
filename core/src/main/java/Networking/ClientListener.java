@@ -228,6 +228,10 @@ public class ClientListener implements Endpoint {
         this.outgoingMessages.add(StreamMaker.pickupKey(pid, keyID));
     }
 
+    public void dispatchCoinDrop(float x, float y, int level){
+        this.outgoingMessages.add(StreamMaker.dropCoins(x,y,level));
+    }
+
     public void dispatchKeyDrop(float x, float y){
         this.outgoingMessages.add(StreamMaker.dropKey(x, y));
     }
@@ -456,8 +460,6 @@ public class ClientListener implements Endpoint {
             incomingMessages.clear();
         }
     }
-
-
 
     /**
      * Are we a server or a client?

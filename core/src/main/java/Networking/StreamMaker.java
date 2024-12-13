@@ -187,6 +187,19 @@ public class StreamMaker {
       return stream;
    }
 
+   public static byte[] dropCoins(float x, float y, int level){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.COINS.getvalue();
+      byte[] xBytes = StreamMaker.floatToBytes(x);
+      byte[] yBytes = StreamMaker.floatToBytes(y);
+      byte[] levelBytes = StreamMaker.intToBytes(level);
+      System.arraycopy(xBytes, 0, stream, 1,4);
+      System.arraycopy(yBytes, 0, stream, 5,4);
+      System.arraycopy(levelBytes, 0, stream, 9,4);
+      return stream;
+   }
+
+
    public static byte[] command(String[] cmd){
       byte[] stream = new byte[128];
       stream[0] = (byte) PacketType.COMMAND.getvalue();

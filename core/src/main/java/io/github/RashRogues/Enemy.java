@@ -10,7 +10,7 @@ import java.util.Random;
 
 public abstract class Enemy extends Entity {
 
-    private final int MAX_DROP_DISTANCE = 3;
+    public static final int MAX_DROP_DISTANCE = 3;
 
     protected EnemyStats stats;
     private int enemyLevel;
@@ -76,7 +76,7 @@ public abstract class Enemy extends Entity {
         }
         flipped = xVelocity < 0f;
         super.update(delta);
-        if (deathTimer >= RRGame.STANDARD_DEATH_DURATION) { this.dropCoins(); this.dropKey(); this.removeSelf(); return; }
+        if (deathTimer >= RRGame.STANDARD_DEATH_DURATION) { this.dropKey(); this.dropCoins(); this.removeSelf(); return; }
         if (stats.isDead()) { deathTimer += delta; return; }
         hurtBox.update(delta);
         keySprite.setX(getX()+getWidth()/4);
@@ -95,12 +95,15 @@ public abstract class Enemy extends Entity {
      * Drop coins of an amount equal to or less than twice this Enemy's level
      */
     public void dropCoins() {
-        int numCoin = rnd.nextInt(2*(enemyLevel+1));
-        for (int ii = 0; ii < numCoin; ii++) {
-            float x = (rnd.nextInt(MAX_DROP_DISTANCE) - 1) / 2;
-            float y = (rnd.nextInt(MAX_DROP_DISTANCE) - 1) / 2;
-            new Coin(getX() + x, getY() + y);
+        if (RRGame.globals.pid == 0){
+            int numCoin = rnd.nextInt(2*(enemyLevel+1));
+            for (int ii = 0; ii < numCoin; ii++) {
+                float x = (rnd.nextInt(MAX_DROP_DISTANCE) - 1) / 2;
+                float y = (rnd.nextInt(MAX_DROP_DISTANCE) - 1) / 2;
+                new Coin(getX() + x, getY() + y);
+            }
         }
+        RRGame.globals.network.connection.dispatchCoinDrop(getX(),getY(), enemyLevel);
     }
 
     /**

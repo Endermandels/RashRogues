@@ -13,10 +13,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class PlayScreen extends ScreenAdapter implements RRScreen {
 
@@ -33,6 +30,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     private HashSet<Entity> entitiesToRemove;
     private PriorityQueue<Entity> renderQueue;
     private HashMap<Integer, Boolean> inputs;
+    private Random rnd = RRGame.globals.getRandom();
     public static CollisionGrid collisionGrid = new CollisionGrid();
     public static ParticleEffectPool smokeParticleEffectPool;
     public static Array<ParticleEffectPool.PooledEffect> smokeParticleEffects;
@@ -661,5 +659,17 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     @Override
     public Room getRoom() {
         return this.currentRoom;
+    }
+
+    @Override
+    public void dropCoins(float x, float y, int enemyLevel) {
+        System.out.println("DROPPING COINS FROM THE SERVER At X = " + x + " and Y = " + y + " level " + enemyLevel);
+        int numCoin = rnd.nextInt(2*(enemyLevel+1));
+        for (int ii = 0; ii < numCoin; ii++) {
+            float dx = (rnd.nextInt(Enemy.MAX_DROP_DISTANCE) - 1) / 2;
+            float dy = (rnd.nextInt(Enemy.MAX_DROP_DISTANCE) - 1) / 2;
+            new Coin(x + dx, x + dy);
+            System.out.println("newcoin!");
+        }
     }
 }

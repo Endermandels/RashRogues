@@ -313,11 +313,8 @@ public class Player extends Entity {
     }
 
     public void grabCoin() {
-        //Players on server pick up coins directly, and tell clients that a player picked up a coin.
-        // slight desync is fine bc coins should be common enough its ok if two players pick up the same one
-        if (RRGame.globals.pid == 0){
+        if (RRGame.globals.pid == this.associatedPID){
             numCoins++;
-            //RRGame.globals.network.connection.dispatchCoinPickup(this.associatedPID);
             pickupKeySFX.play(0.1f);
         }
     }

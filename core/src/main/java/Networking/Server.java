@@ -192,6 +192,12 @@ public class Server implements Endpoint{
 
     }
 
+    public void dispatchCoinDrop(float x, float y, int level){
+        for (ClientListener c : clients){
+            c.dispatchCoinDrop(x, y, level);
+        }
+    }
+
     @Override
     public void dispatchKeys(byte[] keymask, long frame, float x, float y) {
         for (ClientListener c : clients){
