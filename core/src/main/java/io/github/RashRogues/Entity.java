@@ -227,12 +227,10 @@ public abstract class Entity extends Sprite {
 
     // meant to be overridden
     public void onHit(Entity thingHit) {
-        System.out.println("No defined behavior; add this function to the Entity: " + this);
     }
 
     // meant to be overridden by entities with hurtBox
     public void onHurt(Entity thingThatHurtMe) {
-        System.out.println("No defined behavior; add this function to the Entity: " + this);
     }
 
     /**

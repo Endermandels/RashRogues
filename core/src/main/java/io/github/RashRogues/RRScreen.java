@@ -36,4 +36,7 @@ public interface RRScreen {
 
     Room getRoom();
 
+    void dropCoins(float x, float y, int level);
+
+
 }

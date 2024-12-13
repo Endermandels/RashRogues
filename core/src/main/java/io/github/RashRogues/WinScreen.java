@@ -66,4 +66,9 @@ public class WinScreen extends ScreenAdapter implements RRScreen {
         return null;
     }
 
+    @Override
+    public void dropCoins(float x, float y, int level) {
+
+    }
+
 }

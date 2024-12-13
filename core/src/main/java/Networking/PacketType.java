@@ -25,7 +25,9 @@ public enum PacketType {
     UPGRADE(42),
     SET_TARGET(43),
     DESTROY4(44),
-    DROP_KEY(45);
+    DROP_KEY(45),
+    COINS(46),
+    HEALTH(47);
 
     private final int value;
     PacketType(int value){

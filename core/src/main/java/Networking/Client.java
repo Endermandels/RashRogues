@@ -185,6 +185,8 @@ public class Client implements Endpoint {
                 this.handleSetTarget(msg);
             } else if (msgType == DROP_KEY.getvalue()){
                 this.handleDropKey(msg);
+            } else if (msgType == COINS.getvalue()){
+                this.handleCoinDrop(msg);
             }
         }
 
@@ -268,6 +270,10 @@ public class Client implements Endpoint {
        return;
     }
 
+    public void dispatchCoinDrop(float x, float y, int level){
+        return;
+    }
+
     @Override
     public void dispatchKeyDrop(float x, float y) {
         return;
@@ -294,8 +300,8 @@ public class Client implements Endpoint {
      *
      * @param keymask Keys pressed.
      */
-    public void dispatchKeys(byte[] keymask, long frame) {
-        this.outgoingMessages.add(StreamMaker.keys(pid, frame, keymask));
+    public void dispatchKeys(byte[] keymask, long frame, float x, float y) {
+        this.outgoingMessages.add(StreamMaker.keys(pid, frame, keymask, x, y));
     }
 
     /**
@@ -384,6 +390,38 @@ public class Client implements Endpoint {
         }else{
             System.out.println("Warning! Player doesn't exist!");
         }
+    }
+
+    public void dispatchSyncHealth(int pid, int hp){
+        return;
+    }
+
+    public void handleSyncHealth(byte[] packet){
+
+        int pid = (byte) packet[1];
+        byte[] hpBytes = new byte[4];
+        System.arraycopy(packet,2,hpBytes,0,4);
+        int health = StreamMaker.bytesToInt(hpBytes);
+        Player p = RRGame.globals.players.get(pid);
+        if (p == null){
+            return;
+        }
+        p.stats.setHealth(health);
+    }
+
+    public void handleCoinDrop(byte[] packet){
+       byte[] xBytes = new byte[4];
+       byte[] yBytes = new byte[4];
+       byte[] levelBytes = new byte[4];
+       System.arraycopy(packet,1,xBytes,0,4);
+       System.arraycopy(packet,5,yBytes,0,4);
+       System.arraycopy(packet,9,levelBytes,0,4);
+       float x = StreamMaker.bytesToFloat(xBytes);
+       float y = StreamMaker.bytesToFloat(yBytes);
+       int level = StreamMaker.bytesToInt(levelBytes);
+       if (RRGame.globals.currentScreen != null){
+           RRGame.globals.currentScreen.dropCoins(x,y,level);
+       }
     }
 
     /**
@@ -478,15 +516,6 @@ public class Client implements Endpoint {
         } else if (upgrade == BuyableItem.RING.getvalue()){
             p.stats.increaseHealth(25);
         }
-
-        System.out.println("PLAYER NOW:");
-        System.out.println("------------------");
-        System.out.println("HP:" + p.stats.getMaxHealth());
-        System.out.println("Health Potions: " + p.healthPotionsHeld);
-        System.out.println("Attack Speed: " + p.stats.getAttackSpeed());
-        System.out.println("Move Speed: " + p.stats.getMoveSpeed());
-        System.out.println("------------------");
-
     }
 
     /**
@@ -606,8 +635,16 @@ public class Client implements Endpoint {
         }
 
         byte[] longBytes = new byte[8];
+        byte[] xBytes = new byte[4];
+        byte[] yBytes = new byte[4];
         System.arraycopy(packet,2, longBytes,0,8);
+        System.arraycopy(packet,64, xBytes,0,4);
+        System.arraycopy(packet,68, yBytes,0,4);
         long frame = StreamMaker.bytesToLong(longBytes);
+        float x = StreamMaker.bytesToFloat(xBytes);
+        float y = StreamMaker.bytesToFloat(yBytes);
+
+        p.setPosition(x,y);
 
         if (packet[10] == 1){
             p.moveUp();

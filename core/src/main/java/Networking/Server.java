@@ -192,10 +192,23 @@ public class Server implements Endpoint{
 
     }
 
-    @Override
-    public void dispatchKeys(byte[] keymask, long frame) {
+    public void dispatchCoinDrop(float x, float y, int level){
         for (ClientListener c : clients){
-            c.dispatchKeys(keymask, frame);
+            c.dispatchCoinDrop(x, y, level);
+        }
+    }
+
+    @Override
+    public void dispatchSyncHealth(int pid, int hp) {
+       for (ClientListener c : clients){
+           c.dispatchSyncHealth(pid,hp);
+       }
+    }
+
+    @Override
+    public void dispatchKeys(byte[] keymask, long frame, float x, float y) {
+        for (ClientListener c : clients){
+            c.dispatchKeys(keymask, frame, x, y);
         }
     }
 
