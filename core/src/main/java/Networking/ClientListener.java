@@ -400,12 +400,24 @@ public class ClientListener implements Endpoint {
         byte[] longBytes = new byte[8];
         byte[] xBytes = new byte[4];
         byte[] yBytes = new byte[4];
+        byte[] mxBytes = new byte[4];
+        byte[] myBytes = new byte[4];
+
         System.arraycopy(packet,2, longBytes,0,8);
         System.arraycopy(packet,64, xBytes,0,4);
         System.arraycopy(packet,68, yBytes,0,4);
+        System.arraycopy(packet,72, mxBytes,0,4);
+        System.arraycopy(packet,75, myBytes,0,4);
+
         long frame = StreamMaker.bytesToLong(longBytes);
         float x = StreamMaker.bytesToFloat(xBytes);
         float y = StreamMaker.bytesToFloat(yBytes);
+        float mx = StreamMaker.bytesToFloat(mxBytes);
+        float my = StreamMaker.bytesToFloat(myBytes);
+
+        p.mouseLocation.x = mx;
+        p.mouseLocation.y = my;
+
 
         p.setPosition(x,y);
 
