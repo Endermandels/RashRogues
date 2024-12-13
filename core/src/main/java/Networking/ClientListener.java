@@ -418,6 +418,8 @@ public class ClientListener implements Endpoint {
         p.mouseLocation.x = mx;
         p.mouseLocation.y = my;
 
+        System.out.println("Got mouse location of x as " + mx + " | y=" + my);
+
         p.setPosition(x,y);
 
         if (packet[10] == 1) {

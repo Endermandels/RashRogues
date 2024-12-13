@@ -133,6 +133,8 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         float y = Gdx.input.getY();
         player.mouseLocation = RRGame.playerCam.unproject(new Vector3(x, y, 0));
 
+        System.out.println("Send mouse location of x=" + x + " | y=" + y);
+
         game.network.connection.dispatchKeys(keyMask, RRGame.globals.frame, this.player.getX(), this.player.getY(), player.mouseLocation.x, player.mouseLocation.y);
         RRGame.globals.frame++;
     }

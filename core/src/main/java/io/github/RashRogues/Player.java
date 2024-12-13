@@ -266,9 +266,6 @@ public class Player extends Entity {
         if (abilityTimer < abilityCooldown) { return; }
         // good spot for a sound effect
         abilityTimer = 0f;
-        float x = Gdx.input.getX();
-        float y = Gdx.input.getY();
-        Vector3 mouseLocation = RRGame.playerCam.unproject(new Vector3(x, y, 0));
         float xCenter = this.getX() + this.getWidth()/2;
         float yCenter = this.getY() + this.getHeight()/2;
         Vector3 bombDir = new Vector3(mouseLocation.x-xCenter, mouseLocation.y-yCenter, 0);
