@@ -8,6 +8,7 @@ import com.badlogic.gdx.assets.loaders.FileHandleResolver;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -62,6 +63,7 @@ public class RRGame extends Game {
     public static final String RSC_MONO_FONT_FILE = "Fonts/JetBrainsMono-Regular.ttf";
     public static final String RSC_MONO_FONT = "JBM.ttf";
     public static final String RSC_MONO_FONT_LARGE = "JBM_Large.ttf";
+    public static final String RSC_MONO_FONT_WIN = "JBM_Win.ttf";
 
     // entity sprites (players, enemies, projectiles)
     public static final String RSC_ROGUE_IMG = "DefaultImages/rogue.png";
@@ -143,6 +145,15 @@ public class RRGame extends Game {
         myFontLarge.fontFileName = RSC_MONO_FONT_FILE;
         myFontLarge.fontParameters.size = 24;
         am.load(RSC_MONO_FONT_LARGE, BitmapFont.class, myFontLarge);
+
+        FreetypeFontLoader.FreeTypeFontLoaderParameter myFontWin = new FreetypeFontLoader.FreeTypeFontLoaderParameter();
+        myFontWin.fontFileName = RSC_MONO_FONT_FILE;
+        myFontWin.fontParameters.size = 128;
+        myFontWin.fontParameters.shadowOffsetX = 8;
+        myFontWin.fontParameters.shadowOffsetY = 8;
+        myFontWin.fontParameters.color = new Color(1f,0f,0f,1f);
+        myFontWin.fontParameters.shadowColor = new Color(0.3f,0f,0.3f,1f);
+        am.load(RSC_MONO_FONT_WIN, BitmapFont.class, myFontWin);
 
         am.load(RSC_ROGUE_IMG, Texture.class);
         am.load(RSC_ARCHER_IMG, Texture.class);
