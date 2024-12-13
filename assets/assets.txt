@@ -43,6 +43,7 @@ Images/bomber sprite sheet.png
 Images/bomberBomb sprite sheet.png
 Images/bomberExplosion sprite sheet.png
 Images/chest sprite sheet.png
+Images/cloak GUI sprite sheet.png
 Images/door sprite sheet.png
 Images/dragon sprite sheet.png
 Images/king sprite sheet.png
@@ -61,6 +62,7 @@ SFX/music/Stealth Surge.mp3
 SFX/music/Upbeat Beating.mp3
 SFX/music/a hero of the 80s.mp3
 SFX/music/on the road to the 80s.mp3
+SFX/sounds/dash.wav
 SFX/sounds/doorOpen.wav
 SFX/sounds/explosion.wav
 SFX/sounds/hitHurt.wav

@@ -5,7 +5,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 import static java.lang.Math.max;
@@ -16,18 +15,21 @@ public class GUI {
     private SpecialAttack sa;
     private CoinCount cc;
     private HealthPotionCount hpc;
+    private DashGUI dg;
 
     public GUI(Player player) {
         hb = new HealthBar(player);
         sa = new SpecialAttack(player);
         cc = new CoinCount(player);
         hpc = new HealthPotionCount(player);
+        dg = new DashGUI(player);
         this.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
     public void update() {
         hb.update();
         sa.update();
+        dg.update();
     }
 
     public void draw(Batch batch) {
@@ -35,6 +37,7 @@ public class GUI {
         sa.draw(batch);
         cc.draw(batch);
         hpc.draw(batch);
+        dg.draw(batch);
     }
 
     public void resize(int width, int height) {
@@ -42,6 +45,7 @@ public class GUI {
         sa.resize(width, height);
         cc.resize(width, height);
         hpc.resize(width, height);
+        dg.resize(width, height);
     }
 }
 
@@ -145,6 +149,55 @@ class CoinCount extends GUIElement {
     public void draw(Batch batch) {
         batch.draw(getTexture(), xOffset, yOffset, imgWidth, imgHeight);
         font.draw(batch, Integer.toString(player.getNumCoins()), textX, textY);
+    }
+}
+
+class DashGUI extends GUIElement {
+    private static final float PERCENT_DIST_FROM_LEFT_SIDE = 0.45f;
+    private static final float PERCENT_DIST_FROM_BOTTOM = 0.05f;
+    private static final float BASE_NUM_PIXELS_TO_BOTTOM_OF_CLOAK = 12f;
+    private static final int CLOAK_GUI_NUM_ROWS = 1;
+    private static final int CLOAK_GUI_NUM_COLS = 8;
+
+    private float xOffset = Gdx.graphics.getWidth()*PERCENT_DIST_FROM_LEFT_SIDE;
+    private float yOffset = Gdx.graphics.getHeight()*PERCENT_DIST_FROM_BOTTOM;
+    private float imgWidth;
+    private float imgHeight;
+    private TextureRegion[][] cloakGUIFrames;
+    private TextureRegion currentFrame = new TextureRegion(RRGame.am.get(RRGame.RSC_SMOKE_BOMB_IMG, Texture.class), 0, 0, 32, 32);
+
+    public DashGUI(Player player) {
+        super(player, RRGame.am.get(RRGame.RSC_SMOKE_BOMB_IMG), Gdx.graphics.getWidth()*PERCENT_DIST_FROM_LEFT_SIDE, Gdx.graphics.getHeight()*PERCENT_DIST_FROM_BOTTOM,
+                RRGame.SMOKE_BOMB_SIZE, RRGame.SMOKE_BOMB_SIZE, null);
+        imgWidth = Gdx.graphics.getWidth() * 0.125f;
+        imgHeight = imgWidth;
+        Texture cloakGUISheet = new Texture(RRGame.RSC_CLOAK_GUI_SHEET);
+        cloakGUIFrames = TextureRegion.split(cloakGUISheet,
+                cloakGUISheet.getWidth() / CLOAK_GUI_NUM_COLS,
+                cloakGUISheet.getHeight() / CLOAK_GUI_NUM_ROWS);
+    }
+
+    public void update() {
+        int frame = max(0, (int) (7f * player.getDashTimeLeft()));
+        if (frame == 7) {
+            currentFrame = cloakGUIFrames[0][0];
+        }
+        else {
+            currentFrame = cloakGUIFrames[0][frame+1];
+        }
+    }
+
+    public void resize(int width, int height) {
+        imgWidth = width * 0.125f;
+        imgHeight = imgWidth;
+        xOffset = width*PERCENT_DIST_FROM_LEFT_SIDE;
+        // this complicated thing is only needed for this bc its so small compared to its px size of 32x32
+        yOffset = height*PERCENT_DIST_FROM_BOTTOM-(imgHeight/32f * BASE_NUM_PIXELS_TO_BOTTOM_OF_CLOAK);
+    }
+
+    @Override
+    public void draw(Batch batch) {
+        batch.draw(currentFrame, xOffset, yOffset, imgWidth, imgHeight);
     }
 }
 
