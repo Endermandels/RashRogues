@@ -38,6 +38,8 @@ public class AnimationHandler {
     private final int HEALTH_BAR_NUM_COLS = 1;
     private final int BOMB_GUI_NUM_ROWS = 1;
     private final int BOMB_GUI_NUM_COLS = 8;
+    private final int MERCHANT_DETAILED_VIEW_ROWS = 1;
+    private final int MERCHANT_DETAILED_VIEW_COLS = 1;
 
 
 
@@ -76,6 +78,14 @@ public class AnimationHandler {
         animations.get(AnimationActor.ARCHER).put(AnimationAction.CLOSE, new AnimationInfo(archerFrames, 4, 3, 0.1f));
         animations.get(AnimationActor.ARCHER).put(AnimationAction.DIE, new AnimationInfo(archerFrames, 5, 8, RRGame.STANDARD_DEATH_DURATION));
         animations.get(AnimationActor.ARCHER).put(AnimationAction.DEFAULT, animations.get(AnimationActor.ARCHER).get(AnimationAction.IDLE));
+
+
+        Texture merchantDetailedView = new Texture(RRGame.RSC_SHOP_DETAILED_VIEW);
+        TextureRegion[][] merchantDetailedViewFrames = TextureRegion.split(merchantDetailedView,
+                merchantDetailedView.getWidth() / MERCHANT_DETAILED_VIEW_COLS,
+                merchantDetailedView.getHeight() / MERCHANT_DETAILED_VIEW_ROWS);
+        animations.put(AnimationActor.MERCHANT_DETAILED_VIEW, new HashMap<AnimationAction, AnimationInfo>(MERCHANT_DETAILED_VIEW_ROWS));
+        animations.get(AnimationActor.MERCHANT_DETAILED_VIEW).put(AnimationAction.DEFAULT, new AnimationInfo(merchantDetailedViewFrames,0,1,1f));
 
         // bomber
         Texture bomberSheet = new Texture(RRGame.RSC_BOMBER_SHEET);
@@ -315,6 +325,7 @@ enum AnimationActor {
     SMOKE_BOMB,
     SMOKE_BOMB_EXPLOSION,
     SWORDSMAN_SWING,
+    MERCHANT_DETAILED_VIEW,
 }
 
 enum AnimationAction {

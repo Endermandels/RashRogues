@@ -2,9 +2,10 @@ package io.github.RashRogues;
 
 import Networking.ReplicationType;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 
 import static java.lang.Math.max;
 
@@ -12,25 +13,31 @@ public class GUI {
 
     private HealthBar hb;
     private SpecialAttack sa;
+    private MerchantMenu mm;
 
     public GUI(Player player) {
         hb = new HealthBar(player);
         sa = new SpecialAttack(player);
+        mm = new MerchantMenu(player);
     }
 
     public void update() {
         hb.update();
+        mm.update();
     }
 
     public void draw(Batch batch) {
         hb.draw(batch);
         sa.draw(batch);
+        mm.draw(batch);
     }
 
     public void resize(int width, int height) {
         hb.resize(width, height);
         sa.resize(width, height);
+        mm.resize();
     }
+
 }
 
 class GUIElement extends Entity {
@@ -62,6 +69,8 @@ class SpecialAttack extends GUIElement {
         // Do animation with: player.getAbilityTimeLeft();
     }
 
+
+
     public void resize(int width, int height) {
         imgWidth = Gdx.graphics.getWidth() * 0.25f;
         imgHeight = imgWidth;
@@ -72,6 +81,138 @@ class SpecialAttack extends GUIElement {
         batch.draw(getTexture(), X, Y, imgWidth, imgHeight);
     }
 }
+
+class MerchantMenu {
+    private float detailPaneWidth  = 128;
+    private float detailPaneHeight = 128;
+    private float detailPaneX      = 0;
+    private float detailPaneY      = 0;
+
+    private float itemPaneWidth  = 256;
+    private float itemPaneHeight = 128;
+    private float itemPaneX      = detailPaneWidth + 8;
+    private float itemPaneY      = 0;
+
+    private float itemSelectX = 0;
+    private float itemSelectY = 0;
+    private float itemSelectWidth = 32;
+    private float itemSelectHeight = 32;
+
+    Texture detailPaneTexture;
+    Texture itemPaneTexture;
+    Texture selectionTexture;
+
+    private BitmapFont font;
+
+    private ShopItem[] items = {
+        new ShopItem("Throwing Knife", "Increases weapon damage.", 50, RRGame.am.get(RRGame.RSC_THROWING_KNIFE_IMG)),
+        new ShopItem("Ring", "Increases player speed.", 70, RRGame.am.get(RRGame.RSC_RING_IMG)),
+        new ShopItem("Health Potion", "Recovers HP.", 90, RRGame.am.get(RRGame.RSC_HEALTH_POTION_IMG)),
+        new ShopItem("Dagger", "Increases throwing rate.", 120, RRGame.am.get(RRGame.RSC_DAGGER_IMG)),
+        new ShopItem("Cloak", "Increases player defense.", 120, RRGame.am.get(RRGame.RSC_CLOAK_IMG))
+    };
+
+    private class ShopItem {
+        private String title;
+        private String description;
+        private int cost;
+        private Texture texture;
+
+        public ShopItem(String title, String description, int cost, Texture texture){
+            this.title = title;
+            this.description = description;
+            this.cost = cost;
+            this.texture = texture;
+        }
+
+        public String getTitle(){
+            return this.title;
+        }
+
+        public String getDescription(){
+            return this.description;
+        }
+
+        public int getCost(){
+            return this.cost;
+        }
+
+        public Texture getTexture(){
+            return this.texture;
+        }
+    }
+
+    public MerchantMenu(Player player){
+        detailPaneTexture = RRGame.am.get(RRGame.RSC_SHOP_DETAILED_VIEW);
+        itemPaneTexture   = RRGame.am.get(RRGame.RSC_SHOP_ITEMS_VIEW);
+        selectionTexture   = RRGame.am.get(RRGame.RSC_SHOP_ITEMS_SELECT);
+        this.font = new BitmapFont(Gdx.files.local("Fonts/merchant.fnt"));
+    }
+
+    public void resize(){
+        detailPaneWidth  = Gdx.graphics.getWidth() / 1.8f;
+        detailPaneHeight = detailPaneWidth;
+        detailPaneX      = 16;
+        detailPaneY      = Gdx.graphics.getHeight() - detailPaneHeight - 16;
+        int itemSelected = 0;
+
+        itemPaneWidth    = Gdx.graphics.getWidth() / 3;
+        itemPaneHeight   = itemPaneWidth * 2;
+        itemPaneX        = Gdx.graphics.getWidth() - 16 - itemPaneWidth;
+        itemPaneY        = Gdx.graphics.getHeight() - 16 - itemPaneHeight;
+
+        itemSelectWidth  = itemPaneHeight / 4;
+        itemSelectHeight = itemSelectWidth;
+
+    }
+
+    public void update(){
+
+    }
+
+    public void draw(Batch batch) {
+        batch.draw(this.detailPaneTexture, detailPaneX,detailPaneY, detailPaneWidth, detailPaneHeight);
+        batch.draw(this.itemPaneTexture, itemPaneX,itemPaneY, itemPaneWidth, itemPaneHeight);
+
+        float mx = Gdx.input.getX();
+        float my = Gdx.graphics.getHeight() - Gdx.input.getY();
+        int sel = -1;
+
+        for (int i = 0; i < this.items.length; i++) {
+            ShopItem item = items[i];
+            float x = 0;
+            float y = 0;
+
+            if (i < 4) {
+                x = this.itemPaneX;
+                y = this.itemPaneY + this.itemSelectWidth * i;
+            } else {
+                x = this.itemPaneX + this.itemSelectWidth;
+                y = this.itemPaneY + this.itemSelectWidth * (i - 4);
+            }
+
+            if (mx > x && mx < x + this.itemSelectWidth) {
+                if (my > y && my < y + this.itemSelectWidth) {
+                    batch.draw(this.selectionTexture, x, y, itemSelectWidth, itemSelectHeight);
+                    sel = i;
+                }
+            }
+            batch.draw(item.getTexture(), x, y, itemSelectWidth, itemSelectHeight);
+        }
+
+        if (sel != -1){
+            this.font.setColor(Color.WHITE);
+            this.font.getData().setScale(4);
+            font.draw(batch, items[sel].title, this.detailPaneX + 48, this.detailPaneY + this.detailPaneHeight - 48);
+            this.font.getData().setScale(3);
+            font.draw(batch, items[sel].description, this.detailPaneX + 48, this.detailPaneY + this.detailPaneHeight - 84);
+            font.draw(batch, Integer.toString(items[sel].cost) + " GP", this.detailPaneX + 48, this.detailPaneY + this.detailPaneHeight - 116);
+        }
+    }
+
+}
+
+
 
 class HealthBar extends GUIElement {
 

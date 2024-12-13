@@ -5,7 +5,6 @@ import com.badlogic.gdx.net.Socket;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.Queue;
 import io.github.RashRogues.Entity;
-import io.github.RashRogues.PlayScreen;
 import io.github.RashRogues.Player;
 import io.github.RashRogues.RRGame;
 
