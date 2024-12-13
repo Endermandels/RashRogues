@@ -1,6 +1,5 @@
 package io.github.RashRogues;
 
-import Networking.Endpoint;
 import Networking.Network;
 import Networking.ReplicationType;
 
@@ -8,7 +7,7 @@ import java.util.*;
 
 public class Globals {
     public long frame = 0;
-    public int eid = 0;
+    public int eid = 5; //starts at 5 so as not to overlap with player id values.
 
     public int pid = -1;
     public int currentNumPlayers = 0;
@@ -30,10 +29,14 @@ public class Globals {
     // Entities that are not deterministic but must be tied to a frame.
     private final HashMap<Integer, HashMap<Long,Entity>> nondeterministicReplicatedEntities     = new HashMap<>();
     private final HashMap<Integer, HashMap<Long,Entity>> nondeterministicReplicatedProjectiles  = new HashMap<>();
+
     private final HashMap<Integer,Long> projectileNumber                                        = new HashMap<>();
 
     // These items can only be purchased one time per player.
     public final HashSet<BuyableItem> nonRepurchasableItems = new HashSet<>(Arrays.asList(BuyableItem.CLOAK,BuyableItem.DAGGER, BuyableItem.RING));
+
+    private final HashMap<Integer,Entity> keys = new HashMap<>();
+    private int keyCount = 0;
 
     public void setupRandomNumberGenerator(){
         seed = new Random().nextLong();
@@ -54,28 +57,28 @@ public class Globals {
      * and will be matched with an entity on a foreign endpoint.
      * If no screen is currently active, the entity will not be created.
      * @param e Entity to register
-     * @param creatorPID Who created this?
+     * @param creatorID Who created this?
      * @param number Which number is this? (frame #, projectile #)
      */
-    public void registerEntity(Entity e, ReplicationType type, int creatorPID, long number){
+    public void registerEntity(Entity e, ReplicationType type, int creatorID, long number) {
 
         //Cannot register entities if there is no screen.
-        if (currentScreen == null){
-           return;
+        if (currentScreen == null) {
+            return;
         }
 
         // This entity needs to be indexed to a certain 'frame', and originator.
-        if (type == ReplicationType.FRAME_NUMBER) {
-            this.nondeterministicReplicatedEntities.get(creatorPID).put(number, e);
-            e.pid = creatorPID;
-            e.frame = number;
+         if (type == ReplicationType.FRAME_NUMBER) {
+            this.nondeterministicReplicatedEntities.get(creatorID).put(number, e);
+            e.pid = creatorID;
+            e.number = number;
 
         // This entity needs to be indexed to projectile creation number, and originator.
-        } else if (type == ReplicationType.PROJECTILE_NUMBER){
-            this.nondeterministicReplicatedProjectiles.get(creatorPID).put(number,e);
-            e.pid = creatorPID;
-            e.frame = number;
-            this.projectileNumber.put(creatorPID,this.projectileNumber.get(creatorPID)+1);
+        } else if (type == ReplicationType.PLAYER_PROJECTILE_NUMBER){
+            this.nondeterministicReplicatedProjectiles.get(creatorID).put(number,e);
+            e.pid = creatorID;
+            e.number = number;
+            this.projectileNumber.put(creatorID,this.projectileNumber.get(creatorID)+1);
 
         // This entity is matched with another entity based on creation order.
         } else if (type == ReplicationType.ENTITY_NUMBER){
@@ -83,6 +86,10 @@ public class Globals {
             e.id = this.eid;
             deterministicReplicatedEntitiesSet.add(e);
             this.eid++;
+        } else if (type == ReplicationType.KEY){
+            keys.put(this.keyCount,e);
+            e.id = keyCount;
+            keyCount++;
         }
         RRGame.globals.currentScreen.registerEntity(e);
     }
@@ -97,13 +104,15 @@ public class Globals {
             return;
         }
 
-        if (e.replicationType == ReplicationType.PLAYER){
+         if (e.replicationType == ReplicationType.PLAYER){
             Player p = (Player) e;
-            if (this.pid == 0){
-                Globals.network.connection.dispatchKillPlayer(p.associatedPID);
-            }
             this.players.remove(p.associatedPID);
             this.playersSet.remove(p);
+
+            if (this.pid == 0){
+                Globals.network.connection.dispatchDestroyPlayer(p.associatedPID);
+            }
+
         }
 
         //This is a deterministic replicated entity
@@ -116,24 +125,23 @@ public class Globals {
             }
             //stop tracking this entity.
             this.removeReplicatedEntity(e);
-            System.out.println("Removed " + e.toString() + " with eid of " + Integer.toString(e.id));
         }
 
         //This is a nondeterministic replicated entity
         if (e.replicationType == ReplicationType.FRAME_NUMBER){
-            this.nondeterministicReplicatedEntities.get(e.pid).remove(e.frame);
+            this.nondeterministicReplicatedEntities.get(e.pid).remove(e.number);
             //We are the server. Tell client to eliminate this entity.
             if (this.pid == 0){
-                Globals.network.connection.dispatchDestroyEntity2(e.pid, e.frame);
+                Globals.network.connection.dispatchDestroyEntity2(e.pid, e.number);
             }
         }
 
         //This is a nondeterministic replicated projectile
-        if (e.replicationType == ReplicationType.PROJECTILE_NUMBER){
-            this.nondeterministicReplicatedProjectiles.get(e.pid).remove(e.frame);
+        if (e.replicationType == ReplicationType.PLAYER_PROJECTILE_NUMBER){
+            this.nondeterministicReplicatedProjectiles.get(e.pid).remove(e.number);
             //We are the server. Tell client to eliminate this entity.
             if (this.pid == 0){
-                Globals.network.connection.dispatchDestroyProjectile(e.pid, e.frame);
+                Globals.network.connection.dispatchDestroyProjectile(e.pid, e.number);
             }
         }
 
@@ -142,7 +150,19 @@ public class Globals {
     }
 
     public long getProjectileNumber(int pid){
-        return this.projectileNumber.get(pid);
+        if (this.projectileNumber.containsKey(pid)) {
+            return this.projectileNumber.get(pid);
+        }
+        return 0;
+    }
+
+    /**
+     * Get the entity of a registered Key.
+     * @param keyID
+     * @return
+     */
+    public Entity getKey(int keyID){
+        return this.keys.get(keyID);
     }
 
     /**
@@ -261,17 +281,6 @@ public class Globals {
         return this.seed;
     }
 
-    /**
-     * Returns a number between 0 and bound
-     * @param bound Upper bound
-     * @return int
-     */
-    public int getRandomInteger(int bound){
-       if (this.random != null){
-           return random.nextInt(bound);
-       }
-       return 0;
-    }
 
     /**
      * Returns a random number generator.
@@ -279,7 +288,8 @@ public class Globals {
      * @return Random
      */
     public Random getRandom(){
-        return this.random;
+        Random newRandom = new Random(this.random.nextLong());
+        return newRandom;
     }
 
 }

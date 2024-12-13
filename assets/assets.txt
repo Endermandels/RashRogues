@@ -18,8 +18,8 @@ DefaultImages/hole.png
 DefaultImages/key.png
 DefaultImages/king.png
 DefaultImages/ladder.png
+DefaultImages/merchant room.png
 DefaultImages/merchant.png
-DefaultImages/merchant_room.png
 DefaultImages/particle_large.png
 DefaultImages/particle_medium.png
 DefaultImages/particle_small.png
@@ -28,6 +28,7 @@ DefaultImages/rogue.png
 DefaultImages/room1.png
 DefaultImages/room2.png
 DefaultImages/room3.png
+DefaultImages/sword_swing.png
 DefaultImages/swordsman.png
 DefaultImages/throne.png
 DefaultImages/throwing_knife.png
@@ -44,6 +45,7 @@ Images/bomber sprite sheet.png
 Images/bomberBomb sprite sheet.png
 Images/bomberExplosion sprite sheet.png
 Images/chest sprite sheet.png
+Images/cloak GUI sprite sheet.png
 Images/door sprite sheet.png
 Images/dragon sprite sheet.png
 Images/king sprite sheet.png
@@ -62,12 +64,15 @@ Menu/shop_exit_button.png
 Menu/shop_items_select.png
 Menu/shop_items_view.png
 Menu/shop_money_display.png
+Particles/particle-cloud.png
+Particles/smoke_particles.p
 SFX/music/Rogue Rush v2.mp3
 SFX/music/Rogue Rush.mp3
 SFX/music/Stealth Surge.mp3
 SFX/music/Upbeat Beating.mp3
 SFX/music/a hero of the 80s.mp3
 SFX/music/on the road to the 80s.mp3
+SFX/sounds/dash.wav
 SFX/sounds/doorOpen.wav
 SFX/sounds/explosion.wav
 SFX/sounds/hitHurt.wav

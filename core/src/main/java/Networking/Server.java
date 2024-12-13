@@ -145,6 +145,19 @@ public class Server implements Endpoint{
         }
     }
 
+    @Override
+    public void dispatchDestroyPlayer(int pid) {
+       for (ClientListener c : clients){
+           c.dispatchDestroyPlayer(pid);
+       }
+    }
+
+    public void dispatchTarget(int eid, int pid){
+        for (ClientListener c : clients){
+            c.dispatchTarget(eid,pid);
+        }
+    }
+
     /**
      * Instructs all connections to send farwell messages and close.
      * Effectively ends the multiplayer game.
@@ -172,6 +185,14 @@ public class Server implements Endpoint{
     }
 
     @Override
+    public void dispatchDestroyEntity3(int eid, long number) {
+        for (ClientListener c : clients){
+            c.dispatchDestroyEntity3(eid, number);
+        }
+
+    }
+
+    @Override
     public void dispatchKeys(byte[] keymask, long frame) {
         for (ClientListener c : clients){
             c.dispatchKeys(keymask, frame);
@@ -191,9 +212,9 @@ public class Server implements Endpoint{
        }
     }
 
-    public void dispatchKeyPickup(int pid){
+    public void dispatchKeyPickup(int pid,int keyID){
         for (ClientListener c : clients){
-            c.dispatchKeyPickup(pid);
+            c.dispatchKeyPickup(pid,keyID);
         }
     }
 
@@ -222,6 +243,12 @@ public class Server implements Endpoint{
     public void dispatchCommand(String[] cmd) {
         for (ClientListener c : clients){
             c.dispatchCommand(cmd);
+        }
+    }
+
+    public void dispatchKeyDrop(float x, float y){
+        for (ClientListener c : clients){
+            c.dispatchKeyDrop(x,y);
         }
     }
 

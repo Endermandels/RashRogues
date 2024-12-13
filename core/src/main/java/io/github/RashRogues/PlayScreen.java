@@ -1,6 +1,13 @@
 package io.github.RashRogues;
 
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.graphics.FPSLogger;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.ParticleEffect;
+import com.badlogic.gdx.graphics.g2d.ParticleEffectPool;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -27,6 +34,12 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     private PriorityQueue<Entity> renderQueue;
     private HashMap<Integer, Boolean> inputs;
     public static CollisionGrid collisionGrid = new CollisionGrid();
+    public static ParticleEffectPool smokeParticleEffectPool;
+    public static Array<ParticleEffectPool.PooledEffect> smokeParticleEffects;
+
+    //Debugging
+    private static BitmapFont font = new BitmapFont(Gdx.files.internal("fonts/debug.fnt"),false);
+    private static Entity debugEntity = null;
 
     public PlayScreen(RRGame game) {
 
@@ -39,7 +52,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         this.renderQueue    = new PriorityQueue<>(new EntityComparator());
         initInputs();
         loadRooms();
-        setNextRoom();
         createHUDAndInputs();
         initPlayer();
     }
@@ -51,6 +63,9 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         if (this.currentRoom.getRoomType() == RoomType.BATTLE){
             player.setPosition(RRGame.PLAYER_SPAWN_X,RRGame.PLAYER_SPAWN_Y);
         }
+        font.getData().setScale(3f);
+        smokeParticleEffectPool = new ParticleEffectPool(RRGame.am.get(RRGame.RSC_SMOKE_PARTICLE_EFFECT, ParticleEffect.class), 5, 10);
+        smokeParticleEffects = new Array<>();
 
         if (this.currentRoom.getRoomType() == RoomType.MERCHANT){
             player.setPosition(RRGame.PLAYER_SPAWN_MERCHANT_X,RRGame.PLAYER_SPAWN_MERCHANT_Y);
@@ -162,6 +177,18 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             Entity e = renderQueue.poll();
             if (!(e instanceof GUIElement)) e.draw(game.batch);
         }
+        for (ParticleEffectPool.PooledEffect effect : smokeParticleEffects) {
+            effect.draw(game.batch, delta);
+
+            // Ensure we allow the effect to complete if it's looping
+            effect.allowCompletion();
+
+            if (effect.isComplete()) {
+                effect.free();
+                smokeParticleEffects.removeValue(effect, true);
+            }
+        }
+
         game.batch.end();
 
 
@@ -198,9 +225,36 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                 Enemy enemy = (Enemy) e;
                 drawHurtBox(enemy.hurtBox);
             }
+
         }
         game.shapeRenderer.end();
         Gdx.gl.glDisable(GL20.GL_BLEND);
+
+        Vector3 mouse = new Vector3();
+        mouse.x = Gdx.input.getX();
+        mouse.y = Gdx.input.getY();
+        mouse.z = 0;
+        game.playerCam.unproject(mouse);
+
+        for (Entity e : localEntities){
+            if ((mouse.x > e.hitBox.getX() && mouse.x < e.hitBox.getX() + e.hitBox.getWidth()) && (mouse.y > e.hitBox.getY() && mouse.y < e.hitBox.getY() + e.hitBox.getHeight())){
+                debugEntity = e;
+                break;
+            }
+        }
+
+        if (debugEntity != null) {
+            game.hudBatch.begin();
+            font.getData().setScale(3f);
+            font.draw(game.hudBatch, "Entity: " + debugEntity.toString(), 5, Gdx.graphics.getHeight()-30);
+            font.draw(game.hudBatch, "Repl. Type: " + debugEntity.replicationType, 5, Gdx.graphics.getHeight()-60);
+            font.getData().setScale(2.5f);
+            font.draw(game.hudBatch, "ID: " + debugEntity.id, 5, Gdx.graphics.getHeight() - 90);
+            font.draw(game.hudBatch, "Number: " + debugEntity.number, 5, Gdx.graphics.getHeight() - 110);
+            font.draw(game.hudBatch, "Creator: " + debugEntity.pid, 5, Gdx.graphics.getHeight() - 130);
+            game.hudBatch.end();
+        }
+
     }
 
     @Override
@@ -228,6 +282,8 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                 35, 301, 80, 0, game.room1Music, RoomType.BATTLE));
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM2_IMG),
                 35, 301, 120, 10, game.room2Music, RoomType.BATTLE));
+        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM3_IMG),
+                35, 301, 120, 10, game.room3Music));
 
         // other rooms will go below here
     }
@@ -241,6 +297,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
             // last room
             // win screen?
             // this will crash the game for now most likely
+            game.setScreen(new WinScreen(game));
             return;
         }
         else {
@@ -260,6 +317,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         currentDoor = new Door(currentRoom.doorPositionX, currentRoom.doorPositionY, currentRoom.doorUnlockedByDefault);
         game.playerCam.changeWorldSize(currentRoom.roomWidth, currentRoom.roomHeight, currentRoom.doorPositionX, currentRoom.doorPositionY);
         collisionGrid.updateCollisionGridRoomValues(currentRoom.roomWidth, currentRoom.roomHeight);
+        gui = new GUI(RRGame.globals.players.get(RRGame.globals.pid));
     }
 
     public void createHUDAndInputs() {
@@ -318,13 +376,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
             public String help(String[] cmd) {
                 return help;
-            }
-        });
-
-        hud.registerAction("netviewer", new HUDActionCommand() {
-            @Override
-            public String execute(String[] cmd) {
-                return "see console.";
             }
         });
 
@@ -509,7 +560,6 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                     inputs.put(Input.Keys.Q, true);
                 }
 
-
                 return true;
             }
 
@@ -568,6 +618,12 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
     public void executeCommand(String[] cmd){
         this.hud.executeCommand(cmd);
+    }
+
+    public void dispose(){
+        for (ParticleEffectPool.PooledEffect effect : smokeParticleEffects) {
+            effect.free();
+        }
     }
 
     public GUI getGUI(){

@@ -8,9 +8,9 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 public class StreamMaker {
-   private static ByteBuffer longbuffer = ByteBuffer.allocate(Long.BYTES);
-   private static ByteBuffer intbuffer = ByteBuffer.allocate(Integer.BYTES);
-
+   private static ByteBuffer longbuffer;
+   private static ByteBuffer intbuffer;
+   private static ByteBuffer floatbuffer;
 
    public static byte[] farewell(){
       byte[] stream = new byte[128];
@@ -60,9 +60,7 @@ public class StreamMaker {
    public  static byte[] destroyEntity(int eid){
       byte[] stream = new byte[128];
       stream[0] = (byte) PacketType.DESTROY.getvalue();
-
       byte[] eidBytes = intToBytes(eid);
-
       stream[1] = eidBytes[0];
       stream[2] = eidBytes[1];
       stream[3] = eidBytes[2];
@@ -95,6 +93,36 @@ public class StreamMaker {
    }
 
    /**
+    * Destroy projectile # 'number' from entity 'eid'
+    * @param eid
+    * @param number
+    * @return
+    */
+   public static byte[] destroyEntity3(int eid, long number){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.DESTROY4.getvalue();
+
+      byte[] eidBytes = intToBytes(eid);
+      stream[1] = eidBytes[0];
+      stream[2] = eidBytes[1];
+      stream[3] = eidBytes[2];
+      stream[4] = eidBytes[3];
+
+      byte[] numberBytes = longToBytes(number);
+      stream[5] = numberBytes[0];
+      stream[6] = numberBytes[1];
+      stream[7] = numberBytes[2];
+      stream[8] = numberBytes[3];
+      stream[9] = numberBytes[4];
+      stream[10] = numberBytes[5];
+      stream[11] = numberBytes[6];
+      stream[12] = numberBytes[7];
+
+      return stream;
+
+   }
+
+   /**
     * Destroys the number'th projectile belonging to player 'pid'.
     * @param pid
     * @param number
@@ -115,10 +143,16 @@ public class StreamMaker {
       return stream;
    }
 
-   public static byte[] pickupKey(int pid){
+   public static byte[] pickupKey(int pid, int keyID){
       byte[] stream = new byte[128];
       stream[0] = (byte) PacketType.PICKUP_KEY.getvalue();
       stream[1] = (byte) pid;
+      byte[] keyIDBytes = StreamMaker.intToBytes(keyID);
+      stream[2] = keyIDBytes[0];
+      stream[3] = keyIDBytes[1];
+      stream[4] = keyIDBytes[2];
+      stream[5] = keyIDBytes[3];
+
       return stream;
    }
 
@@ -166,9 +200,6 @@ public class StreamMaker {
         tx += cmdlet_bytes.length+1;
      }
      stream[tx-1] = '#';
-     for (int i = 0; i < stream.length; i++){
-        System.out.println(stream[i]);
-     }
      return stream;
    }
 
@@ -244,6 +275,57 @@ public class StreamMaker {
       return stream;
    }
 
+   /**
+    * Specify the target for an NPC
+    * @param pid Player whom NPC should target
+    * @param eid ID of NPC
+    * @return
+    */
+   public static byte[] target(int pid, int eid){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.SET_TARGET.getvalue();
+      stream[1] = (byte) pid;
+      byte[] eidBytes = intToBytes(eid);
+      for (int i = 0; i < eidBytes.length; i++){
+         stream[2+i] = eidBytes[i];
+      }
+      return stream;
+   }
+
+   /**
+    * Tell the client to create a key at X and Y
+    * @param x
+    * @param y
+    * @return
+    */
+   public static byte[] dropKey(float x, float y){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.DROP_KEY.getvalue();
+      byte[] xBytes = StreamMaker.floatToBytes(x);
+      floatbuffer = ByteBuffer.allocate(Float.BYTES);
+      byte[] yBytes = StreamMaker.floatToBytes(y);
+
+      stream[1] = xBytes[0];
+      stream[2] = xBytes[1];
+      stream[3] = xBytes[2];
+      stream[4] = xBytes[3];
+
+      stream[5] = yBytes[0];
+      stream[6] = yBytes[1];
+      stream[7] = yBytes[2];
+      stream[8] = yBytes[3];
+
+      float X = StreamMaker.bytesToFloat(xBytes);
+      float Y = StreamMaker.bytesToFloat(yBytes);
+
+      return stream;
+   }
+
+   /**
+    * Specify the seed to use for random operations.
+    * @param seed
+    * @return
+    */
    public static byte[] seed(long seed){
       byte[] stream = new byte[128];
       stream[0] = (byte) PacketType.RANDOM_SEED.getvalue();
@@ -272,29 +354,41 @@ public class StreamMaker {
    }
 
    public static byte[] intToBytes(int i){
-      intbuffer.clear();
+      intbuffer = ByteBuffer.allocate(Integer.BYTES);
       intbuffer.putInt(i);
       return intbuffer.array();
    }
 
    public static int bytesToInt(byte[] bytes){
-      intbuffer.clear();
+      intbuffer = ByteBuffer.allocate(Integer.BYTES);
       intbuffer.put(bytes, 0, bytes.length);
       intbuffer.flip();
       return intbuffer.getInt();
    }
 
    public static byte[] longToBytes(long l){
-      longbuffer.clear();
+      longbuffer = ByteBuffer.allocate(Long.BYTES);
       longbuffer.putLong(0, l);
       return longbuffer.array();
    }
 
    public static long bytesToLong(byte[] bytes){
-      longbuffer.clear();
+      longbuffer = ByteBuffer.allocate(Long.BYTES);
       longbuffer.put(bytes, 0, bytes.length);
       longbuffer.flip();
       return longbuffer.getLong();
    }
 
+   public static float bytesToFloat(byte[] bytes){
+      floatbuffer = ByteBuffer.allocate(Float.BYTES);
+      floatbuffer.put(bytes,0,bytes.length);
+      floatbuffer.flip();
+      return floatbuffer.getFloat();
+   }
+
+   public static byte[] floatToBytes(float f){
+      floatbuffer = ByteBuffer.allocate(Float.BYTES);
+      floatbuffer.putFloat(0,f);
+      return floatbuffer.array();
+   }
 }

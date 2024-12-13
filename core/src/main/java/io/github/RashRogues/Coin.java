@@ -7,7 +7,7 @@ public class Coin extends Entity {
 
     Coin(float x, float y) {
         super(EntityAlignment.BACKGROUND, RRGame.am.get(RRGame.RSC_COIN_IMG, Texture.class),
-                x, y, RRGame.KEY_SIZE, RRGame.KEY_SIZE, Layer.BACKGROUND, null,
+                x, y, RRGame.KEY_SIZE, RRGame.KEY_SIZE, Layer.COIN, null,
                 ReplicationType.ENTITY_NUMBER, -1, -1);
         this.setBoxPercentSize(0.25f, 0.25f, hitBox);
         hitBox.disableLength = 0f;
