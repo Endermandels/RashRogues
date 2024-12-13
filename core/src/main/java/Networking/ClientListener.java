@@ -293,6 +293,10 @@ public class ClientListener implements Endpoint {
        this.outgoingMessages.add(StreamMaker.target(pid,eid));
     }
 
+    public void dispatchSyncHealth(int pid, int hp){
+        this.outgoingMessages.add(StreamMaker.syncHealth(pid,hp));
+    }
+
     /**
      * Communicate to the client to destroy an entity.
      */

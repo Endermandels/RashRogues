@@ -29,4 +29,5 @@ public interface Endpoint {
     void dispatchKeyPickup(int pid, int keyID);
     void dispatchKeyDrop(float x, float y);
     void dispatchCoinDrop(float x, float y, int level);
+    void dispatchSyncHealth(int pid, int hp);
 }

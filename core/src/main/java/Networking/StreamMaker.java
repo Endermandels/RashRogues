@@ -367,6 +367,20 @@ public class StreamMaker {
       return stream;
    }
 
+   public static byte[] syncHealth(int pid, int hp){
+      byte[] stream = new byte[128];
+      stream[0] = (byte) PacketType.HEALTH.getvalue();
+      stream[1] = (byte) pid;
+
+      byte[] hpBytes = StreamMaker.intToBytes(hp);
+      stream[2] = hpBytes[0];
+      stream[3] = hpBytes[1];
+      stream[4] = hpBytes[2];
+      stream[5] = hpBytes[3];
+
+      return stream;
+   }
+
    public static byte[] intToBytes(int i){
       intbuffer = ByteBuffer.allocate(Integer.BYTES);
       intbuffer.putInt(i);

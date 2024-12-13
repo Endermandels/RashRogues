@@ -33,9 +33,19 @@ public class Stats {
     public void increaseMoveSpeed(float amount) { moveSpeed+=amount; parent.setMaxMoveSpeeds(moveSpeed, moveSpeed); }
     public void increaseRetreatSpeed(float amount) { retreatSpeed+=amount; }
     public int getMaxHealth() { return maxHealth; }
+    public void setHealth(int health){this.health = health;}
 
     public void takeDamage(int damage) {
+
         this.health -= damage;
+
+
+        // Force the client to reckon with the health he has on the server.
+        if (this.parent instanceof Player){
+            int pid = ((Player) this.parent).associatedPID;
+            RRGame.globals.network.connection.dispatchSyncHealth(pid, this.health);
+        }
+
 
         // Only The Server Has The Authority to kill.
         // Server communicate these deaths to clients.

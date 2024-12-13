@@ -392,6 +392,23 @@ public class Client implements Endpoint {
         }
     }
 
+    public void dispatchSyncHealth(int pid, int hp){
+        return;
+    }
+
+    public void handleSyncHealth(byte[] packet){
+
+        int pid = (byte) packet[1];
+        byte[] hpBytes = new byte[4];
+        System.arraycopy(packet,2,hpBytes,0,4);
+        int health = StreamMaker.bytesToInt(hpBytes);
+        Player p = RRGame.globals.players.get(pid);
+        if (p == null){
+            return;
+        }
+        p.stats.setHealth(health);
+    }
+
     public void handleCoinDrop(byte[] packet){
        byte[] xBytes = new byte[4];
        byte[] yBytes = new byte[4];

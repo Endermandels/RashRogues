@@ -102,8 +102,8 @@ public abstract class Enemy extends Entity {
                 float y = (rnd.nextInt(MAX_DROP_DISTANCE) - 1) / 2;
                 new Coin(getX() + x, getY() + y);
             }
+            RRGame.globals.network.connection.dispatchCoinDrop(getX(),getY(), enemyLevel);
         }
-        RRGame.globals.network.connection.dispatchCoinDrop(getX(),getY(), enemyLevel);
     }
 
     /**
