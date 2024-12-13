@@ -26,6 +26,7 @@ public class Bomber extends Enemy {
     private final int BOMB_DAMAGE = 200;
     private final float BOMB_DISTANCE = 10f;
     private final float BOMB_SPEED = 15f;
+    private final float ATTENTION_DISTANCE = 25f; // Distance at which a player is worth moving
     private final int ATTENTION_SPAN = 60;
     private final float WINDUP_TIME = 0.9f;
     private final float COOLDOWN_TIME = 1.0f;
@@ -115,7 +116,7 @@ public class Bomber extends Enemy {
                 continue;
             }
             float distToP = distanceTo(player);
-            if (distToP < closest) {
+            if (distToP < closest && distToP < ATTENTION_DISTANCE) {
                 p       = player;
                 closest = distToP;
             }
@@ -224,6 +225,8 @@ public class Bomber extends Enemy {
 
             case IDLE:
                 setCurrentAnimation(AnimationAction.IDLE);
+                xVelocity = 0f;
+                yVelocity = 0f;
 
                 windupTimer    = 0;
                 cooldownTimer  = 0;
