@@ -15,11 +15,14 @@ public class GUI {
     private HealthBar hb;
     private SpecialAttack sa;
     private CoinCount cc;
+    private HealthPotionCount hpc;
 
     public GUI(Player player) {
         hb = new HealthBar(player);
         sa = new SpecialAttack(player);
         cc = new CoinCount(player);
+        hpc = new HealthPotionCount(player);
+        this.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
     public void update() {
@@ -31,12 +34,14 @@ public class GUI {
         hb.draw(batch);
         sa.draw(batch);
         cc.draw(batch);
+        hpc.draw(batch);
     }
 
     public void resize(int width, int height) {
         hb.resize(width, height);
         sa.resize(width, height);
         cc.resize(width, height);
+        hpc.resize(width, height);
     }
 }
 
@@ -50,6 +55,52 @@ class GUIElement extends Entity {
             ReplicationType.CLIENTSIDE, player.pid, -1);
         // TODO: the part above might need to be player.associatedPID, question for Cade
         this.player = player;
+    }
+}
+
+
+class HealthPotionCount extends GUIElement {
+    private static final float PERCENT_DIST_FROM_LEFT_SIDE = 0.02f;
+    private static final float PERCENT_DIST_FROM_BOTTOM = 0.5f;
+    private static final float BASE_NUM_PIXELS_TO_SIDE_OF_POTION = 11f;
+    private static final float BASE_NUM_PIXELS_TO_BOTTOM_OF_POTION = 11f;
+
+    private float xOffset = Gdx.graphics.getWidth()*PERCENT_DIST_FROM_LEFT_SIDE;
+    private float yOffset = Gdx.graphics.getHeight()*PERCENT_DIST_FROM_BOTTOM;
+    private float textX = 0f;
+    private float textY = 0f;
+    private float pixelsToSideOfPotion = BASE_NUM_PIXELS_TO_SIDE_OF_POTION;
+    private float pixelsToBottomOfPotion = BASE_NUM_PIXELS_TO_BOTTOM_OF_POTION;
+    private float imgWidth;
+    private float imgHeight;
+    private BitmapFont font;
+
+    public HealthPotionCount(Player player) {
+        super(player, RRGame.am.get(RRGame.RSC_HEALTH_POTION_IMG), Gdx.graphics.getWidth()*PERCENT_DIST_FROM_LEFT_SIDE, Gdx.graphics.getHeight()*PERCENT_DIST_FROM_BOTTOM,
+                RRGame.KEY_SIZE, RRGame.KEY_SIZE, null);
+        imgWidth = Gdx.graphics.getWidth() * 0.2f;
+        imgHeight = imgWidth;
+        font = RRGame.am.get(RRGame.RSC_MONO_FONT_LARGE);
+        font.setColor(0,0,0,1);
+    }
+
+    public void resize(int width, int height) {
+        imgWidth = Gdx.graphics.getWidth() * 0.2f;
+        imgHeight = imgWidth;
+        // this complicated thing is only needed for this bc its so small compared to its px size of 32x32
+        pixelsToSideOfPotion = imgWidth * BASE_NUM_PIXELS_TO_SIDE_OF_POTION / 32f;
+        xOffset = width*PERCENT_DIST_FROM_LEFT_SIDE-pixelsToSideOfPotion;
+        textX = xOffset+imgWidth-pixelsToSideOfPotion;
+        pixelsToBottomOfPotion = imgHeight * BASE_NUM_PIXELS_TO_BOTTOM_OF_POTION / 32f;
+        yOffset = height*PERCENT_DIST_FROM_BOTTOM-pixelsToBottomOfPotion;
+        float pixelsThroughHalfOfPotion = imgHeight * (16-BASE_NUM_PIXELS_TO_BOTTOM_OF_POTION) / 32f;
+        textY = yOffset+pixelsToBottomOfPotion+pixelsThroughHalfOfPotion+font.getCapHeight()/2;
+    }
+
+    @Override
+    public void draw(Batch batch) {
+        batch.draw(getTexture(), xOffset, yOffset, imgWidth, imgHeight);
+        font.draw(batch, Integer.toString(player.getHealthPotionCount()), textX, textY);
     }
 }
 
@@ -78,7 +129,7 @@ class CoinCount extends GUIElement {
     }
 
     public void resize(int width, int height) {
-        imgWidth = Gdx.graphics.getWidth() * 0.2f;
+        imgWidth = Gdx.graphics.getWidth() * 0.15f;
         imgHeight = imgWidth;
         // this complicated thing is only needed for this bc its so small compared to its px size of 32x32
         pixelsToSideOfCoin = imgWidth * BASE_NUM_PIXELS_TO_SIDE_OF_COIN / 32f;

@@ -261,7 +261,8 @@ public class Player extends Entity {
     public void useConsumable(int pid, long frame) {
         // this is currently only healthPotions; this could be changed to consumablesHeld and diff consumables
         // but that is currently out of scope
-        if (consumableTimer < CONSUMABLE_COOLDOWN || healthPotionsHeld <= 0) { return; }
+        if (consumableTimer < CONSUMABLE_COOLDOWN || healthPotionsHeld <= 0
+                || stats.getHealth() == stats.getMaxHealth()) { return; }
         // good spot for a sound effect
         consumableTimer = 0f;
         healthPotionsHeld--;
@@ -280,6 +281,8 @@ public class Player extends Entity {
     public void pickUpConsumable() {
         healthPotionsHeld++;
     }
+
+    public int getHealthPotionCount() { return healthPotionsHeld; }
 
     public void adjustVelocity() {
         // normalize diagonal movement
@@ -358,9 +361,9 @@ public class Player extends Entity {
         this.setPosition(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y);
         this.holdingKey = false;
         this.attackTimer = 0f;
-        this.dashTimer = 0f;
-        this.abilityTimer = 0f;
-        this.consumableTimer = 0f;
+        this.dashTimer = DASH_DEXTERITY_CONVERTER / stats.getDexterity();
+        this.abilityTimer = abilityCooldown;
+        this.consumableTimer = CONSUMABLE_COOLDOWN;
     }
 
     @Override
