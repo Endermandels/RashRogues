@@ -20,6 +20,10 @@ public abstract class Enemy extends Entity {
     private float deathTimer = 0f;
     private Random rnd;
     private Sound hurtSFX;
+    private float smokeTimer = 0f;
+    private final float POSSIBLE_CHANGE_DIR_TIME = 0.7f;
+    private boolean oppositeX = false;
+    private boolean oppositeY = false;
 
     Enemy(Texture texture, float x, float y, float width, float height, boolean hasKey, AnimationActor animationActor) {
         super(EntityAlignment.ENEMY, texture, x, y, width, height, Layer.ENEMY, animationActor,
@@ -46,6 +50,31 @@ public abstract class Enemy extends Entity {
      * @param delta
      */
     public void update(float delta) {
+        if (this.hasEffect(Effect.SMOKE)) {
+            smokeTimer += delta;
+            if (oppositeX) {
+                xVelocity *= -1;
+            }
+            if (oppositeY) {
+                yVelocity *= -1;
+            }
+            if (smokeTimer > POSSIBLE_CHANGE_DIR_TIME) {
+                smokeTimer = 0f;
+                if (rnd.nextBoolean()) {
+                    oppositeX = true;
+                }
+                else {
+                    oppositeX = false;
+                }
+                if (rnd.nextBoolean()) {
+                    oppositeY = true;
+                }
+                else {
+                    oppositeY = false;
+                }
+            }
+        }
+        flipped = xVelocity < 0f;
         super.update(delta);
         if (deathTimer >= RRGame.STANDARD_DEATH_DURATION) { this.dropCoins(); this.dropKey(); this.removeSelf(); return; }
         if (stats.isDead()) { deathTimer += delta; return; }
