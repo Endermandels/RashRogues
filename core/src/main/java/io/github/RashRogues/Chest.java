@@ -10,7 +10,7 @@ import java.util.Random;
 public class Chest extends Entity {
 
     public boolean open;
-    public float AMOUNT_NEEDED_TO_OPEN = 80f;
+    public float AMOUNT_NEEDED_TO_OPEN = 30f;
     private float currentAmount;
     private final int BASE_MAX_AMOUNT_OF_COIN = 20;
     private final int MAX_DROP_DISTANCE = 11;
