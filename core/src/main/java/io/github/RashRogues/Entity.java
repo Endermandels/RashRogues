@@ -79,30 +79,7 @@ public abstract class Entity extends Sprite {
         this.replicationType = replicationType;
         RRGame.globals.registerEntity(this, replicationType, creatorPID, number);
         this.toggleAnimations(true);
-        if (animationActor == null) {
-            // this is redundant but necessary unless we want a whole extra layer of nested if loops!
-            this.animations = null;
-        }
-        else if (this instanceof Player) {
-            switch (RRGame.globals.pid) {
-                case 0:
-                    this.setUpAnimations(AnimationActor.PLAYER1);
-                    break;
-                case 1:
-                    this.setUpAnimations(AnimationActor.PLAYER2);
-                    break;
-                case 2:
-                    this.setUpAnimations(AnimationActor.PLAYER3);
-                    break;
-                case 3:
-                    this.setUpAnimations(AnimationActor.PLAYER4);
-                    break;
-                default:
-                    this.setUpAnimations(animationActor);
-                    break;
-            }
-        }
-        else {
+        if (animationActor != null) {
             this.setUpAnimations(animationActor);
         }
     }
