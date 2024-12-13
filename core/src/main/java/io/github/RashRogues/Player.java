@@ -98,14 +98,16 @@ public class Player extends Entity {
         super.update(delta);
         // we likely want some resurrection sort of ability or even just a ghost camera you can move
         if (deathTimer >= RRGame.STANDARD_DEATH_DURATION) { this.removeSelf(); return; }
-        if (stats.isDead()) { this.dropKey(); deathTimer += delta; return; }
+        if (stats.isDead() && RRGame.globals.pid == 0) {
+            this.dropKey();
+            this.removeSelf();
+        }
         hurtBox.update(delta);
         keySprite.setX(getX()-getWidth()/2);
         keySprite.setY(getY()+getHeight()/2);
         if (attackTimer >= (1 / stats.getAttackSpeed())){
             int myPID    = this.associatedPID;
             long projNum = RRGame.globals.getProjectileNumber(myPID);
-
             attack(myPID,projNum);
             attackTimer = 0f;
         }
@@ -202,23 +204,34 @@ public class Player extends Entity {
     }
 
     public void setHoldingKey(boolean holdingKey){
+        if (holdingKey){
+            pickupKeySFX.play(0.2f);
+        }
         this.holdingKey = holdingKey;
     }
 
     public void dropKey(){
         if (holdingKey){
+            RRGame.globals.network.connection.dispatchKeyDrop(this.getX(), this.getY());
             setHoldingKey(false);
             new Key(getX(),getY());
         }
     }
 
-    public void grabKey(){
+    public void grabKey(int keyID){
+        if (RRGame.globals.getKey(keyID) == null){
+            System.out.println(">>! Warning: key wasn't registered properly!");
+            return;
+        }
+
         //Players on server pick up keys directly, and tell clients that a player picked up a key.
         if (RRGame.globals.pid == 0){
             setHoldingKey(true);
-            RRGame.globals.network.connection.dispatchKeyPickup(this.associatedPID);
+            RRGame.globals.network.connection.dispatchKeyPickup(this.associatedPID, keyID);
             pickupKeySFX.play(0.2f);
         }
+
+        // (key will destroy itself upon collision)
     }
 
     public boolean isHoldingKey(){
@@ -322,7 +335,7 @@ public class Player extends Entity {
             hurtSFX.play(0.5f, rnd.nextFloat(0.5f, 2f), 0);
         }
         else if (thingThatHurtMe instanceof Key) {
-            this.grabKey();
+            this.grabKey(thingThatHurtMe.id);
         }
         else if (thingThatHurtMe instanceof Coin) {
             this.grabCoin();

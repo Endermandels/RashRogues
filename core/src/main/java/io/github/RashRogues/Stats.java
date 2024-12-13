@@ -7,15 +7,17 @@ public class Stats {
     private int damage;
     private float attackSpeed;
     private float moveSpeed;
+    private float retreatSpeed;
     private Entity parent;
     private boolean dead;
 
-    Stats(int health, int damage, float attackSpeed, float moveSpeed, Entity parent) {
+    Stats(int health, int damage, float attackSpeed, float moveSpeed, float retreatSpeed, Entity parent) {
         this.maxHealth = health;
         this.health = health;
         this.damage = damage;
         this.attackSpeed = attackSpeed;
         this.moveSpeed = moveSpeed;
+        this.retreatSpeed = retreatSpeed;
         this.parent = parent;
         this.dead = false;
     }
@@ -27,15 +29,26 @@ public class Stats {
     public float getAttackSpeed() { return attackSpeed; }
     public void increaseAttackSpeed(float amount) { attackSpeed+=amount; }
     public float getMoveSpeed() { return moveSpeed; }
+    public float getRetreatSpeed() { return retreatSpeed; }
     public void increaseMoveSpeed(float amount) { moveSpeed+=amount; parent.setMaxMoveSpeeds(moveSpeed, moveSpeed); }
+    public void increaseRetreatSpeed(float amount) { retreatSpeed+=amount; }
     public int getMaxHealth() { return maxHealth; }
 
     public void takeDamage(int damage) {
         this.health -= damage;
-        //System.out.println("Yeouch! Just took " + damage + " damage!");
-        if (this.health <= 0) {
+
+        // Only The Server Has The Authority to kill.
+        // Server communicate these deaths to clients.
+        if (this.health <= 0 && RRGame.globals.pid == 0) {
             this.dead = true;
-            //System.out.println("I'm dead...");
+
+            //Dispatch Kill Player Command To Clients
+            if (this.parent instanceof Player){
+               RRGame.globals.network.connection.dispatchKillPlayer(((Player) this.parent).associatedPID);
+            }
+
+            //todo: communicate other entities deaths
+
         }
     }
 
@@ -44,5 +57,10 @@ public class Stats {
     }
 
     public boolean isDead() { return this.dead; }
+
+    public void kill(){
+        this.health = 0;
+        this.dead   = true;
+    }
 
 }

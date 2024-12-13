@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import static io.github.RashRogues.RRGame.globals;
+
 public class PlayerList extends Entity {
     private HashSet<String> players;
     private static Texture itemTex = RRGame.am.get(RRGame.RSC_GAME_LIST_ITEM);
@@ -34,7 +36,8 @@ public class PlayerList extends Entity {
         super.draw(batch);
 
         int index = 0;
-        for (Integer pid : RRGame.globals.clientSet){
+        HashSet<Integer> players = (HashSet) RRGame.globals.clientSet.clone();
+        for (Integer pid : players){
             int itemHeight = (int) (this.getHeight() / Network.MAX_CLIENTS);
             int X = (int) this.getX();
             int Y = (int) this.getY() + (int) this.getHeight() - (itemHeight*(index+1));

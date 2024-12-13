@@ -36,8 +36,6 @@ public class AnimationHandler {
     private final int MERCHANT_NUM_COLS = 4;
     private final int HEALTH_BAR_NUM_ROWS = 50;
     private final int HEALTH_BAR_NUM_COLS = 1;
-    private final int BOMB_GUI_NUM_ROWS = 1;
-    private final int BOMB_GUI_NUM_COLS = 8;
 
 
 
@@ -83,9 +81,9 @@ public class AnimationHandler {
                 bomberSheet.getWidth() / BOMBER_NUM_COLS,
                 bomberSheet.getHeight() / BOMBER_NUM_ROWS);
         animations.put(AnimationActor.BOMBER, new HashMap<AnimationAction, AnimationInfo>(BOMBER_NUM_ROWS));
-        animations.get(AnimationActor.BOMBER).put(AnimationAction.IDLE, new AnimationInfo(bomberFrames, 0, 8, 0.2f));
+        animations.get(AnimationActor.BOMBER).put(AnimationAction.IDLE, new AnimationInfo(bomberFrames, 0, 8, 0.9f));
         animations.get(AnimationActor.BOMBER).put(AnimationAction.MOVE, new AnimationInfo(bomberFrames, 1, 9, 0.5f));
-        animations.get(AnimationActor.BOMBER).put(AnimationAction.ATTACK, new AnimationInfo(bomberFrames, 2, 19, 1.2f));
+        animations.get(AnimationActor.BOMBER).put(AnimationAction.ATTACK, new AnimationInfo(bomberFrames, 2, 19, 0.8f));
         animations.get(AnimationActor.BOMBER).put(AnimationAction.DIE, new AnimationInfo(bomberFrames, 3, 4, RRGame.STANDARD_DEATH_DURATION));
         animations.get(AnimationActor.BOMBER).put(AnimationAction.DEFAULT, animations.get(AnimationActor.BOMBER).get(AnimationAction.IDLE));
 
@@ -190,15 +188,6 @@ public class AnimationHandler {
         setHealthBarAnimations(healthBarFrames, AnimationActor.HEALTH_BAR_7, 7);
         animations.put(AnimationActor.HEALTH_BAR_8, new HashMap<AnimationAction, AnimationInfo>(HEALTH_BAR_NUM_ROWS));
         animations.get(AnimationActor.HEALTH_BAR_8).put(AnimationAction.DEFAULT, new AnimationInfo(healthBarFrames,1, 1, 0.1f, 0));
-
-        // Bomb GUI
-        Texture bombGUISheet = new Texture(RRGame.RSC_BOMB_GUI_SHEET);
-        TextureRegion[][] bombGUIFrames = TextureRegion.split(bombGUISheet,
-                bombGUISheet.getWidth() / BOMB_GUI_NUM_COLS,
-                bombGUISheet.getHeight() / BOMB_GUI_NUM_ROWS);
-        animations.put(AnimationActor.BOMB_GUI, new HashMap<AnimationAction, AnimationInfo>(BOMB_GUI_NUM_ROWS));
-        animations.get(AnimationActor.BOMB_GUI).put(AnimationAction.OPEN, new AnimationInfo(bombGUIFrames, 0, 8, 0.8f));
-        animations.get(AnimationActor.BOMB_GUI).put(AnimationAction.DEFAULT, new AnimationInfo(bombGUIFrames, 0, 1, 0.1f, 0));
 
         // things not finished yet
 //        animations.put(AnimationActor.SMOKE_BOMB, null);

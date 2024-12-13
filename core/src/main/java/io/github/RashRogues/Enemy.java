@@ -39,6 +39,8 @@ public abstract class Enemy extends Entity {
         this(texture, x, y, size, size, hasKey, animationActor);
     }
 
+    public abstract void setTarget(Player player);
+
     /**
      * Ran every frame.
      * @param delta
@@ -52,9 +54,10 @@ public abstract class Enemy extends Entity {
         keySprite.setY(getY()+getHeight()/4);
     }
 
-    public void dropKey() {
-        if (hasKey) {
+    public void dropKey(){
+        if ((hasKey) && (RRGame.globals.pid == 0)) {
             hasKey = false;
+            RRGame.globals.network.connection.dispatchKeyDrop(getX(),getY());
             new Key(getX(),getY());
         }
     }
@@ -63,10 +66,10 @@ public abstract class Enemy extends Entity {
      * Drop coins of an amount equal to or less than twice this Enemy's level
      */
     public void dropCoins() {
-        int numCoin = RRGame.globals.getRandomInteger(2*(enemyLevel+1));
+        int numCoin = rnd.nextInt(2*(enemyLevel+1));
         for (int ii = 0; ii < numCoin; ii++) {
-            float x = (RRGame.globals.getRandomInteger(MAX_DROP_DISTANCE) - 1) / 2;
-            float y = (RRGame.globals.getRandomInteger(MAX_DROP_DISTANCE) - 1) / 2;
+            float x = (rnd.nextInt(MAX_DROP_DISTANCE) - 1) / 2;
+            float y = (rnd.nextInt(MAX_DROP_DISTANCE) - 1) / 2;
             new Coin(getX() + x, getY() + y);
         }
     }
@@ -104,6 +107,7 @@ public abstract class Enemy extends Entity {
         if (stats.isDead()) {
             // sound
             this.setCurrentAnimation(AnimationAction.DIE);
+            System.out.println("dying");
         }
         else if (tookDamage) {
             // sound

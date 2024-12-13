@@ -215,8 +215,12 @@ public class ClientListener implements Endpoint {
      * Tell client that 'pid' picked up a key.
      * @param pid
      */
-    public void dispatchKeyPickup(int pid){
-        this.outgoingMessages.add(StreamMaker.pickupKey(pid));
+    public void dispatchKeyPickup(int pid, int keyID){
+        this.outgoingMessages.add(StreamMaker.pickupKey(pid, keyID));
+    }
+
+    public void dispatchKeyDrop(float x, float y){
+        this.outgoingMessages.add(StreamMaker.dropKey(x, y));
     }
 
     /**
@@ -234,6 +238,10 @@ public class ClientListener implements Endpoint {
         this.outgoingMessages.add(StreamMaker.seed(seed));
     }
 
+    /**
+     * Kill the player
+     * @param pid
+     */
     @Override
     public void dispatchKillPlayer(int pid) {
        this.outgoingMessages.add(StreamMaker.killPlayer(pid));
@@ -242,6 +250,24 @@ public class ClientListener implements Endpoint {
     @Override
     public void dispatchCommand(String[] cmd) {
        this.outgoingMessages.add(StreamMaker.command(cmd));
+    }
+
+    /**
+     * Remove the player's entity.
+     * @param pid
+     */
+    public void dispatchDestroyPlayer(int pid){
+        this.outgoingMessages.add(StreamMaker.destroyPlayer(pid));
+    }
+
+    /**
+     * Communicate to the client which player the npc with eid should target.
+     * @param eid
+     * @param pid
+     */
+    @Override
+    public void dispatchTarget(int eid, int pid) {
+       this.outgoingMessages.add(StreamMaker.target(pid,eid));
     }
 
     /**
@@ -254,6 +280,11 @@ public class ClientListener implements Endpoint {
     @Override
     public void dispatchDestroyEntity2(int pid, long frame) {
         this.outgoingMessages.add(StreamMaker.destroyEntity2(pid,frame));
+    }
+
+    @Override
+    public void dispatchDestroyEntity3(int eid, long number) {
+       this.outgoingMessages.add(StreamMaker.destroyEntity3(eid,number));
     }
 
     /**
@@ -294,12 +325,15 @@ public class ClientListener implements Endpoint {
     public void handleKeys(byte[] packet){
         this.server.relay(packet,this.client_pid);
 
+        int pid = packet[1];
+        Player p = RRGame.globals.players.get(pid);
+        if (p == null){
+            return;
+        }
+
         byte[] longBytes = new byte[8];
         System.arraycopy(packet,2, longBytes,0,8);
         long frame = StreamMaker.bytesToLong(longBytes);
-
-        int pid = packet[1];
-        Player p = RRGame.globals.players.get(pid);
 
         if (packet[10] == 1) {
             p.moveUp();
@@ -321,9 +355,6 @@ public class ClientListener implements Endpoint {
         }
         if (packet[16] == 1) {
             p.useAbility(pid,frame);
-        }
-        if (packet[17] == 1) {
-            p.attack(pid,frame);
         }
     }
 

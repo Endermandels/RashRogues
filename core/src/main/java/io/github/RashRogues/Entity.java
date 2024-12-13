@@ -42,7 +42,7 @@ public abstract class Entity extends Sprite {
     // Used For Networking
     public int id     = -1;
     public int pid    = -1;
-    public long frame = -1;
+    public long number = -1;
 
     /**
      * Create an Entity on the current screen.
@@ -190,7 +190,7 @@ public abstract class Entity extends Sprite {
         hitBox.update(delta);
     }
 
-    private void setUpAnimations(AnimationActor animationActor) {
+    protected void setUpAnimations(AnimationActor animationActor) {
         this.animationTimer = 0f;
         if (Entity.ah.animations.get(animationActor) == null) return;
         this.animations = Entity.ah.animations.get(animationActor);
@@ -205,7 +205,7 @@ public abstract class Entity extends Sprite {
             return false;
         }
         // move only has priority over the idle animation, no others
-        if (action == AnimationAction.MOVE && this.currentAnimationAction != AnimationAction.DEFAULT) {
+        if (action == AnimationAction.MOVE && this.currentAnimationAction != AnimationAction.IDLE &&this.currentAnimationAction != AnimationAction.DEFAULT) {
             return false;
         }
         this.currentAnimationInfo = this.animations.get(action);
@@ -216,14 +216,6 @@ public abstract class Entity extends Sprite {
             return true;
         }
         return false;
-    }
-
-    /**
-     * Basically only used by HealthBar!
-     * */
-    protected boolean setCurrentAnimation(AnimationAction action, AnimationActor changedActor) {
-        setUpAnimations(changedActor);
-        return setCurrentAnimation(action);
     }
 
     protected void toggleAnimations(boolean onOrOff) {
