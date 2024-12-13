@@ -261,12 +261,14 @@ class MerchantMenu {
             if (mx > x && mx < x + this.itemWidth) {
                 if (my > y && my < y + this.itemWidth) {
 
+                    batch.draw(this.selectionTexture, x, y, itemSelectWidth, itemSelectHeight);
+
+
                     // Draw Items. Gray out if previously purchased.
                     if (prevPurchased.contains(item.itemType) && RRGame.globals.nonRepurchasableItems.contains(item.itemType)){
                         batch.setColor(Color.DARK_GRAY);
                     }
 
-                    batch.draw(this.selectionTexture, x, y, itemSelectWidth, itemSelectHeight);
                     batch.draw(item.getTexture(),x,y,itemSelectWidth,itemSelectHeight);
                     batch.setColor(Color.WHITE);
                     sel = i;
