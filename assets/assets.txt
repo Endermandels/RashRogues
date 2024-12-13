@@ -74,6 +74,7 @@ SFX/sounds/hitHurt.wav
 SFX/sounds/hitHurtEnemy.wav
 SFX/sounds/pickupKey.wav
 SFX/sounds/shoot.wav
+SFX/sounds/shop_invalid.wav
 SFX/sounds/shop_purchase.wav
 SFX/sounds/swordSwipe.wav
 credits.txt

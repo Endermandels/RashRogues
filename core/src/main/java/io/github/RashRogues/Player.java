@@ -50,6 +50,7 @@ public class Player extends Entity {
     private Sound hurtSFX;
     private Sound shootSFX;
     private Sound purchaseSFX;
+    private Sound invalidSFX;
 
     private boolean shopping = false;
 
@@ -79,6 +80,7 @@ public class Player extends Entity {
         hurtSFX = RRGame.am.get(RRGame.RSC_HURT_SFX);
         shootSFX = RRGame.am.get(RRGame.RSC_SHOOT_SFX);
         purchaseSFX = RRGame.am.get(RRGame.RSC_SHOP_PURCHASE);
+        invalidSFX = RRGame.am.get(RRGame.RSC_SHOP_INVALID);
         this.numCoins = 150;
         // this will obviously change based on a number of factors later
     }
@@ -255,6 +257,7 @@ public class Player extends Entity {
 
     public void buyItem(BuyableItem item, int cost) {
        if (numCoins < cost){
+           this.invalidSFX.play(0.2f);
            return;
        }
        this.purchaseSFX.play(0.2f);

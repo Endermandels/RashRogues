@@ -122,6 +122,7 @@ public class RRGame extends Game {
     public static final String RSC_PICK_UP_KEY_SFX = "SFX/sounds/pickupKey.wav";
     public static final String RSC_SWORD_SWIPE_SFX = "SFX/sounds/swordSwipe.wav";
     public static final String RSC_SHOP_PURCHASE = "SFX/sounds/shop_purchase.wav";
+    public static final String RSC_SHOP_INVALID = "SFX/sounds/shop_invalid.wav";
 
     // music
     public static final String RSC_ROOM1_MUSIC = "SFX/music/on the road to the 80s.mp3";
@@ -206,6 +207,7 @@ public class RRGame extends Game {
 
         am.load(RSC_SWORD_SWIPE_SFX, Sound.class);
         am.load(RSC_SHOP_PURCHASE, Sound.class);
+        am.load(RSC_SHOP_INVALID, Sound.class);
         am.load(RSC_PICK_UP_KEY_SFX, Sound.class);
         am.load(RSC_HURT_ENEMY_SFX, Sound.class);
         am.load(RSC_EXPLOSION_SFX, Sound.class);
