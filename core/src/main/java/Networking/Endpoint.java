@@ -11,7 +11,7 @@ public interface Endpoint {
     public void dispatchStartGame();
     public void dispatchCreatePlayer(Player player);
     public void dispatchDestroyPlayer(int pid);
-    public void dispatchKeys(byte[] keyMask, long keys, float x, float y);
+    public void dispatchKeys(byte[] keyMask, long keys, float x, float y, float mx, float my);
     public void dispatchHeartbeat();
     public void forward(byte[] packet);
     public void dispose();
@@ -30,4 +30,5 @@ public interface Endpoint {
     void dispatchKeyDrop(float x, float y);
     void dispatchCoinDrop(float x, float y, int level);
     void dispatchSyncHealth(int pid, int hp);
+    void dispatchKillEnemy(int eid);
 }

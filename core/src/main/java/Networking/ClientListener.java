@@ -160,6 +160,7 @@ public class ClientListener implements Endpoint {
 
         } catch(Exception e) {
             System.out.println(">>! Malformed Network Traffic Detected!");
+            System.out.println(e);
         }
 
     }
@@ -178,8 +179,12 @@ public class ClientListener implements Endpoint {
      * Communicate keystrokes to client.
      * @param keymask Keystroke Bytemap
      */
-    public void dispatchKeys(byte[] keymask, long frame, float x, float y){
-        this.outgoingMessages.add(StreamMaker.keys(pid, frame, keymask, x, y));
+    public void dispatchKeys(byte[] keymask, long frame, float x, float y, float mx, float my){
+        this.outgoingMessages.add(StreamMaker.keys(pid, frame, keymask, x, y, mx, my));
+    }
+
+    public void dispatchKillEnemy(int eid){
+       this.outgoingMessages.add(StreamMaker.killEnemy(eid));
     }
 
     /**

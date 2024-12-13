@@ -187,6 +187,8 @@ public class Client implements Endpoint {
                 this.handleDropKey(msg);
             } else if (msgType == COINS.getvalue()){
                 this.handleCoinDrop(msg);
+            } else if (msgType == KILL_ENEMY.getvalue()){
+                this.handleKillEnemy(msg);
             }
         }
 
@@ -300,8 +302,8 @@ public class Client implements Endpoint {
      *
      * @param keymask Keys pressed.
      */
-    public void dispatchKeys(byte[] keymask, long frame, float x, float y) {
-        this.outgoingMessages.add(StreamMaker.keys(pid, frame, keymask, x, y));
+    public void dispatchKeys(byte[] keymask, long frame, float x, float y, float mx, float my) {
+        this.outgoingMessages.add(StreamMaker.keys(pid, frame, keymask, x, y, mx, my));
     }
 
     /**
@@ -396,6 +398,11 @@ public class Client implements Endpoint {
         return;
     }
 
+    @Override
+    public void dispatchKillEnemy(int eid) {
+       return;
+    }
+
     public void handleSyncHealth(byte[] packet){
 
         int pid = (byte) packet[1];
@@ -408,6 +415,19 @@ public class Client implements Endpoint {
         }
         p.stats.setHealth(health);
     }
+
+   public void handleKillEnemy(byte[] packet){
+        byte[] eidBytes = new byte[4];
+        System.arraycopy(packet,1,eidBytes,0,4);
+        int eid = StreamMaker.bytesToInt(eidBytes);
+        Entity e = RRGame.globals.getReplicatedEntity(eid);
+        if (e instanceof Enemy){
+            ((Enemy) e).stats.kill();
+        }
+        System.out.println("killed : " + e);
+
+
+   }
 
     public void handleCoinDrop(byte[] packet){
        byte[] xBytes = new byte[4];
@@ -637,14 +657,24 @@ public class Client implements Endpoint {
         byte[] longBytes = new byte[8];
         byte[] xBytes = new byte[4];
         byte[] yBytes = new byte[4];
+        byte[] mxBytes = new byte[4];
+        byte[] myBytes = new byte[4];
+
         System.arraycopy(packet,2, longBytes,0,8);
         System.arraycopy(packet,64, xBytes,0,4);
         System.arraycopy(packet,68, yBytes,0,4);
+        System.arraycopy(packet,72, mxBytes,0,4);
+        System.arraycopy(packet,75, myBytes,0,4);
+
         long frame = StreamMaker.bytesToLong(longBytes);
         float x = StreamMaker.bytesToFloat(xBytes);
         float y = StreamMaker.bytesToFloat(yBytes);
+        float mx = StreamMaker.bytesToFloat(mxBytes);
+        float my = StreamMaker.bytesToFloat(myBytes);
 
         p.setPosition(x,y);
+        p.mouseLocation.x = mx;
+        p.mouseLocation.y = my;
 
         if (packet[10] == 1){
             p.moveUp();

@@ -56,6 +56,7 @@ public class Player extends Entity {
     private Sound purchaseSFX;
     private Sound invalidSFX;
 
+    public Vector3 mouseLocation = new Vector3(0f,0f,0f);
 
     public Player(Texture texture, float x, float y, float width, float height, int pid) {
         super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER, AnimationActor.PLAYER1,
@@ -213,9 +214,6 @@ public class Player extends Entity {
         }
         // good spot for a sound effect
         //this converts a Vector3 position of pixels to a Vector3 position of units
-        float x = Gdx.input.getX();
-        float y = Gdx.input.getY();
-        Vector3 mouseLocation = RRGame.playerCam.unproject(new Vector3(x, y, 0));
         float xCenter = this.getX() + this.getWidth()/2;
         float yCenter = this.getY() + this.getHeight()/2;
         Vector3 throwingKnifeDir = new Vector3(mouseLocation.x-xCenter, mouseLocation.y-yCenter, 0);

@@ -12,7 +12,7 @@ public abstract class Enemy extends Entity {
 
     public static final int MAX_DROP_DISTANCE = 3;
 
-    protected EnemyStats stats;
+    public EnemyStats stats;
     private int enemyLevel;
     protected HurtBox hurtBox;
     protected boolean hasKey;
