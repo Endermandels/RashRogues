@@ -147,7 +147,6 @@ public class Archer extends Enemy {
                 closest = distToP;
             }
         }
-        if (hasEffect(Effect.SMOKE)) { p = null; }
         this.target = p;
 
         // Sync client to match the new target.
