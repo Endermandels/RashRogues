@@ -89,7 +89,7 @@ at your neck!
 
 ### Custom Animations: *Complete*
     All assets in the game (at least the entities) will be custom made, 
-    including animations.
+    including animations. Particle Effects have also been added sparingly.
 
 ## Other Completed Goals
 

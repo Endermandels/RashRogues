@@ -110,6 +110,10 @@ public class Projectile extends Entity {
                     this.getHeight(), this.xVelocity, this.yVelocity, this.damage, degOffset, this.onlyHitOneTarget,
                     this.distance, this.speed, this.animationActor, this.replicationType, this.creator, this.number);
         }
+        else if (this instanceof SmokeBombExplosion){
+            // this is annoying but i'm tired and cant think of another easy way to do this:
+            returnProjectile =  new SmokeBombExplosion(this.getX(), this.getY());
+        }
         else {
             returnProjectile =  new Projectile(this.alignment, this.getTexture(), this.getX(), this.getY(), this.getWidth(),
                     this.getHeight(), this.damage, this.getRotation(), this.onlyHitOneTarget, this.duration,

@@ -11,6 +11,7 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
@@ -103,10 +104,12 @@ public class RRGame extends Game {
     public static final String RSC_COIN_IMG = "DefaultImages/coin.png";
     public static final String RSC_HEALTH_POTION_IMG = "DefaultImages/health_potion.png";
 
-    //debug tools
+    // debug tools
     public static final String RSC_NET_VIEWER = "Menu/net_viewer.png";
 
-    // item animations
+    // particle effects
+    public static final String RSC_SMOKE_PARTICLE_IMG = "Particles/particle-cloud.png";
+    public static final String RSC_SMOKE_PARTICLE_EFFECT = "Particles/smoke_particles.p";
 
     // sounds
     public static final String RSC_HURT_SFX = "SFX/sounds/hitHurt.wav";
@@ -193,6 +196,9 @@ public class RRGame extends Game {
         am.load(RSC_HEALTH_POTION_IMG, Texture.class);
 
         am.load(RSC_NET_VIEWER, Texture.class);
+
+        am.load(RSC_SMOKE_PARTICLE_IMG, Texture.class);
+        am.load(RSC_SMOKE_PARTICLE_EFFECT, ParticleEffect.class);
 
         am.load(RSC_GAME_LIST_ITEM, Texture.class);
         am.load(RSC_BTN_START_GAME, Texture.class);
