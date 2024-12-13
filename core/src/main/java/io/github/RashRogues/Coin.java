@@ -18,6 +18,8 @@ public class Coin extends Entity {
         // if we hit anything other than a player, we don't care
         if (!(thingHit instanceof Player)) { return; }
         // otherwise kill ourselves, the player will grab us
-        this.removeSelf();
+        if (((Player) thingHit).associatedPID == RRGame.globals.pid){
+            this.removeSelf();
+        }
     }
 }

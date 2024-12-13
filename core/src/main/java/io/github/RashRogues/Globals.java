@@ -100,11 +100,6 @@ public class Globals {
      * @param e Entity
      */
     public void deregisterEntity(Entity e){
-
-        if (e == null){
-            return;
-        }
-
          if (e.replicationType == ReplicationType.PLAYER){
             Player p = (Player) e;
             this.players.remove(p.associatedPID);

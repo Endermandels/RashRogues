@@ -26,9 +26,9 @@ public class Room extends Sprite {
     // enemies would likely be spawned in here
     // this would include the one that drops the key.
 
-    protected final float SPAWN_TIMER_DECAY = 0.01f;
-    protected final float SPAWN_TIMER_MIN = 10f;
-    protected float spawnTimerMax = 30f;
+    protected final float SPAWN_TIMER_DECAY = 0.05f;
+    protected final float SPAWN_TIMER_MIN = 6f;
+    protected float spawnTimerMax = 15f;
     protected float spawnTimer;
 
     protected Random rnd;
