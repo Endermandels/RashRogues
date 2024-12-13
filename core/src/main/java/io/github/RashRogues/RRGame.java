@@ -58,7 +58,7 @@ public class RRGame extends Game {
     public static final float STANDARD_PROJECTILE_DISTANCE = 40;
     public static final float STANDARD_MELEE_DURATION = 0.5f;
     public static final float STANDARD_DEATH_DURATION = 0.7f;
-    public static final int HEALTH_POTION_HEAL_AMOUNT = 300;
+    public static final int HEALTH_POTION_HEAL_AMOUNT = 200;
 
     public static final String RSC_MONO_FONT_FILE = "Fonts/JetBrainsMono-Regular.ttf";
     public static final String RSC_MONO_FONT = "JBM.ttf";
@@ -96,6 +96,7 @@ public class RRGame extends Game {
     // item/background sprites
     public static final String RSC_ROOM1_IMG = "DefaultImages/room1.png";
     public static final String RSC_ROOM2_IMG = "DefaultImages/room2.png";
+    public static final String RSC_ROOM3_IMG = "DefaultImages/room3.png";
     public static final String RSC_KEY_IMG = "DefaultImages/key.png";
     public static final String RSC_DOOR_IMG = "DefaultImages/door.png";
     public static final String RSC_CHEST_IMG = "DefaultImages/chest.png";
@@ -119,8 +120,10 @@ public class RRGame extends Game {
     // music
     public static final String RSC_ROOM1_MUSIC = "SFX/music/on the road to the 80s.mp3";
     public static final String RSC_ROOM2_MUSIC = "SFX/music/Stealth Surge.mp3";
+    public static final String RSC_ROOM3_MUSIC = "SFX/music/Rogue Rush v2.mp3";
     public Music room1Music;
     public Music room2Music;
+    public Music room3Music;
 
     // ui
     public static final String RSC_BTN_HOST = "Buttons/host.png";
@@ -183,6 +186,7 @@ public class RRGame extends Game {
 
         am.load(RSC_ROOM1_IMG, Texture.class);
         am.load(RSC_ROOM2_IMG, Texture.class);
+        am.load(RSC_ROOM3_IMG, Texture.class);
         am.load(RSC_KEY_IMG, Texture.class);
         am.load(RSC_DOOR_IMG, Texture.class);
         am.load(RSC_CHEST_IMG, Texture.class);
@@ -213,6 +217,10 @@ public class RRGame extends Game {
         room2Music = Gdx.audio.newMusic(Gdx.files.internal(RSC_ROOM2_MUSIC));
         room2Music.setLooping(true);
         room2Music.setVolume(0.2f);
+
+        room3Music = Gdx.audio.newMusic(Gdx.files.internal(RSC_ROOM3_MUSIC));
+        room3Music.setLooping(true);
+        room3Music.setVolume(0.2f);
 
         batch = new SpriteBatch();
         hudBatch = new SpriteBatch();
