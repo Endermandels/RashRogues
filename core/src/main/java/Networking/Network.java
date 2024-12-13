@@ -10,6 +10,32 @@ public class Network {
       SERVER
    }
 
+   /* Hosting a mutliplayer game:
+    1. The host must set their host IP address, and their broadcast IP address.
+    2. The client does not need to set any IP information. Just click join and find games.
+
+    Alternatively if you wish to play the game on localhost, just set HOST_IP and BROADCAST_IP to "127.0.0.1"
+   */
+
+   /*
+   Set Me!
+
+   You can find your IP address on the host computer by opening terminal/cmd and running ifconig/ipconfig.
+   */
+   public static final String HOST_IP = "127.0.0.1";
+   //public static final String HOST_IP = "192.168.5.24"
+
+   /*
+   * Set Me!
+   *
+   * Set this to the broadcast ip of your network.
+   *  If you don't know how to calculate your broadcast IP,
+   * use this website: https://remotemonitoringsystems.ca/broadcast.php
+   *  */
+   public static final String BROADCAST_IP = "127.0.0.1";
+   //public static final String HOST_IP = "192.168.5.255"
+
+
    public static final int PORT = 5999;
    public static final int SOLICITATION_PORT = 5998;
    public static final int SOLICITATION_FREQUENCY = 120;

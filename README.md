@@ -1,14 +1,55 @@
 # RashRogues
 
-# IMPORTANT!!
-Two variables MUST be changed based on your --
-// cade enter stuff here
-
 Made by:
 
     Max Greener
     Cade Tormanen
     Elijah Delavar
+
+
+# IMPORTANT!!
+#### To play over the network (with two or more computers) you must set to variables in the hosting computer's code.
+#### No changes to client computer code is necessary.
+
+### Instructions:
+
+In Network.java on the hosting computer:
+
+    HOST_IP -> set this to the IP address of the hosting comptuer
+    BROADCAST_IP -> set this to the Broadcast IP of the network you are on.
+
+
+
+### More Information:
+
+To find your IP address, open up Terminal/CMD and run ifconfig/ipconfig.
+
+If you are having trouble figuring out what to set for the broadcast IP,
+you can use this website: 
+
+#### https://remotemonitoringsystems.ca/broadcast.php 
+
+Example 1:
+
+    My IP address is 172.20.10.5, and I'm on a 255.255.0.0 network,
+
+    I would set:
+
+        HOST_IP = "172.20.10.5"
+        BROADCAST_IP = "172.20.255.255"
+
+Example 2:
+
+    My IP address is 192.168.25.44, and I'm on a 255.255.255.0 network,
+
+    I would set:
+
+        HOST_IP = "192.168.25.44"
+        BROADCAST_IP = "192.168.25.44"
+
+
+
+
 
 ## Overview
 
