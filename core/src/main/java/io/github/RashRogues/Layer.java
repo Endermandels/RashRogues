@@ -4,8 +4,10 @@ public enum Layer {
     BACKGROUND(0),
     PLAYER(1),
     ENEMY(2),
-    PROJECTILE(3),
-    FOREGROUND(4);
+    KEY(3),
+    COIN(4),
+    PROJECTILE(5),
+    FOREGROUND(6);
 
     Layer(int value){
         this.value = value;
