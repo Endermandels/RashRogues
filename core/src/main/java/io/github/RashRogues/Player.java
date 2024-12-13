@@ -361,9 +361,9 @@ public class Player extends Entity {
         this.setPosition(RRGame.PLAYER_SPAWN_X, RRGame.PLAYER_SPAWN_Y);
         this.holdingKey = false;
         this.attackTimer = 0f;
-        this.dashTimer = 0f;
-        this.abilityTimer = 0f;
-        this.consumableTimer = 0f;
+        this.dashTimer = DASH_DEXTERITY_CONVERTER / stats.getDexterity();
+        this.abilityTimer = abilityCooldown;
+        this.consumableTimer = CONSUMABLE_COOLDOWN;
     }
 
     @Override
