@@ -95,7 +95,7 @@ public class Player extends Entity {
         }
         purchaseSFX = RRGame.am.get(RRGame.RSC_SHOP_PURCHASE);
         invalidSFX = RRGame.am.get(RRGame.RSC_SHOP_INVALID);
-        this.numCoins = 300;
+        this.numCoins = 200;
         this.purchasedItems = new HashSet<>();
         // this will obviously change based on a number of factors later
     }
@@ -495,6 +495,15 @@ public class Player extends Entity {
                 this.abilityTimer = 0f;
                 this.consumableTimer = 0f;
             break;
+
+            case KING:
+                this.setPosition(RRGame.PLAYER_SPAWN_MERCHANT_X, RRGame.PLAYER_SPAWN_MERCHANT_Y);
+                this.holdingKey = false;
+                this.attackTimer = 0f;
+                this.dashTimer = 0f;
+                this.abilityTimer = 0f;
+                this.consumableTimer = 0f;
+                break;
 
         }
     }
