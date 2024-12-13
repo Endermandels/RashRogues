@@ -128,8 +128,13 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         if (this.player.shopping) {
             return;
         }
-            game.network.connection.dispatchKeys(keyMask, RRGame.globals.frame, this.player.getX(), this.player.getY());
-            RRGame.globals.frame++;
+
+        float x = Gdx.input.getX();
+        float y = Gdx.input.getY();
+        player.mouseLocation = RRGame.playerCam.unproject(new Vector3(x, y, 0));
+
+        game.network.connection.dispatchKeys(keyMask, RRGame.globals.frame, this.player.getX(), this.player.getY(), player.mouseLocation.x, player.mouseLocation.y);
+        RRGame.globals.frame++;
     }
 
     public void update(float delta) {

@@ -38,7 +38,7 @@ public class Server implements Endpoint{
      */
     public void host(){
         Server server = this; //add server to this block scope, so we can use it inside the thread.
-        primarySocket = Gdx.net.newServerSocket(Network.PROTOCOL,"localhost",Network.PORT,null);
+        primarySocket = Gdx.net.newServerSocket(Network.PROTOCOL,"192.168.11.111",Network.PORT,null);
         clients = Collections.synchronizedList(new ArrayList<ClientListener>());
         cleanupQueue = new Queue<>();
         heartbeatStatus = new LinkedHashMap();
@@ -206,9 +206,9 @@ public class Server implements Endpoint{
     }
 
     @Override
-    public void dispatchKeys(byte[] keymask, long frame, float x, float y) {
+    public void dispatchKeys(byte[] keymask, long frame, float x, float y, float mx, float my) {
         for (ClientListener c : clients){
-            c.dispatchKeys(keymask, frame, x, y);
+            c.dispatchKeys(keymask, frame, x, y, mx, my);
         }
     }
 
@@ -268,6 +268,12 @@ public class Server implements Endpoint{
     @Override
     public void dispatchHeartbeat() {
         return;
+    }
+
+    public void dispatchKillEnemy(int eid){
+        for (ClientListener c : clients){
+            c.dispatchKillEnemy(eid);
+        }
     }
 
     @Override

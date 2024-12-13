@@ -57,7 +57,9 @@ public class Stats {
                RRGame.globals.network.connection.dispatchKillPlayer(((Player) this.parent).associatedPID);
             }
 
-            //todo: communicate other entities deaths
+            if (this.parent instanceof Enemy){
+                RRGame.globals.network.connection.dispatchKillEnemy(( (Enemy) this.parent).id);
+            }
 
         }
     }

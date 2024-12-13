@@ -27,7 +27,8 @@ public enum PacketType {
     DESTROY4(44),
     DROP_KEY(45),
     COINS(46),
-    HEALTH(47);
+    HEALTH(47),
+    KILL_ENEMY(48);
 
     private final int value;
     PacketType(int value){
