@@ -117,6 +117,7 @@ public class Projectile extends Entity {
         }
         // because this step is done on each subclass, we need to do it here
         returnProjectile.setBoxPercentSize(this.hitBoxWidthScalar, this.hitBoxHeightScalar, returnProjectile.hitBox);
+        returnProjectile.hitBox.setEffect(this.hitBox.getEffect());
         return returnProjectile;
     }
 
