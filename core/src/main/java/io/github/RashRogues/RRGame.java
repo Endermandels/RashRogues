@@ -138,6 +138,7 @@ public class RRGame extends Game {
     public static final String RSC_SHOP_DETAILED_VIEW = "Menu/shop_detailed_view.png";
     public static final String RSC_SHOP_ITEMS_VIEW = "Menu/shop_items_view.png";
     public static final String RSC_SHOP_ITEMS_SELECT = "Menu/shop_items_select.png";
+    public static final String RSC_SHOP_MONEY_DISPLAY= "Menu/shop_money_display.png";
 
     @Override
     public void create() {
@@ -197,6 +198,7 @@ public class RRGame extends Game {
         am.load(RSC_BTN_JOIN, Texture.class);
         am.load(RSC_SHOP_DETAILED_VIEW, Texture.class);
         am.load(RSC_SHOP_ITEMS_VIEW, Texture.class);
+        am.load(RSC_SHOP_MONEY_DISPLAY, Texture.class);
         am.load(RSC_SHOP_ITEMS_SELECT, Texture.class);
 
         am.load(RSC_SWORD_SWIPE_SFX, Sound.class);

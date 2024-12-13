@@ -23,7 +23,6 @@ public class GUI {
 
     public void update() {
         hb.update();
-        mm.update();
     }
 
     public void draw(Batch batch) {
@@ -98,11 +97,21 @@ class MerchantMenu {
     private float itemSelectWidth = 32;
     private float itemSelectHeight = 32;
 
+    private float moneyDisplayWidth = 128;
+    private float moneyDisplayHeight = 64;
+    private float moneyDisplayX = 0;
+    private float moneyDisplayY = 0;
+
+
     Texture detailPaneTexture;
     Texture itemPaneTexture;
     Texture selectionTexture;
+    Texture moneyDisplayTexture;
 
     private BitmapFont font;
+
+    private boolean disabled = false;
+    private Player player;
 
     private ShopItem[] items = {
         new ShopItem("Throwing Knife", "Increases weapon damage.", 50, RRGame.am.get(RRGame.RSC_THROWING_KNIFE_IMG)),
@@ -146,7 +155,9 @@ class MerchantMenu {
         detailPaneTexture = RRGame.am.get(RRGame.RSC_SHOP_DETAILED_VIEW);
         itemPaneTexture   = RRGame.am.get(RRGame.RSC_SHOP_ITEMS_VIEW);
         selectionTexture   = RRGame.am.get(RRGame.RSC_SHOP_ITEMS_SELECT);
+        moneyDisplayTexture   = RRGame.am.get(RRGame.RSC_SHOP_MONEY_DISPLAY);
         this.font = new BitmapFont(Gdx.files.local("Fonts/merchant.fnt"));
+        this.player = player;
     }
 
     public void resize(){
@@ -164,15 +175,32 @@ class MerchantMenu {
         itemSelectWidth  = itemPaneHeight / 4;
         itemSelectHeight = itemSelectWidth;
 
+        moneyDisplayWidth = Gdx.graphics.getWidth() / 4;
+        moneyDisplayHeight = moneyDisplayWidth / 2;
+        moneyDisplayX = Gdx.graphics.getWidth() / 3;
+        moneyDisplayY = 16;
+
+
     }
 
-    public void update(){
+    public void enable(){
+        this.disabled = false;
+    }
 
+    public void disable(){
+        this.disabled = true;
     }
 
     public void draw(Batch batch) {
+        if (disabled) {
+             return;
+        }
+
         batch.draw(this.detailPaneTexture, detailPaneX,detailPaneY, detailPaneWidth, detailPaneHeight);
         batch.draw(this.itemPaneTexture, itemPaneX,itemPaneY, itemPaneWidth, itemPaneHeight);
+        batch.draw(this.moneyDisplayTexture,moneyDisplayX,moneyDisplayY, moneyDisplayWidth, moneyDisplayHeight);
+        font.getData().setScale((int) this.moneyDisplayWidth / 40);
+        font.draw(batch, Integer.toString(player.getCoins()), this.moneyDisplayX+this.moneyDisplayWidth/8, this.moneyDisplayY+this.moneyDisplayHeight/1.5f);
 
         float mx = Gdx.input.getX();
         float my = Gdx.graphics.getHeight() - Gdx.input.getY();

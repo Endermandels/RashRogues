@@ -60,6 +60,7 @@ Menu/net_viewer.png
 Menu/shop_detailed_view.png
 Menu/shop_items_select.png
 Menu/shop_items_view.png
+Menu/shop_money_display.png
 SFX/music/Rogue Rush v2.mp3
 SFX/music/Rogue Rush.mp3
 SFX/music/Stealth Surge.mp3

@@ -48,6 +48,8 @@ public class Player extends Entity {
     private Sound hurtSFX;
     private Sound shootSFX;
 
+    private boolean shopping = false;
+
     public Player(Texture texture, float x, float y, float width, float height, int pid) {
         super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER, AnimationActor.PLAYER1,
                 ReplicationType.PLAYER, -1, -1);
@@ -90,6 +92,11 @@ public class Player extends Entity {
      * @param delta Time since last frame
      */
     public void update(float delta) {
+        if (shopping){
+            return;
+        }
+
+
         attackTimer += delta;
         dashTimer += delta;
         abilityTimer += delta;
@@ -241,6 +248,18 @@ public class Player extends Entity {
         numCoins--;
     }
 
+    public int getCoins(){
+        return this.numCoins;
+    }
+
+    public void startShopping(Merchant merchant){
+        this.shopping = true;
+    }
+
+    public void stopShopping(){
+        this.shopping = false;
+    }
+
     public void useConsumable(int pid, long frame) {
         // this is currently only healthPotions; this could be changed to consumablesHeld and diff consumables
         // but that is currently out of scope
@@ -302,12 +321,20 @@ public class Player extends Entity {
 
     @Override
     public void onHurt(Entity thingThatHurtMe) {
+        if (shopping){
+            return;
+        }
+
         boolean tookDamage = false;
         if (thingThatHurtMe.alignment == EntityAlignment.PLAYER) { return; }
         else if (thingThatHurtMe instanceof Projectile && thingThatHurtMe.alignment == EntityAlignment.ENEMY) {
             this.stats.takeDamage(((Projectile) thingThatHurtMe).damage);
             tookDamage = true;
             hurtSFX.play(0.5f, rnd.nextFloat(0.5f, 2f), 0);
+        }
+        else if (thingThatHurtMe instanceof Merchant) {
+            this.startShopping((Merchant) thingThatHurtMe);
+            return;
         }
         else if (thingThatHurtMe instanceof Enemy) {
             this.stats.takeDamage(((Enemy) thingThatHurtMe).stats.getDamage());
