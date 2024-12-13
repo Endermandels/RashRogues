@@ -36,7 +36,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     public static Array<ParticleEffectPool.PooledEffect> smokeParticleEffects;
 
     //Debugging
-    private static BitmapFont font = new BitmapFont(Gdx.files.internal("fonts/debug.fnt"),false);
+    private static BitmapFont font = new BitmapFont(Gdx.files.internal("Fonts/debug.fnt"),false);
     private static Entity debugEntity = null;
 
     public PlayScreen(RRGame game) {
@@ -286,11 +286,26 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM_MERCHANT_IMG),
                 10, 19, 0, 0, game.room2Music, RoomType.MERCHANT));
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM1_IMG),
-                35, 301, 80, 0, game.room1Music, RoomType.BATTLE));
+                35, 301, 10, 0, game.room1Music, RoomType.BATTLE));
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM2_IMG),
-                35, 301, 120, 10, game.room2Music, RoomType.BATTLE));
+                35, 301, 30, 5, game.room2Music, RoomType.BATTLE));
+        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM_MERCHANT_IMG),
+                10, 19, 0, 0, game.room2Music, RoomType.MERCHANT));
         rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM3_IMG),
-                35, 301, 120, 10, game.room3Music, RoomType.BATTLE));
+                35, 301, 50, 10, game.room3Music, RoomType.BATTLE));
+        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM1_IMG),
+                35, 301, 60, 15, game.room1Music, RoomType.BATTLE));
+        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM_MERCHANT_IMG),
+                10, 19, 0, 0, game.room2Music, RoomType.MERCHANT));
+        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM2_IMG),
+                35, 301, 80, 15, game.room2Music, RoomType.BATTLE));
+        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM3_IMG),
+                35, 301, 100, 20, game.room3Music, RoomType.BATTLE));
+        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM_MERCHANT_IMG),
+                10, 19, 0, 0, game.room2Music, RoomType.MERCHANT));
+        rooms.add(new Room(RRGame.am.get(RRGame.RSC_ROOM_MERCHANT_IMG),
+                10, 19, 0, 0, game.room3Music, RoomType.KING));
+
 
         // other rooms will go below here
     }
@@ -669,12 +684,10 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     @Override
     public void dropCoins(float x, float y, int enemyLevel) {
         System.out.println("DROPPING COINS FROM THE SERVER At X = " + x + " and Y = " + y + " level " + enemyLevel);
-        int numCoin = rnd.nextInt(2*(enemyLevel+1));
-        for (int ii = 0; ii < numCoin; ii++) {
-            float dx = (rnd.nextInt(Enemy.MAX_DROP_DISTANCE) - 1) / 2;
-            float dy = (rnd.nextInt(Enemy.MAX_DROP_DISTANCE) - 1) / 2;
-            new Coin(x + dx, x + dy);
-            System.out.println("newcoin!");
-        }
+        int valCoin = rnd.nextInt(2*(enemyLevel+1));
+        float dx = (rnd.nextInt(Enemy.MAX_DROP_DISTANCE) - 1) / 2;
+        float dy = (rnd.nextInt(Enemy.MAX_DROP_DISTANCE) - 1) / 2;
+        new Coin(x + dx, x + dy, valCoin);
+        System.out.println("newcoin!");
     }
 }

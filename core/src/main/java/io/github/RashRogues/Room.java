@@ -26,9 +26,9 @@ public class Room extends Sprite {
     // enemies would likely be spawned in here
     // this would include the one that drops the key.
 
-    protected final float SPAWN_TIMER_DECAY = 0.5f;
-    protected final float SPAWN_TIMER_MIN = 0.5f;
-    protected float spawnTimerMax = 5f;
+    protected final float SPAWN_TIMER_DECAY = 0.05f;
+    protected final float SPAWN_TIMER_MIN = 6f;
+    protected float spawnTimerMax = 15f;
     protected float spawnTimer;
 
     protected Random rnd;
@@ -58,7 +58,9 @@ public class Room extends Sprite {
                 break;
 
             case KING:
-                createKingRoom();
+                roomWidth = (int) RRGame.MERCHANT_ROOM_WIDTH;
+                roomHeight = texture.getHeight() * roomWidth / texture.getWidth();
+                createKingRoom(doorPositionX,doorPositionY);
                 break;
 
             case BATTLE:
@@ -106,8 +108,12 @@ public class Room extends Sprite {
 
     }
 
-    private void createKingRoom(){
-
+    private void createKingRoom(int doorPositionX, int doorPositionY){
+        setSize(roomWidth, roomHeight);
+        setPosition(0, 0);
+        this.doorPositionX = doorPositionX;
+        this.doorPositionY = doorPositionY;
+        doorUnlockedByDefault = false;
     }
 
     private void spawnEnemy(float x, float y, boolean hasKey) {
@@ -155,9 +161,12 @@ public class Room extends Sprite {
             case MERCHANT:
 
                 new Merchant(RRGame.MERCHANT_SPAWN_X,RRGame.MERCHANT_SPAWN_Y,RRGame.MERCHANT_SIZE,RRGame.globals.playersSet,false);
-
-
                 break;
+
+            case KING:
+
+                new King(RRGame.MERCHANT_SPAWN_X,RRGame.MERCHANT_SPAWN_Y,RRGame.MERCHANT_SIZE,RRGame.globals.playersSet,true);
+
         }
 
 

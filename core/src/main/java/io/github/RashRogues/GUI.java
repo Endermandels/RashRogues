@@ -358,7 +358,7 @@ class MerchantMenu {
         selectionTexture   = RRGame.am.get(RRGame.RSC_SHOP_ITEMS_SELECT);
         moneyDisplayTexture   = RRGame.am.get(RRGame.RSC_SHOP_MONEY_DISPLAY);
         exitButtonTexture   = RRGame.am.get(RRGame.RSC_SHOP_EXIT_BUTTON);
-        this.font = new BitmapFont(Gdx.files.local("Fonts/debug.fnt"));
+        this.font = RRGame.am.get(RRGame.RSC_MONO_FONT);
         this.player = player;
     }
 

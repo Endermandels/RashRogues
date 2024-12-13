@@ -95,7 +95,7 @@ public class Player extends Entity {
         }
         purchaseSFX = RRGame.am.get(RRGame.RSC_SHOP_PURCHASE);
         invalidSFX = RRGame.am.get(RRGame.RSC_SHOP_INVALID);
-        this.numCoins = 300;
+        this.numCoins = 200;
         this.purchasedItems = new HashSet<>();
         // this will obviously change based on a number of factors later
     }
@@ -266,9 +266,6 @@ public class Player extends Entity {
         if (abilityTimer < abilityCooldown) { return; }
         // good spot for a sound effect
         abilityTimer = 0f;
-        float x = Gdx.input.getX();
-        float y = Gdx.input.getY();
-        Vector3 mouseLocation = RRGame.playerCam.unproject(new Vector3(x, y, 0));
         float xCenter = this.getX() + this.getWidth()/2;
         float yCenter = this.getY() + this.getHeight()/2;
         Vector3 bombDir = new Vector3(mouseLocation.x-xCenter, mouseLocation.y-yCenter, 0);
@@ -310,10 +307,12 @@ public class Player extends Entity {
         return holdingKey;
     }
 
-    public void grabCoin() {
+    public void grabCoin(Coin coin) {
         if (RRGame.globals.pid == this.associatedPID){
-            numCoins++;
-            pickupKeySFX.play(0.1f);
+            for (int ii = 0; ii < coin.value; ii++) {
+                numCoins++;
+                pickupKeySFX.play(0.1f);
+            }
         }
     }
 
@@ -460,7 +459,7 @@ public class Player extends Entity {
             this.grabKey(thingThatHurtMe.id);
         }
         else if (thingThatHurtMe instanceof Coin) {
-            this.grabCoin();
+            this.grabCoin((Coin)thingThatHurtMe);
         }
         else if (thingThatHurtMe instanceof Door || thingThatHurtMe instanceof Chest) {
             // just catch the things we know of that don't do anything
@@ -498,6 +497,15 @@ public class Player extends Entity {
                 this.abilityTimer = 0f;
                 this.consumableTimer = 0f;
             break;
+
+            case KING:
+                this.setPosition(RRGame.PLAYER_SPAWN_MERCHANT_X, RRGame.PLAYER_SPAWN_MERCHANT_Y);
+                this.holdingKey = false;
+                this.attackTimer = 0f;
+                this.dashTimer = 0f;
+                this.abilityTimer = 0f;
+                this.consumableTimer = 0f;
+                break;
 
         }
     }

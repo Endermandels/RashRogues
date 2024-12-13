@@ -1,5 +1,9 @@
 # RashRogues
 
+# IMPORTANT!!
+Two variables MUST be changed based on your --
+// cade enter stuff here
+
 Made by:
 
     Max Greener
@@ -53,11 +57,9 @@ at your neck!
     Player will get hurt when colliding with projectiles, explosions, and enemy hitboxes.
     Enemies will get hurt if damaged by a player’s damaging projectile.
 
-### UI: *Partially Complete*
+### UI: *Complete*
     The player’s health bar will be visible, as well as their ability icons.
     The shop will open when a player interacts with the merchant.
-    
-    Note: The shop mechanic is not implemented yet.
 
 ### Enemies: *Complete*
     Swordsman: slow melee unit, deals heavy damage, large health pool
@@ -77,10 +79,10 @@ at your neck!
         Above changed to: Press E to use a consumable.
     Press ~ to open the HUD. 
 
-### Merchant: *Incomplete*
+### Merchant: *Complete*
     Select an upgrade specific to the user from interacting with the merchant.  
-    Upgrades include: smoke bombs, throwing knives, daggers, cloaks, gloves,
-    lockpicking tools, and more.
+    Upgrades include: health potions, attack speed increases, health increases,
+    and move speed increases.
 
 ### Difficulty Increase: *Complete*
     The longer the players stay in any given room,

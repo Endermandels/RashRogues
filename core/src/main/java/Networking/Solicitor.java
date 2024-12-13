@@ -20,7 +20,7 @@ public class Solicitor {
         if (this.lastBroadcast > Network.SOLICITATION_FREQUENCY) {
             InetAddress ip = null;
             try {
-                ip = InetAddress.getByName("192.168.11.111"); //TODO: dynamically figure out what the broadcast IP for the current subnet is.
+                ip = InetAddress.getByName("127.0.0.1"); //TODO: dynamically figure out what the broadcast IP for the current subnet is.
             } catch (UnknownHostException e) {
                 e.printStackTrace();
             }
