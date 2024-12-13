@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.utils.ScreenUtils;
 
 import java.util.HashSet;
 
@@ -26,13 +27,15 @@ public class GUI {
 
     public void update() {
         hb.update();
-        mm.update();
     }
 
     public void draw(Batch batch) {
-        hb.draw(batch);
-        sa.draw(batch);
-        mm.draw(batch);
+        if (mm.isEnabled()){
+            mm.draw(batch);
+        }else{
+            hb.draw(batch);
+            sa.draw(batch);
+        }
     }
 
     public void resize(int width, int height) {
@@ -133,10 +136,10 @@ class MerchantMenu {
     private Player player;
 
     private ShopItem[] items = {
-        new ShopItem("Health Potion", "Recovers HP.", 90, RRGame.am.get(RRGame.RSC_HEALTH_POTION_IMG), BuyableItem.HEALTH_POTION),
-        new ShopItem("Ring", "Increases player speed.", 200, RRGame.am.get(RRGame.RSC_RING_IMG), BuyableItem.RING),
-        new ShopItem("Dagger", "Increases throwing rate.", 200, RRGame.am.get(RRGame.RSC_DAGGER_IMG), BuyableItem.DAGGER),
-        new ShopItem("Cloak", "Increases player defense.", 200, RRGame.am.get(RRGame.RSC_CLOAK_IMG), BuyableItem.CLOAK)
+        new ShopItem("Health Potion", "Recover HP.", 50, RRGame.am.get(RRGame.RSC_HEALTH_POTION_IMG), BuyableItem.HEALTH_POTION),
+        new ShopItem("Ring", "Increase health.", 200, RRGame.am.get(RRGame.RSC_RING_IMG), BuyableItem.RING),
+        new ShopItem("Dagger", "Increase throw speed.", 200, RRGame.am.get(RRGame.RSC_DAGGER_IMG), BuyableItem.DAGGER),
+        new ShopItem("Cloak", "Increase move speed.", 200, RRGame.am.get(RRGame.RSC_CLOAK_IMG), BuyableItem.CLOAK)
     };
 
     private class ShopItem {
@@ -177,36 +180,39 @@ class MerchantMenu {
         selectionTexture   = RRGame.am.get(RRGame.RSC_SHOP_ITEMS_SELECT);
         moneyDisplayTexture   = RRGame.am.get(RRGame.RSC_SHOP_MONEY_DISPLAY);
         exitButtonTexture   = RRGame.am.get(RRGame.RSC_SHOP_EXIT_BUTTON);
-        this.font = new BitmapFont(Gdx.files.local("Fonts/merchant.fnt"));
+        this.font = new BitmapFont(Gdx.files.local("Fonts/debug.fnt"));
         this.player = player;
     }
 
     public void resize(){
-        detailPaneWidth  = Gdx.graphics.getWidth() / 1.8f;
+        detailPaneWidth  = Gdx.graphics.getWidth() / 2.2f;
         detailPaneHeight = detailPaneWidth;
-        detailPaneX      = 2;
-        detailPaneY      = Gdx.graphics.getHeight() - detailPaneHeight - 16;
-        int itemSelected = 0;
+        detailPaneX      = Gdx.graphics.getWidth() / 50;
+        detailPaneY      = Gdx.graphics.getHeight() - (Gdx.graphics.getWidth()/120) - detailPaneHeight;
 
-        itemPaneWidth    = Gdx.graphics.getWidth() / 3;
+        itemPaneWidth    = Gdx.graphics.getWidth() / 4.5f;
         itemPaneHeight   = itemPaneWidth * 2;
-        itemPaneX        = Gdx.graphics.getWidth() - 54 - itemPaneWidth;
-        itemPaneY        = Gdx.graphics.getHeight() - 16 - itemPaneHeight;
+        itemPaneX        = Gdx.graphics.getWidth() - Gdx.graphics.getWidth()/6 - itemPaneWidth;
+        itemPaneY        = Gdx.graphics.getHeight() - (Gdx.graphics.getWidth()/120) - itemPaneHeight;
 
         itemWidth = itemPaneHeight / 4;
         itemSelectWidth  = itemPaneHeight / 3;
         itemSelectHeight = itemSelectWidth;
 
-        moneyDisplayWidth = Gdx.graphics.getWidth() / 5;
+        moneyDisplayWidth = Gdx.graphics.getWidth() / 10;
         moneyDisplayHeight = moneyDisplayWidth / 2;
-        moneyDisplayX = Gdx.graphics.getWidth() / 3;
+        moneyDisplayX = Gdx.graphics.getWidth() / 50;
         moneyDisplayY = 16;
 
-        exitButtonWidth = Gdx.graphics.getWidth() / 16;
+        exitButtonWidth = Gdx.graphics.getWidth() / 14;
         exitButtonHeight = exitButtonWidth;
-        exitButtonX = Gdx.graphics.getWidth() - exitButtonWidth - 8;
-        exitButtonY = Gdx.graphics.getHeight() - exitButtonHeight - 8;
+        exitButtonX = Gdx.graphics.getWidth() - exitButtonWidth - Gdx.graphics.getWidth()/48;
+        exitButtonY = Gdx.graphics.getHeight() - exitButtonHeight - Gdx.graphics.getWidth()/48;
 
+    }
+
+    public boolean isEnabled(){
+        return !this.disabled;
     }
 
     public void enable(){
@@ -217,15 +223,9 @@ class MerchantMenu {
         this.disabled = true;
     }
 
-    public void update(){}
-
     public void draw(Batch batch) {
-        if (disabled) {
-             return;
-        }
-
         HashSet<BuyableItem> prevPurchased = this.player.getPurchasedItems();
-
+        ScreenUtils.clear(Color.BLACK);
         batch.draw(this.detailPaneTexture, detailPaneX,detailPaneY, detailPaneWidth, detailPaneHeight);
         batch.draw(this.itemPaneTexture, itemPaneX,itemPaneY, itemPaneWidth, itemPaneHeight);
         batch.draw(this.moneyDisplayTexture,moneyDisplayX,moneyDisplayY, moneyDisplayWidth, moneyDisplayHeight);
@@ -277,12 +277,16 @@ class MerchantMenu {
         }
 
         if (sel != -1){
+
             this.font.setColor(Color.WHITE);
-            this.font.getData().setScale(4);
-            font.draw(batch, items[sel].title, this.detailPaneX + 48, this.detailPaneY + this.detailPaneHeight - 48);
-            this.font.getData().setScale(3);
-            font.draw(batch, items[sel].description, this.detailPaneX + 48, this.detailPaneY + this.detailPaneHeight - 84);
-            font.draw(batch, Integer.toString(items[sel].cost) + " GP", this.detailPaneX + 48, this.detailPaneY + this.detailPaneHeight - 116);
+            this.font.getData().setScale((int) (this.detailPaneWidth / 140));
+
+            font.draw(batch, items[sel].title, this.detailPaneX + this.detailPaneWidth / 8, this.detailPaneY + this.detailPaneHeight - (this.detailPaneHeight / 8));
+
+            this.font.getData().setScale((int) (this.detailPaneWidth / 200));
+
+            font.draw(batch, items[sel].description, this.detailPaneX + (this.detailPaneWidth / 8), this.detailPaneY + this.detailPaneHeight - (this.detailPaneHeight / 8 * 2));
+            font.draw(batch, Integer.toString(items[sel].cost) + " GP", this.detailPaneX + (this.detailPaneWidth / 8), this.detailPaneY + this.detailPaneHeight - (this.detailPaneHeight / 8 * 3));
 
             if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
                 this.player.buyItem(items[sel].itemType, items[sel].cost);

@@ -79,14 +79,6 @@ public class AnimationHandler {
         animations.get(AnimationActor.ARCHER).put(AnimationAction.DIE, new AnimationInfo(archerFrames, 5, 8, RRGame.STANDARD_DEATH_DURATION));
         animations.get(AnimationActor.ARCHER).put(AnimationAction.DEFAULT, animations.get(AnimationActor.ARCHER).get(AnimationAction.IDLE));
 
-
-        Texture merchantDetailedView = new Texture(RRGame.RSC_SHOP_DETAILED_VIEW);
-        TextureRegion[][] merchantDetailedViewFrames = TextureRegion.split(merchantDetailedView,
-                merchantDetailedView.getWidth() / MERCHANT_DETAILED_VIEW_COLS,
-                merchantDetailedView.getHeight() / MERCHANT_DETAILED_VIEW_ROWS);
-        animations.put(AnimationActor.MERCHANT_DETAILED_VIEW, new HashMap<AnimationAction, AnimationInfo>(MERCHANT_DETAILED_VIEW_ROWS));
-        animations.get(AnimationActor.MERCHANT_DETAILED_VIEW).put(AnimationAction.DEFAULT, new AnimationInfo(merchantDetailedViewFrames,0,1,1f));
-
         // bomber
         Texture bomberSheet = new Texture(RRGame.RSC_BOMBER_SHEET);
         TextureRegion[][] bomberFrames = TextureRegion.split(bomberSheet,
@@ -180,7 +172,7 @@ public class AnimationHandler {
                 merchantSheet.getWidth() / MERCHANT_NUM_COLS,
                 merchantSheet.getHeight() / MERCHANT_NUM_ROWS);
         animations.put(AnimationActor.MERCHANT, new HashMap<AnimationAction, AnimationInfo>(MERCHANT_NUM_ROWS));
-        animations.get(AnimationActor.MERCHANT).put(AnimationAction.IDLE, new AnimationInfo(merchantFrames, 0, 4, 0.2f));
+        animations.get(AnimationActor.MERCHANT).put(AnimationAction.IDLE, new AnimationInfo(merchantFrames, 0, 4, 0.5f));
         animations.get(AnimationActor.MERCHANT).put(AnimationAction.OPEN, new AnimationInfo(merchantFrames, 1, 3, 0.5f));
         animations.get(AnimationActor.MERCHANT).put(AnimationAction.CLOSE, new AnimationInfo(merchantFrames, 2, 3, 0.5f));
         animations.get(AnimationActor.MERCHANT).put(AnimationAction.DEFAULT, animations.get(AnimationActor.MERCHANT).get(AnimationAction.IDLE));

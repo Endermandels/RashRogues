@@ -83,7 +83,7 @@ public class Player extends Entity {
         shootSFX = RRGame.am.get(RRGame.RSC_SHOOT_SFX);
         purchaseSFX = RRGame.am.get(RRGame.RSC_SHOP_PURCHASE);
         invalidSFX = RRGame.am.get(RRGame.RSC_SHOP_INVALID);
-        this.numCoins = 99999;
+        this.numCoins = 300;
         this.purchasedItems = new HashSet<>();
         // this will obviously change based on a number of factors later
     }

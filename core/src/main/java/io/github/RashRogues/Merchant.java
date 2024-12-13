@@ -9,8 +9,8 @@ public class Merchant extends Enemy {
 
     private HashSet<Player> playerSet;
 
-    private final float MERCHANT_HIT_BOX_PERCENT_WIDTH_SCALAR = 0.25f;
-    private final float MERCHANT_HIT_BOX_PERCENT_HEIGHT_SCALAR = 0.45f;
+    private final float MERCHANT_HIT_BOX_PERCENT_WIDTH_SCALAR = 0.66f;
+    private final float MERCHANT_HIT_BOX_PERCENT_HEIGHT_SCALAR = 0.66f;
     private final float MERCHANT_HURT_BOX_PERCENT_WIDTH_SCALAR = 0.45f;
     private final float MERCHANT_HURT_BOX_PERCENT_HEIGHT_SCALAR = 0.65f;
 
@@ -27,6 +27,7 @@ public class Merchant extends Enemy {
      * @param delta
      */
     public void update(float delta){
+        this.setCurrentAnimation(AnimationAction.IDLE);
         super.update(delta);
     }
 
