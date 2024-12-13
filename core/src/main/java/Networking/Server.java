@@ -38,7 +38,7 @@ public class Server implements Endpoint{
      */
     public void host(){
         Server server = this; //add server to this block scope, so we can use it inside the thread.
-        primarySocket = Gdx.net.newServerSocket(Network.PROTOCOL,"192.168.11.114",Network.PORT,null);
+        primarySocket = Gdx.net.newServerSocket(Network.PROTOCOL,"127.0.0.1",Network.PORT,null);
         clients = Collections.synchronizedList(new ArrayList<ClientListener>());
         cleanupQueue = new Queue<>();
         heartbeatStatus = new LinkedHashMap();
