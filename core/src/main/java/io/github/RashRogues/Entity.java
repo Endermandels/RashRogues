@@ -201,7 +201,8 @@ public abstract class Entity extends Sprite {
     protected boolean setCurrentAnimation(AnimationAction action) {
         // if somehow we've asked it to do something that doesn't exist, then don't crash
         // additionally, death animations take priority over everything
-        if (this.animations == null || !this.animations.containsKey(action) || this.currentAnimationAction == AnimationAction.DIE) {
+        if (this.animations == null || !this.animations.containsKey(action) ||
+                (this.currentAnimationAction == AnimationAction.DIE && !this.isAnimationFinished())) {
             return false;
         }
         // move only has priority over the idle animation, no others
