@@ -1,7 +1,25 @@
-Music made by Suno AI
-Music by AllWorldMusic from Pixabay
+Room 1 Music
+    GRAND_PROJECT on Pixabay
+    https://pixabay.com/users/grand_project-19033897/
 
+Room 2 Music
+    Suno AI
+    https://suno.com/
 
-  GUI Textures
-  Androx
-  https://byandrox.itch.io/
+SFX
+    jsfxr
+    https://sfxr.me/
+
+Health Bar
+    Androx
+    https://byandrox.itch.io/
+
+Font
+    JetBrainsMono*.ttf fonts
+    https://www.jetbrains.com/lp/mono/
+
+Menu Images
+    Cade Tormanen
+
+All other assets
+    Elijah Delavar
