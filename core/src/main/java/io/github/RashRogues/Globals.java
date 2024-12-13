@@ -118,7 +118,7 @@ public class Globals {
             // If this entity is client-side-only, don't bother dispatching removal
             if (this.pid == 0){
                 System.out.println("DESTROYING " + e.id + " aka " + e);
-                Globals.network.connection.dispatchDestroyEntity(e.id);
+//                Globals.network.connection.dispatchDestroyEntity(e.id);
             }
         }
 
