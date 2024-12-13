@@ -13,7 +13,7 @@ public abstract class Enemy extends Entity {
     public static final int MAX_DROP_DISTANCE = 3;
 
     public EnemyStats stats;
-    private int enemyLevel;
+    protected int enemyLevel;
     protected HurtBox hurtBox;
     protected boolean hasKey;
     private Sprite keySprite;
@@ -96,7 +96,7 @@ public abstract class Enemy extends Entity {
      */
     public void dropCoins() {
         if (RRGame.globals.pid == 0){
-            int numCoin = rnd.nextInt(2*(enemyLevel+1));
+            int numCoin = rnd.nextInt(4*(enemyLevel+1));
             for (int ii = 0; ii < numCoin; ii++) {
                 float x = (rnd.nextInt(MAX_DROP_DISTANCE) - 1) / 2;
                 float y = (rnd.nextInt(MAX_DROP_DISTANCE) - 1) / 2;

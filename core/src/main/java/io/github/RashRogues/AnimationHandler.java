@@ -118,7 +118,7 @@ public class AnimationHandler {
                 kingSheet.getHeight() / KING_NUM_ROWS);
         animations.put(AnimationActor.KING, new HashMap<AnimationAction, AnimationInfo>(KING_NUM_ROWS));
         animations.get(AnimationActor.KING).put(AnimationAction.CLOSE, new AnimationInfo(kingFrames, 0, 5, 0.1f));
-        animations.get(AnimationActor.KING).put(AnimationAction.OPEN, new AnimationInfo(kingFrames, 1, 3, 0.6f));
+        animations.get(AnimationActor.KING).put(AnimationAction.OPEN, new AnimationInfo(kingFrames, 1, 3, 3f));
         animations.get(AnimationActor.KING).put(AnimationAction.IDLE, new AnimationInfo(kingFrames, 2, 4, 1f));
         animations.get(AnimationActor.KING).put(AnimationAction.DIE, new AnimationInfo(kingFrames, 3, 7, RRGame.STANDARD_DEATH_DURATION));
         animations.get(AnimationActor.KING).put(AnimationAction.DEFAULT, animations.get(AnimationActor.KING).get(AnimationAction.IDLE));
