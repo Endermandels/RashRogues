@@ -47,6 +47,7 @@ public class Player extends Entity {
     private Sound pickupKeySFX;
     private Sound hurtSFX;
     private Sound shootSFX;
+    private Sound dashSFX;
 
     public Player(Texture texture, float x, float y, float width, float height, int pid) {
         super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER, AnimationActor.PLAYER1,
@@ -65,6 +66,7 @@ public class Player extends Entity {
         pickupKeySFX = RRGame.am.get(RRGame.RSC_PICK_UP_KEY_SFX);
         hurtSFX = RRGame.am.get(RRGame.RSC_HURT_SFX);
         shootSFX = RRGame.am.get(RRGame.RSC_SHOOT_SFX);
+        dashSFX = RRGame.am.get(RRGame.RSC_DASH_SFX);
         switch (this.associatedPID) {
             case 0:
                 this.setUpAnimations(AnimationActor.PLAYER1);
@@ -189,9 +191,18 @@ public class Player extends Entity {
         return true;
     }
 
+    /**
+     *
+     * @return percentage of time left on dash cooldown
+     */
+    public float getDashTimeLeft() {
+        return Math.min(dashTimer / (DASH_DEXTERITY_CONVERTER / stats.getDexterity()), 1);
+    }
+
     public void dash() {
         if (dashTimer < (DASH_DEXTERITY_CONVERTER / stats.getDexterity())) { return; }
         // good spot for a sound effect
+        dashSFX.play(0.5f, rnd.nextFloat(0.5f, 1f), 0f);
         dashTimer = 0f;
         float x = getX();
         float y = getY();

@@ -90,6 +90,7 @@ public class RRGame extends Game {
     public static final String RSC_CHEST_SHEET = "Images/chest sprite sheet.png";
     public static final String RSC_DOOR_SHEET = "Images/door sprite sheet.png";
     public static final String RSC_BOMB_GUI_SHEET = "Images/bomb GUI sprite sheet.png";
+    public static final String RSC_CLOAK_GUI_SHEET = "Images/cloak GUI sprite sheet.png";
 
     // item/background sprites
     public static final String RSC_ROOM1_IMG = "DefaultImages/room1.png";
@@ -113,6 +114,7 @@ public class RRGame extends Game {
     public static final String RSC_DOOR_OPEN_SFX = "SFX/sounds/doorOpen.wav";
     public static final String RSC_PICK_UP_KEY_SFX = "SFX/sounds/pickupKey.wav";
     public static final String RSC_SWORD_SWIPE_SFX = "SFX/sounds/swordSwipe.wav";
+    public static final String RSC_DASH_SFX = "SFX/sounds/dash.wav";
 
     // music
     public static final String RSC_ROOM1_MUSIC = "SFX/music/on the road to the 80s.mp3";
@@ -169,6 +171,7 @@ public class RRGame extends Game {
         am.load(RSC_BOMB_GUI_SHEET, Texture.class);
         am.load(RSC_BOMBER_BOMB_SHEET, Texture.class);
         am.load(RSC_BOMBER_EXPLOSION_SHEET, Texture.class);
+        am.load(RSC_CLOAK_GUI_SHEET, Texture.class);
 
         am.load(RSC_ROOM1_IMG, Texture.class);
         am.load(RSC_ROOM2_IMG, Texture.class);
@@ -194,6 +197,7 @@ public class RRGame extends Game {
         am.load(RSC_DOOR_OPEN_SFX, Sound.class);
         am.load(RSC_SHOOT_SFX, Sound.class);
         am.load(RSC_HURT_SFX, Sound.class);
+        am.load(RSC_DASH_SFX, Sound.class);
 
         room1Music = Gdx.audio.newMusic(Gdx.files.internal(RSC_ROOM1_MUSIC));
         room1Music.setLooping(true);
