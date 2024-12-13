@@ -40,7 +40,7 @@ public class Player extends Entity {
     private boolean holdingKey;
     private Sprite keySprite;
     private int healthPotionsHeld;
-    private float deathTimer = 0f;
+    private float deathTimer;
     private int numCoins;
 
     private Random rnd;
@@ -52,29 +52,19 @@ public class Player extends Entity {
         super(EntityAlignment.PLAYER, texture, x, y, width, height, Layer.PLAYER, AnimationActor.PLAYER1,
                 ReplicationType.PLAYER, -1, -1);
         RRGame.globals.currentNumPlayers++;
-        this.maxXVelocity = BASE_PLAYER_MOVE_SPEED;
-        this.maxYVelocity = BASE_PLAYER_MOVE_SPEED;
-        this.attackTimer = 0f;
-        this.dashTimer = DASH_DEXTERITY_CONVERTER / BASE_PLAYER_DEXTERITY;
-        this.abilityTimer = abilityCooldown;
-        this.consumableTimer = CONSUMABLE_COOLDOWN;
-        this.holdingKey = false;
+        this.associatedPID = pid;
+        resetPlayer();
         this.keySprite = new Sprite(RRGame.am.get(RRGame.RSC_KEY_IMG, Texture.class));
         this.keySprite.setSize(width*2, height*2);
         this.keySprite.setOrigin(width, height);
-        this.healthPotionsHeld = 3;
-        this.stats = new PlayerStats(BASE_PLAYER_HEALTH, BASE_PLAYER_DAMAGE, BASE_PLAYER_ATTACK_SPEED, BASE_PLAYER_MOVE_SPEED, BASE_PLAYER_DEXTERITY, this);
         hitBox.disableLength = 10000f;
         hurtBox = new HurtBox(hitBox, this);
         setBoxPercentSize(PLAYER_HIT_BOX_PERCENT_SCALAR, PLAYER_HIT_BOX_PERCENT_SCALAR, hitBox);
         setBoxPercentSize(PLAYER_HURT_BOX_WIDTH_PERCENT_SCALAR, PLAYER_HURT_BOX_HEIGHT_PERCENT_SCALAR, hurtBox);
-        this.associatedPID = pid;
         rnd = RRGame.globals.getRandom();
         pickupKeySFX = RRGame.am.get(RRGame.RSC_PICK_UP_KEY_SFX);
         hurtSFX = RRGame.am.get(RRGame.RSC_HURT_SFX);
         shootSFX = RRGame.am.get(RRGame.RSC_SHOOT_SFX);
-        this.numCoins = 0;
-        // this will obviously change based on a number of factors later
     }
 
     public Player(Texture texture, float x, float y, float size, int pid) {
@@ -96,11 +86,18 @@ public class Player extends Entity {
         consumableTimer += delta;
         adjustVelocity();
         super.update(delta);
-        // we likely want some resurrection sort of ability or even just a ghost camera you can move
-        if (deathTimer >= RRGame.STANDARD_DEATH_DURATION) { this.removeSelf(); return; }
+        if (deathTimer >= RRGame.STANDARD_DEATH_DURATION && RRGame.globals.pid == 0) {
+            String[] cmd = {"tp", Integer.toString(this.associatedPID), Integer.toString(RRGame.PLAYER_SPAWN_X), Integer.toString(RRGame.PLAYER_SPAWN_Y)};
+            RRGame.globals.executeCommandOnCurrentScreen(cmd);
+        }
+        if (deathTimer >= RRGame.STANDARD_DEATH_DURATION) {
+            this.resetPlayer();
+            return;
+        }
         if (stats.isDead() && RRGame.globals.pid == 0) {
             this.dropKey();
-            this.removeSelf();
+            deathTimer += delta;
+            return;
         }
         hurtBox.update(delta);
         keySprite.setX(getX()-getWidth()/2);
@@ -111,6 +108,20 @@ public class Player extends Entity {
             attack(myPID,projNum);
             attackTimer = 0f;
         }
+    }
+
+    private void resetPlayer() {
+        this.maxXVelocity = BASE_PLAYER_MOVE_SPEED;
+        this.maxYVelocity = BASE_PLAYER_MOVE_SPEED;
+        this.attackTimer = 0f;
+        this.dashTimer = DASH_DEXTERITY_CONVERTER / BASE_PLAYER_DEXTERITY;
+        this.abilityTimer = abilityCooldown;
+        this.consumableTimer = CONSUMABLE_COOLDOWN;
+        this.holdingKey = false;
+        this.healthPotionsHeld = 3;
+        this.stats = new PlayerStats(BASE_PLAYER_HEALTH, BASE_PLAYER_DAMAGE, BASE_PLAYER_ATTACK_SPEED, BASE_PLAYER_MOVE_SPEED, BASE_PLAYER_DEXTERITY, this);
+        this.numCoins = 0;
+        this.deathTimer = 0f;
     }
 
     public void moveLeft(){
@@ -268,14 +279,6 @@ public class Player extends Entity {
         healthPotionsHeld--;
         stats.heal(RRGame.HEALTH_POTION_HEAL_AMOUNT);
         System.out.println("New Health: " + stats.getHealth());
-    }
-
-    /**
-     * Since we can do hitBox on background items, then there could be a way that this function could check
-     * what entity it's intersecting with (a chest) and then do stuff like unlocking, idk. or maybe its automatic
-     */
-    public void interact() {
-        System.out.println("interact?");
     }
 
     public void pickUpConsumable() {
