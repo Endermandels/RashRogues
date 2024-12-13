@@ -52,7 +52,7 @@ public class RRGame extends Game {
     public static final float BOMBER_BOMB_FUSE_DURATION = 2f;
     public static final float BOMBER_BOMB_EXPLOSION_SIZE = 8;
     public static final float BOMBER_BOMB_EXPLOSION_DURATION = 1;
-    public static final float SWORDSMAN_SWING_SIZE = 4;
+    public static final float SWORDSMAN_SWING_SIZE = 8;
     public static final float STANDARD_PROJECTILE_SPEED = 20;
     public static final float STANDARD_PROJECTILE_DISTANCE = 40;
     public static final float STANDARD_MELEE_DURATION = 0.5f;
@@ -72,7 +72,7 @@ public class RRGame extends Game {
     public static final String RSC_THROWING_KNIFE_IMG = "DefaultImages/throwing_knife.png";
     public static final String RSC_SMOKE_BOMB_IMG = "DefaultImages/bomb.png";
     public static final String RSC_SMOKE_BOMB_EXPLOSION_IMG = "DefaultImages/explosion.png";
-    public static final String RSC_SWORDSMAN_SWING_IMG = "DefaultImages/explosion.png";
+    public static final String RSC_SWORDSMAN_SWING_IMG = "DefaultImages/sword_swing.png";
 
     // entity animation sheets
     public static final String RSC_ROGUE1_SHEET = "Images/rogue sprite sheet.png";

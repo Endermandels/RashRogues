@@ -67,7 +67,7 @@ public class AnimationHandler {
                 archerSheet.getWidth() / ARCHER_NUM_COLS,
                 archerSheet.getHeight() / ARCHER_NUM_ROWS);
         animations.put(AnimationActor.ARCHER, new HashMap<AnimationAction, AnimationInfo>(ARCHER_NUM_ROWS));
-        animations.get(AnimationActor.ARCHER).put(AnimationAction.IDLE, new AnimationInfo(archerFrames, 0, 6, 0.1f));
+        animations.get(AnimationActor.ARCHER).put(AnimationAction.IDLE, new AnimationInfo(archerFrames, 0, 6, 0.8f));
         animations.get(AnimationActor.ARCHER).put(AnimationAction.MOVE, new AnimationInfo(archerFrames, 1, 12, 0.3f));
         animations.get(AnimationActor.ARCHER).put(AnimationAction.OPEN, new AnimationInfo(archerFrames, 2, 3, 0.1f));
         animations.get(AnimationActor.ARCHER).put(AnimationAction.ATTACK, new AnimationInfo(archerFrames, 3, 14, 0.7f));
@@ -93,7 +93,7 @@ public class AnimationHandler {
                 swordsmanSheet.getWidth() / SWORDSMAN_NUM_COLS,
                 swordsmanSheet.getHeight() / SWORDSMAN_NUM_ROWS);
         animations.put(AnimationActor.SWORDSMAN, new HashMap<AnimationAction, AnimationInfo>(SWORDSMAN_NUM_ROWS));
-        animations.get(AnimationActor.SWORDSMAN).put(AnimationAction.IDLE, new AnimationInfo(swordsmanFrames, 0, 10, 0.2f));
+        animations.get(AnimationActor.SWORDSMAN).put(AnimationAction.IDLE, new AnimationInfo(swordsmanFrames, 0, 10, 1f));
         animations.get(AnimationActor.SWORDSMAN).put(AnimationAction.MOVE, new AnimationInfo(swordsmanFrames, 1, 16, 1f));
         animations.get(AnimationActor.SWORDSMAN).put(AnimationAction.ATTACK, new AnimationInfo(swordsmanFrames, 2, 14, 1f));
         animations.get(AnimationActor.SWORDSMAN).put(AnimationAction.DIE, new AnimationInfo(swordsmanFrames, 3, 4, RRGame.STANDARD_DEATH_DURATION));

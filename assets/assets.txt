@@ -28,6 +28,7 @@ DefaultImages/rogue.png
 DefaultImages/room1.png
 DefaultImages/room2.png
 DefaultImages/room3.png
+DefaultImages/sword_swing.png
 DefaultImages/swordsman.png
 DefaultImages/throne.png
 DefaultImages/throwing_knife.png
