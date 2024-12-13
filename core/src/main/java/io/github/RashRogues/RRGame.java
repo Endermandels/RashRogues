@@ -121,6 +121,7 @@ public class RRGame extends Game {
     public static final String RSC_DOOR_OPEN_SFX = "SFX/sounds/doorOpen.wav";
     public static final String RSC_PICK_UP_KEY_SFX = "SFX/sounds/pickupKey.wav";
     public static final String RSC_SWORD_SWIPE_SFX = "SFX/sounds/swordSwipe.wav";
+    public static final String RSC_SHOP_PURCHASE = "SFX/sounds/shop_purchase.wav";
 
     // music
     public static final String RSC_ROOM1_MUSIC = "SFX/music/on the road to the 80s.mp3";
@@ -139,6 +140,7 @@ public class RRGame extends Game {
     public static final String RSC_SHOP_ITEMS_VIEW = "Menu/shop_items_view.png";
     public static final String RSC_SHOP_ITEMS_SELECT = "Menu/shop_items_select.png";
     public static final String RSC_SHOP_MONEY_DISPLAY= "Menu/shop_money_display.png";
+    public static final String RSC_SHOP_EXIT_BUTTON= "Menu/shop_exit_button.png";
 
     @Override
     public void create() {
@@ -200,8 +202,10 @@ public class RRGame extends Game {
         am.load(RSC_SHOP_ITEMS_VIEW, Texture.class);
         am.load(RSC_SHOP_MONEY_DISPLAY, Texture.class);
         am.load(RSC_SHOP_ITEMS_SELECT, Texture.class);
+        am.load(RSC_SHOP_EXIT_BUTTON, Texture.class);
 
         am.load(RSC_SWORD_SWIPE_SFX, Sound.class);
+        am.load(RSC_SHOP_PURCHASE, Sound.class);
         am.load(RSC_PICK_UP_KEY_SFX, Sound.class);
         am.load(RSC_HURT_ENEMY_SFX, Sound.class);
         am.load(RSC_EXPLOSION_SFX, Sound.class);

@@ -114,4 +114,14 @@ public class LobbyScreen extends ScreenAdapter implements RRScreen {
             this.solicitor.dispose();
         }
     }
+
+    @Override
+    public GUI getGUI() {
+        return null;
+    }
+
+    @Override
+    public Room getRoom() {
+        return null;
+    }
 }

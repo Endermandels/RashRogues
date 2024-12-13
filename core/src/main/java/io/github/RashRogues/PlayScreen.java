@@ -16,7 +16,7 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
     private boolean debug = false;
     private RRGame game;
     private HUD hud;
-    private GUI gui;
+    public GUI gui;
     private Room currentRoom;
     private Player player;
     private Door currentDoor;
@@ -489,6 +489,11 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
                     inputs.put(Input.Keys.UP, true);
                 }
 
+                // Do Not Allow Inputs Other Than Movement In Merchant Room
+                if (currentRoom.getRoomType() == RoomType.MERCHANT){
+                    return true;
+                }
+
                 if (keycode == Input.Keys.SPACE) {
                     inputs.put(Input.Keys.SPACE, true);
                 }
@@ -560,5 +565,14 @@ public class PlayScreen extends ScreenAdapter implements RRScreen {
 
     public void executeCommand(String[] cmd){
         this.hud.executeCommand(cmd);
+    }
+
+    public GUI getGUI(){
+        return this.gui;
+    }
+
+    @Override
+    public Room getRoom() {
+        return this.currentRoom;
     }
 }

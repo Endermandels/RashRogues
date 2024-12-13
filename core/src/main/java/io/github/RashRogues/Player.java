@@ -28,6 +28,7 @@ public class Player extends Entity {
     private final float PLAYER_HIT_BOX_PERCENT_SCALAR = 0.01f;
     private final float PLAYER_HURT_BOX_WIDTH_PERCENT_SCALAR = 0.2f;
     private final float PLAYER_HURT_BOX_HEIGHT_PERCENT_SCALAR = 0.4f;
+    private final float MERCHANT_COOLDOWN = 2f;
     private float dashTimer;
     private final float DASH_DEXTERITY_CONVERTER = 10f;
     private final float DASH_DISTANCE = 6f;
@@ -41,12 +42,14 @@ public class Player extends Entity {
     private Sprite keySprite;
     private int healthPotionsHeld;
     private float deathTimer = 0f;
+    private float merchantTimer = MERCHANT_COOLDOWN;
     private int numCoins;
 
     private Random rnd;
     private Sound pickupKeySFX;
     private Sound hurtSFX;
     private Sound shootSFX;
+    private Sound purchaseSFX;
 
     private boolean shopping = false;
 
@@ -75,7 +78,8 @@ public class Player extends Entity {
         pickupKeySFX = RRGame.am.get(RRGame.RSC_PICK_UP_KEY_SFX);
         hurtSFX = RRGame.am.get(RRGame.RSC_HURT_SFX);
         shootSFX = RRGame.am.get(RRGame.RSC_SHOOT_SFX);
-        this.numCoins = 0;
+        purchaseSFX = RRGame.am.get(RRGame.RSC_SHOP_PURCHASE);
+        this.numCoins = 150;
         // this will obviously change based on a number of factors later
     }
 
@@ -92,10 +96,14 @@ public class Player extends Entity {
      * @param delta Time since last frame
      */
     public void update(float delta) {
+
         if (shopping){
             return;
         }
 
+        if (merchantTimer < MERCHANT_COOLDOWN){
+            merchantTimer+=delta;
+        }
 
         attackTimer += delta;
         dashTimer += delta;
@@ -112,7 +120,6 @@ public class Player extends Entity {
         if (attackTimer >= (1 / stats.getAttackSpeed())){
             int myPID    = this.associatedPID;
             long projNum = RRGame.globals.getProjectileNumber(myPID);
-
             attack(myPID,projNum);
             attackTimer = 0f;
         }
@@ -151,6 +158,9 @@ public class Player extends Entity {
      * @return
      */
     public boolean attack(int pid, long frame) {
+        if (RRGame.globals.currentScreen.getRoom().getRoomType() == RoomType.MERCHANT){
+            return false;
+        }
         // good spot for a sound effect
         //this converts a Vector3 position of pixels to a Vector3 position of units
         float x = Gdx.input.getX();
@@ -243,20 +253,32 @@ public class Player extends Entity {
         System.out.println("Current coins " + numCoins);
     }
 
-    public void spendCoins(int amount) {
-        // idk how this will work for merchant but i'm adding the function here
-        numCoins--;
+    public void buyItem(BuyableItem item, int cost) {
+       if (numCoins < cost){
+           return;
+       }
+       this.purchaseSFX.play(0.2f);
+       numCoins -= cost;
+       switch(item){
+           case HEALTH_POTION:
+               this.healthPotionsHeld++;
+           break;
+       }
     }
 
     public int getCoins(){
         return this.numCoins;
     }
 
-    public void startShopping(Merchant merchant){
+    public void startShopping(){
+        GUI gui = RRGame.globals.currentScreen.getGUI();
+        gui.openStore();
         this.shopping = true;
     }
 
     public void stopShopping(){
+        GUI gui = RRGame.globals.currentScreen.getGUI();
+        gui.closeStore();
         this.shopping = false;
     }
 
@@ -333,7 +355,10 @@ public class Player extends Entity {
             hurtSFX.play(0.5f, rnd.nextFloat(0.5f, 2f), 0);
         }
         else if (thingThatHurtMe instanceof Merchant) {
-            this.startShopping((Merchant) thingThatHurtMe);
+            if (this.merchantTimer >= MERCHANT_COOLDOWN){
+                this.startShopping();
+                this.merchantTimer = 0;
+            }
             return;
         }
         else if (thingThatHurtMe instanceof Enemy) {

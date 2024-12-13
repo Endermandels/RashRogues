@@ -71,4 +71,14 @@ public class MainMenuScreen extends ScreenAdapter implements RRScreen {
     public void executeCommand(String[] cmd) {
        return;
     }
+
+    @Override
+    public GUI getGUI() {
+        return null;
+    }
+
+    @Override
+    public Room getRoom() {
+        return null;
+    }
 }

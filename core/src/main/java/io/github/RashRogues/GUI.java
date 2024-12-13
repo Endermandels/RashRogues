@@ -2,6 +2,7 @@ package io.github.RashRogues;
 
 import Networking.ReplicationType;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -23,6 +24,7 @@ public class GUI {
 
     public void update() {
         hb.update();
+        mm.update();
     }
 
     public void draw(Batch batch) {
@@ -35,6 +37,14 @@ public class GUI {
         hb.resize(width, height);
         sa.resize(width, height);
         mm.resize();
+    }
+
+    public void openStore(){
+        this.mm.enable();
+    }
+
+    public void closeStore(){
+        this.mm.disable();
     }
 
 }
@@ -102,23 +112,28 @@ class MerchantMenu {
     private float moneyDisplayX = 0;
     private float moneyDisplayY = 0;
 
+    private float exitButtonWidth = 32;
+    private float exitButtonHeight = 32;
+    private float exitButtonX = 0;
+    private float exitButtonY = 0;
 
     Texture detailPaneTexture;
     Texture itemPaneTexture;
     Texture selectionTexture;
     Texture moneyDisplayTexture;
+    Texture exitButtonTexture;
 
     private BitmapFont font;
 
-    private boolean disabled = false;
+    private boolean disabled = true;
     private Player player;
 
     private ShopItem[] items = {
-        new ShopItem("Throwing Knife", "Increases weapon damage.", 50, RRGame.am.get(RRGame.RSC_THROWING_KNIFE_IMG)),
-        new ShopItem("Ring", "Increases player speed.", 70, RRGame.am.get(RRGame.RSC_RING_IMG)),
-        new ShopItem("Health Potion", "Recovers HP.", 90, RRGame.am.get(RRGame.RSC_HEALTH_POTION_IMG)),
-        new ShopItem("Dagger", "Increases throwing rate.", 120, RRGame.am.get(RRGame.RSC_DAGGER_IMG)),
-        new ShopItem("Cloak", "Increases player defense.", 120, RRGame.am.get(RRGame.RSC_CLOAK_IMG))
+            new ShopItem("Health Potion", "Recovers HP.", 90, RRGame.am.get(RRGame.RSC_HEALTH_POTION_IMG), BuyableItem.HEALTH_POTION)
+//        new ShopItem("Throwing Knife", "Increases weapon damage.", 50, RRGame.am.get(RRGame.RSC_THROWING_KNIFE_IMG), BuyableItem.THROWING_KNIFE),
+//        new ShopItem("Ring", "Increases player speed.", 70, RRGame.am.get(RRGame.RSC_RING_IMG), BuyableItem.RING),
+//        new ShopItem("Dagger", "Increases throwing rate.", 120, RRGame.am.get(RRGame.RSC_DAGGER_IMG), BuyableItem.DAGGER),
+//        new ShopItem("Cloak", "Increases player defense.", 120, RRGame.am.get(RRGame.RSC_CLOAK_IMG), BuyableItem.CLOAK)
     };
 
     private class ShopItem {
@@ -126,12 +141,14 @@ class MerchantMenu {
         private String description;
         private int cost;
         private Texture texture;
+        public BuyableItem itemType;
 
-        public ShopItem(String title, String description, int cost, Texture texture){
+        public ShopItem(String title, String description, int cost, Texture texture, BuyableItem itemType){
             this.title = title;
             this.description = description;
             this.cost = cost;
             this.texture = texture;
+            this.itemType = itemType;
         }
 
         public String getTitle(){
@@ -156,6 +173,7 @@ class MerchantMenu {
         itemPaneTexture   = RRGame.am.get(RRGame.RSC_SHOP_ITEMS_VIEW);
         selectionTexture   = RRGame.am.get(RRGame.RSC_SHOP_ITEMS_SELECT);
         moneyDisplayTexture   = RRGame.am.get(RRGame.RSC_SHOP_MONEY_DISPLAY);
+        exitButtonTexture   = RRGame.am.get(RRGame.RSC_SHOP_EXIT_BUTTON);
         this.font = new BitmapFont(Gdx.files.local("Fonts/merchant.fnt"));
         this.player = player;
     }
@@ -163,23 +181,27 @@ class MerchantMenu {
     public void resize(){
         detailPaneWidth  = Gdx.graphics.getWidth() / 1.8f;
         detailPaneHeight = detailPaneWidth;
-        detailPaneX      = 16;
+        detailPaneX      = 2;
         detailPaneY      = Gdx.graphics.getHeight() - detailPaneHeight - 16;
         int itemSelected = 0;
 
         itemPaneWidth    = Gdx.graphics.getWidth() / 3;
         itemPaneHeight   = itemPaneWidth * 2;
-        itemPaneX        = Gdx.graphics.getWidth() - 16 - itemPaneWidth;
+        itemPaneX        = Gdx.graphics.getWidth() - 64 - itemPaneWidth;
         itemPaneY        = Gdx.graphics.getHeight() - 16 - itemPaneHeight;
 
         itemSelectWidth  = itemPaneHeight / 4;
         itemSelectHeight = itemSelectWidth;
 
-        moneyDisplayWidth = Gdx.graphics.getWidth() / 4;
+        moneyDisplayWidth = Gdx.graphics.getWidth() / 5;
         moneyDisplayHeight = moneyDisplayWidth / 2;
         moneyDisplayX = Gdx.graphics.getWidth() / 3;
         moneyDisplayY = 16;
 
+        exitButtonWidth = Gdx.graphics.getWidth() / 16;
+        exitButtonHeight = exitButtonWidth;
+        exitButtonX = Gdx.graphics.getWidth() - exitButtonWidth - 8;
+        exitButtonY = Gdx.graphics.getHeight() - exitButtonHeight - 8;
 
     }
 
@@ -189,6 +211,22 @@ class MerchantMenu {
 
     public void disable(){
         this.disabled = true;
+    }
+
+    public void update(){
+
+        float mx = Gdx.input.getX();
+        float my = Gdx.graphics.getHeight() - Gdx.input.getY();
+
+        if (mx > exitButtonX && mx < exitButtonX + exitButtonWidth){
+            if (my > exitButtonY && my < exitButtonY + exitButtonHeight){
+               if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)){
+                   this.player.stopShopping();
+                   return;
+               }
+            }
+        }
+
     }
 
     public void draw(Batch batch) {
@@ -201,6 +239,7 @@ class MerchantMenu {
         batch.draw(this.moneyDisplayTexture,moneyDisplayX,moneyDisplayY, moneyDisplayWidth, moneyDisplayHeight);
         font.getData().setScale((int) this.moneyDisplayWidth / 40);
         font.draw(batch, Integer.toString(player.getCoins()), this.moneyDisplayX+this.moneyDisplayWidth/8, this.moneyDisplayY+this.moneyDisplayHeight/1.5f);
+        batch.draw(this.exitButtonTexture,this.exitButtonX,this.exitButtonY,this.exitButtonWidth,this.exitButtonHeight);
 
         float mx = Gdx.input.getX();
         float my = Gdx.graphics.getHeight() - Gdx.input.getY();
@@ -235,12 +274,15 @@ class MerchantMenu {
             this.font.getData().setScale(3);
             font.draw(batch, items[sel].description, this.detailPaneX + 48, this.detailPaneY + this.detailPaneHeight - 84);
             font.draw(batch, Integer.toString(items[sel].cost) + " GP", this.detailPaneX + 48, this.detailPaneY + this.detailPaneHeight - 116);
+
+            if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+                System.out.println("BUYING : " + items[sel]);
+                this.player.buyItem(items[sel].itemType, items[sel].cost);
+            }
         }
     }
 
 }
-
-
 
 class HealthBar extends GUIElement {
 
