@@ -1,5 +1,9 @@
 # RashRogues
 
+# IMPORTANT!!
+Two variables MUST be changed based on your --
+// cade enter stuff here
+
 Made by:
 
     Max Greener
